@@ -6,6 +6,11 @@ module Merchant
     def void
       @purchase = Purchase.find(params[:id])
 
+      # voidable_by? returns false for an already-voided bill too, so a manager
+      # double-clicking undo was told they lacked permission — wrong, and
+      # alarming. Answer the actual question first.
+      return respond(alert: t("merchant.void.already")) if @purchase.voided?
+
       unless @purchase.voidable_by?(current_user, current_membership)
         return respond(alert: t("merchant.void.not_allowed"))
       end
@@ -13,9 +18,13 @@ module Merchant
       result = VoidPurchase.new(purchase: @purchase, staff: current_user,
                                 reason: params[:reason]).call
       if result.ok
-        respond(notice: t("merchant.void.done",
-                          n: number_with_delimiter(result.points_reversed),
-                          name: @purchase.member.display_name))
+        msg = t("merchant.void.done", n: number_with_delimiter(result.points_reversed),
+                                      name: @purchase.member.display_name)
+        # Say so when the customer had already spent some of them.
+        if result.shortfall.to_i.positive?
+          msg += " " + t("merchant.void.shortfall", n: number_with_delimiter(result.shortfall))
+        end
+        respond(notice: msg)
       else
         respond(alert: result.error)
       end

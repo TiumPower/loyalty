@@ -9,7 +9,7 @@
 # stamps and in-progress missions come back down, but a reward already issued and
 # possibly already used is never clawed back.
 class VoidPurchase
-  Result = Struct.new(:ok, :error, :points_reversed, keyword_init: true)
+  Result = Struct.new(:ok, :error, :points_reversed, :shortfall, keyword_init: true)
 
   def initialize(purchase:, staff:, reason: nil)
     @purchase = purchase
@@ -35,15 +35,31 @@ class VoidPurchase
       end
       bill.update!(voided_at: Time.current, voided_by_id: @staff&.id, void_reason: @reason)
 
-      if points.positive?
+      # Take back only what the customer still holds. If they already spent
+      # these points on a reward — which this service deliberately never claws
+      # back — reversing the full amount left them on a NEGATIVE balance, and
+      # every tier, redemption and expiry calculation then ran on a number that
+      # cannot exist. The bill is still voided either way, so revenue is
+      # corrected; the shortfall is recorded in the ledger note.
+      reversible = [points, locked.points_balance.to_i].min
+      reversible = 0 if reversible.negative?
+      @shortfall = points - reversible
+
+      if reversible.positive?
+        note = I18n.t("merchant.void.ledger_note",
+                      amount: ActiveSupport::NumberHelper.number_to_delimited(@purchase.amount),
+                      reason: @reason.presence || I18n.t("merchant.void.no_reason"))
+        if @shortfall.positive?
+          note += " " + I18n.t("merchant.void.partial_note",
+                               n: ActiveSupport::NumberHelper.number_to_delimited(@shortfall))
+        end
         PointTransaction.create!(
           workspace: @purchase.workspace, member: member, kind: "void",
-          amount: -points, source: @purchase, outlet: @purchase.outlet, staff: @staff,
-          note: I18n.t("merchant.void.ledger_note",
-                       amount: ActiveSupport::NumberHelper.number_to_delimited(@purchase.amount),
-                       reason: @reason.presence || I18n.t("merchant.void.no_reason"))
+          amount: -reversible, source: @purchase, outlet: @purchase.outlet, staff: @staff,
+          note: note
         )
       end
+      @reversed = reversible
 
       Gamification.reverse_purchase(@purchase)
       locked.recompute_points!
@@ -52,8 +68,8 @@ class VoidPurchase
     return err(I18n.t("merchant.void.already")) if already
 
     @purchase.reload
-    notify_member(member, points)
-    Result.new(ok: true, points_reversed: points)
+    notify_member(member, @reversed.to_i)
+    Result.new(ok: true, points_reversed: @reversed.to_i, shortfall: @shortfall.to_i)
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("[VoidPurchase] ##{@purchase.id}: #{e.class} #{e.message}")
     err(I18n.t("merchant.void.failed"))

@@ -55,7 +55,7 @@
 <%# ---- Summary KPIs ---- %>
 <div class="l-kpis" style="margin-bottom:16px;">
   <div class="l-kpi"><div class="k"><%= tx.(:earned) %></div><div class="v" style="color:var(--primary);">+<%= number_with_delimiter(@earned) %></div></div>
-  <div class="l-kpi"><div class="k"><%= tx.(:spent) %></div><div class="v">−<%= number_with_delimiter(@spent) %></div></div>
+  <div class="l-kpi"><div class="k"><%= tx.(:spent) %></div><div class="v"><%= @spent.zero? ? "0" : "−#{number_with_delimiter(@spent)}" %></div></div>
   <div class="l-kpi"><div class="k"><%= tx.(:total) %></div><div class="v"><%= number_with_delimiter(@total) %></div></div>
 </div>
 
@@ -82,7 +82,15 @@
                     style: "color:var(--primary-ink); text-decoration:none;" %>
             </td>
             <td style="white-space:nowrap;"><%= t.icon %> <%= t("customer.tx.#{t.kind}", default: t.kind.humanize) %></td>
-            <td style="color:var(--ink-2);"><%= t.note.presence || "—" %></td>
+            <td style="color:var(--ink-2);">
+              <% bill = @purchases[t.source_id] if t.source_type == "Purchase" %>
+              <% if bill %>
+                <%= tx.(:bill_of, amount: number_with_delimiter(bill.amount)) %>
+                <% if t.note.present? %><span style="display:block; font-size:11.5px;"><%= t.note %></span><% end %>
+              <% else %>
+                <%= t.note.presence || "—" %>
+              <% end %>
+            </td>
             <td style="color:var(--ink-2);"><%= t.outlet&.name || tx.(:no_branch) %></td>
             <td style="color:var(--ink-2);"><%= t.staff&.name || "—" %></td>
             <td style="text-align:right; font-weight:700; font-variant-numeric:tabular-nums; color:<%= t.credit? ? 'var(--primary)' : 'var(--ink)' %>;">

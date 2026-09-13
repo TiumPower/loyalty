@@ -10,6 +10,8 @@ en:
       failed_title: "Could not undo"
       success_title: "Undone"
       not_allowed: "You don't have permission to undo this. Please ask a manager."
+      partial_note: "%{n} points had already been spent and could not be taken back."
+      shortfall: "%{n} points had already been spent and could not be taken back."
       no_reason: "no reason given"
       ledger_note: "Voided bill %{amount} (%{reason})"
     join_sources:
@@ -172,6 +174,7 @@ en:
       th_time: "Time"
       th_customer: "Customer"
       th_kind: "Kind"
+      bill_of: "Bill %{amount}đ"
       th_detail: "Detail"
       th_branch: "Branch"
       th_staff: "Staff"
