@@ -11,6 +11,9 @@
   <div class="l-panel" style="margin-bottom:16px;">
     <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.account.info") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:16px;"><%= t("merchant.account.email_role", email: @user.email, role: current_membership&.label) %></p>
+    <%# The email is the login identifier and is not editable here; saying so
+        beats leaving someone hunting for a field that does not exist. %>
+    <p style="color:var(--ink-2); font-size:12.5px; margin:-8px 0 14px;"><%= t("merchant.account.email_fixed") %></p>
     <%= form_with model: @user, url: merchant_account_path, method: :patch do |f| %>
       <label class="l-label"><%= t("merchant.account.display_name") %></label>
       <%= f.text_field :name, class: "l-field", placeholder: t("merchant.account.name_ph") %>
@@ -46,6 +49,14 @@
     <div data-qrrefresh-target="box" style="display:inline-block; padding:12px; background:#fff; border:1px solid var(--line); border-radius:16px;">
       <%= qr_svg(merchant_quick_login_url(token: StaffLogin.encode(current_user, current_workspace), host: request.host_with_port), size: 180) %>
     </div>
-    <p style="color:var(--ink-3); font-size:11.5px; margin-top:10px;"><%= t("merchant.quick_login.expiry_hint") %></p>
+    <p style="color:var(--ink-3); font-size:11.5px; margin-top:10px;"><%= t("merchant.quick_login.expiry_hint", min: (StaffLogin::TTL / 60).to_i) %></p>
+  </div>
+
+  <%# Sign-out lived only in the sidebar, which is a drawer on phones — the
+      account page is where people look for it. %>
+  <div class="l-panel" style="margin-top:16px;">
+    <%= button_to t("merchant.nav.logout", default: "Đăng xuất"), destroy_user_session_path, method: :delete,
+          class: "l-btn l-btn-ghost l-btn-block", style: "color:#B4402F;",
+          form: { data: { turbo: false, turbo_confirm: t("merchant.nav.logout_confirm") } } %>
   </div>
 </div>

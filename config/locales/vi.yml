@@ -66,7 +66,7 @@ vi:
     quick_login:
       title: "Đăng nhập nhanh trên điện thoại"
       note: "Quét mã này bằng điện thoại của bạn để đăng nhập ngay vào chế độ máy quét — không cần gõ mật khẩu tại quầy."
-      expiry_hint: "Mã tự làm mới sau ít phút để bảo mật."
+      expiry_hint: "Mã hết hạn sau %{min} phút và tự làm mới. Ai quét được mã này sẽ đăng nhập vào tài khoản của bạn — đừng chia sẻ ảnh chụp màn hình."
       invalid: "Mã đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng lấy mã mới."
       welcome: "Đã đăng nhập — sẵn sàng quét mã."
     dashboard:
@@ -500,6 +500,7 @@ vi:
     account:
       info: "Thông tin"
       email_role: "Email: %{email} · Vai trò: %{role}"
+      email_fixed: "Email đăng nhập không đổi được tại đây — liên hệ hỗ trợ nếu bạn cần thay email."
       display_name: "Tên hiển thị"
       name_ph: "Tên của bạn"
       save_name: "Lưu tên"
@@ -733,6 +734,7 @@ vi:
     choose:
       title: "Chọn cửa hàng"
       sub: "Bạn quản lý nhiều cửa hàng. Chọn một để vào bảng điều khiển."
+      no_access: "Bạn không có quyền truy cập cửa hàng đó."
       no_shops: "Bạn chưa có cửa hàng nào."
       create_shop: "Tạo cửa hàng"
       suspended: "Tạm ngưng"

@@ -61,7 +61,7 @@ en:
     quick_login:
       title: "Quick login on your phone"
       note: "Scan this with your phone to sign in straight to scanner mode — no password typing at the counter."
-      expiry_hint: "The code refreshes every few minutes for security."
+      expiry_hint: "The code expires after %{min} minutes and refreshes itself. Anyone who scans it is signed in as you — do not share a screenshot."
       invalid: "Login code is invalid or expired. Please get a new one."
       welcome: "Signed in — ready to scan."
     dashboard:
@@ -495,6 +495,7 @@ en:
     account:
       info: "Info"
       email_role: "Email: %{email} · Role: %{role}"
+      email_fixed: "Your sign-in email cannot be changed here — contact support if you need to change it."
       display_name: "Display name"
       name_ph: "Your name"
       save_name: "Save name"
@@ -728,6 +729,7 @@ en:
     choose:
       title: "Choose a shop"
       sub: "You manage several shops. Pick one to open its dashboard."
+      no_access: "You do not have access to that shop."
       no_shops: "You don't have any shops yet."
       create_shop: "Create a shop"
       suspended: "Suspended"

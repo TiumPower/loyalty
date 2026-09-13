@@ -17,7 +17,7 @@
         </span>
         <span style="flex:1; min-width:0;">
           <span style="display:block; font-weight:600;"><%= ws.name %></span>
-          <span class="l-mono" style="display:block; font-size:12px; color:var(--ink-2);"><%= ws.subdomain %>.loyalty.czin.net</span>
+          <span class="l-mono" style="display:block; font-size:12px; color:var(--ink-2);"><%= workspace_host(ws) %></span>
         </span>
         <% if ws.access_blocked? %>
           <span class="l-chip" style="background:#F3DDD7; color:#B4402F; font-size:11px;"><%= t("merchant.choose.suspended") %></span>
