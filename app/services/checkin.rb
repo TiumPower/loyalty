@@ -29,20 +29,36 @@ module Checkin
   #   :none    — workspace has no active check-in mission
   #   :already — the member already checked in today
   #   :done    — checked in (missions advanced, points awarded)
+  # "Already checked in today" was read off whatever copy of the member the
+  # caller happened to hold and written a few statements later, with nothing in
+  # between. Two taps on the QR — the normal case on a phone with a slow
+  # connection — both got past it, and the second one showed the customer a
+  # success screen reading "+0 điểm". Re-read the flag under a row lock so one
+  # scan means one check-in.
   def check_in!(member, workspace, outlet = nil)
     missions = workspace.missions.active.where(mission_type: "checkin").to_a
     return [:none, 0] if missions.empty?
-    return [:already, 0] if member.last_checkin_at&.to_date == Date.current
 
     points = 0
-    member.update!(last_checkin_at: Time.current)
-    missions.each do |m|
-      mp = m.progress_for(member)
-      mp.save! if mp.new_record?
-      next if mp.completed?
-      mp.advance!(1, outlet: outlet)
-      points += m.reward_points if mp.completed?
+    status = nil
+    Member.transaction do
+      locked = Member.lock.find(member.id)
+      if locked.last_checkin_at&.to_date == Date.current
+        status = :already
+        raise ActiveRecord::Rollback
+      end
+      locked.update!(last_checkin_at: Time.current)
+      missions.each do |m|
+        mp = m.progress_for(locked)
+        mp.save! if mp.new_record?
+        next if mp.completed?
+        mp.advance!(1, outlet: outlet)
+        points += m.reward_points if mp.completed?
+      end
+      status = :done
     end
-    [:done, points]
+
+    member.reload
+    status == :done ? [:done, points] : [:already, 0]
   end
 end

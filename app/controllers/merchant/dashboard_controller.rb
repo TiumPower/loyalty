@@ -94,10 +94,14 @@ module Merchant
     end
 
     # Rotate the check-in token: the old printed QR stops working immediately.
+    # This is the only remedy for a poster that has been photographed and passed
+    # around — and until now nothing in the app linked to it, so the machinery
+    # was deployed with no way to reach it. Returns to the screen it was
+    # triggered from (the branch QR screen, usually) rather than the dashboard.
+    ROTATE_RETURN_PATHS = %w[/merchant/scan-home/checkin-qr /merchant/outlets].freeze
     def rotate_checkin
       current_workspace.rotate_checkin_nonce!
-      redirect_to merchant_root_path,
-                  notice: "Đã làm mới mã check-in. Mã cũ đã ngừng hoạt động — hãy tải và in lại mã mới."
+      redirect_to safe_rotate_return, notice: t("merchant.scan.checkin_rotated")
     end
 
     private
@@ -279,6 +283,13 @@ module Merchant
         end
       end
       best
+    end
+
+    # Only ever back to one of our own screens — never to a supplied URL.
+    def safe_rotate_return
+      back = URI.parse(request.referer.to_s).path rescue nil
+      return back if back.present? && ROTATE_RETURN_PATHS.any? { |p| back.start_with?(p) }
+      merchant_root_path
     end
 
     def nav_key = :dashboard

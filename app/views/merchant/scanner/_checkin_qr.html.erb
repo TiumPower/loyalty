@@ -27,5 +27,19 @@
     <div style="display:inline-block; padding:18px; background:#fff; border-radius:20px; box-shadow:var(--shadow);">
       <%= qr_svg(checkin_url, size: 260) %>
     </div>
+
+    <%# The poster carries a static token, so rotating the nonce is the only way
+        to kill a QR that has been photographed and shared. It had no entry
+        point anywhere in the app. Managers only — it revokes every branch. %>
+    <% if current_membership&.can_manage? %>
+      <div style="margin-top:22px; padding-top:16px; border-top:1px solid var(--line);">
+        <p style="color:var(--ink-2); font-size:12.5px; margin-bottom:10px;">
+          <%= t("merchant.scan.checkin_rotate_note") %>
+        </p>
+        <%= button_to t("merchant.scan.checkin_rotate"), merchant_rotate_checkin_path,
+                      method: :post, class: "l-btn l-btn-soft",
+                      form: { data: { turbo_confirm: t("merchant.scan.checkin_rotate_confirm") } } %>
+      </div>
+    <% end %>
   </div>
 <% end %>

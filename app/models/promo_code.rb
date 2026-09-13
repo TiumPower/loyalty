@@ -31,18 +31,34 @@ class PromoCode < ApplicationRecord
 
   # Claim into a member's wallet (§6.6): issues a Voucher without spending points,
   # enforcing one-per-member and the total cap. Returns [voucher, error].
+  # The one-per-member check used to run before the lock was taken, so a
+  # double-scanned QR ran it twice on a promo nobody had claimed yet: both
+  # requests issued a voucher and the unique index turned the loser into an
+  # error page instead of "bạn đã nhận rồi". Everything that decides the outcome
+  # now happens under the row lock, and the index is still honoured as a last
+  # line so a race can never mint two vouchers.
   def claim!(member)
     return [nil, :unavailable] unless available?
-    existing = promo_claims.find_by(member_id: member.id)
-    return [existing.voucher, :already] if existing
 
     voucher = nil
+    error   = nil
     PromoCode.transaction do
-      locked = PromoCode.lock.find(id)
-      return [nil, :unavailable] if locked.out_of_claims?
+      locked   = PromoCode.lock.find(id)
+      existing = locked.promo_claims.find_by(member_id: member.id)
+      if existing
+        voucher, error = existing.voucher, :already
+        raise ActiveRecord::Rollback
+      end
+      if locked.out_of_claims?
+        error = :unavailable
+        raise ActiveRecord::Rollback
+      end
       # The campaign's own max_claims is not the only limit — the reward itself
       # may be capped, and that cap was being ignored here.
-      return [nil, :unavailable] unless reward.claim_stock!
+      unless reward.claim_stock!
+        error = :unavailable
+        raise ActiveRecord::Rollback
+      end
       voucher = Voucher.create!(
         workspace: workspace, member: member, reward: reward,
         source: "claim_qr", state: "active", points_spent: 0,
@@ -51,7 +67,10 @@ class PromoCode < ApplicationRecord
       PromoClaim.create!(workspace: workspace, promo_code: self, member: member, voucher: voucher)
       PromoCode.where(id: id).update_all("claims_count = claims_count + 1")
     end
-    [voucher, nil]
+    [voucher, error]
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    claimed = promo_claims.find_by(member_id: member.id)
+    claimed ? [claimed.voucher, :already] : [nil, :unavailable]
   end
 
   def register_scan! = PromoCode.where(id: id).update_all("scan_count = scan_count + 1")
