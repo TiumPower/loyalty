@@ -32,6 +32,9 @@ module Merchant
       # Aggregates over the whole filtered set (before pagination).
       @earned  = scope.net_credits.sum(:amount)
       @spent   = scope.redemptions.sum(:amount).abs
+      # Lapsed points are not redemptions (see PointTransaction#redemptions);
+      # shown as their own figure so the two aren't confused.
+      @expired = scope.expirations.sum(:amount).abs
       @total   = scope.count
 
       @page    = [params[:page].to_i, 1].max

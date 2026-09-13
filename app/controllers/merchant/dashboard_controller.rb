@@ -2,7 +2,7 @@ module Merchant
   class DashboardController < BaseController
     include DateRangeFilterable
 
-    before_action :require_manager!, only: [:rotate_checkin]
+    before_action :require_manager!, only: [:rotate_checkin, :refresh_busy_hour]
 
     def show
       return redirect_to merchant_onboarding_path if current_workspace && !current_workspace.onboarded?
@@ -22,10 +22,20 @@ module Merchant
       if current_workspace
         @points_issued   = in_range(PointTransaction.net_credits).sum(:amount)
         @points_redeemed = in_range(PointTransaction.redemptions).sum(:amount).abs
+        @points_expired  = in_range(PointTransaction.expirations).sum(:amount).abs
         @points_outstanding = [Member.sum(:points_balance), 0].max # unredeemed = a liability (state, not range)
         @purchases_count = in_range(Purchase.not_voided).count
         @redemption_rate = @points_issued.zero? ? 0 : (@points_redeemed.to_f / @points_issued * 100).round
-        @active_members  = Member.where("lifetime_points > 0").count
+        # "Đang hoạt động" has to mean active. This counted lifetime_points > 0 —
+        # anyone who ever earned a single point — so a shop where four fifths of
+        # the list had not been back in a year still reported them all as active.
+        @active_members  = Member.where(
+          id: Purchase.not_voided.where("created_at >= ?", ACTIVE_WINDOW.ago).select(:member_id)
+        ).count
+        # Denominator for "điểm TB/khách": points issued is range-scoped, so the
+        # customers it is divided by must be too, or picking a shorter range just
+        # makes the average collapse against a lifetime member count.
+        @earning_members = in_range(PointTransaction.net_credits).distinct.count(:member_id)
         # "Is this programme making me money?" — the numbers that answer it.
         @retention       = retention_metrics(Purchase.not_voided)
         @revenue         = @retention[:revenue]
@@ -39,6 +49,7 @@ module Merchant
         @sub_warning     = subscription_warning(current_workspace)
       else
         @points_issued = @points_redeemed = @purchases_count = @redemption_rate = @active_members = 0
+        @earning_members = 0
         @member_growth = []
         @tier_counts   = []
       end
@@ -62,10 +73,19 @@ module Merchant
     # AJAX: (re)generate the AI insight synchronously for the chosen branch, then
     # return the refreshed panel. Synchronous keeps it simple and reliable — no
     # background job to get stuck; the button shows a spinner while it runs.
+    #
+    # Synchronous also means each click is one Opus request held open on a web
+    # thread, so the button is rate-limited and manager-only. Unguarded, anyone
+    # with a staff login could hold it down and bill the account for it.
+    REFRESH_COOLDOWN = 2.minutes
     def refresh_busy_hour
       @range = resolve_range
       load_busy_hour(params[:outlet])
       oid = @busy_outlet&.id
+      if @busy_insight&.generated_at.present? && @busy_insight.generated_at > REFRESH_COOLDOWN.ago
+        response.headers["X-Insight-Cooldown"] = "1"
+        return render partial: "merchant/dashboard/busy_hour", layout: false
+      end
       BusyHourInsight.new(current_workspace, matrix: @busy_hours, busiest_slot: @busiest_slot,
                           outlet: @busy_outlet, range: { from: @range[:from], to: @range[:to] }).generate!
       # reload the freshly-written insight
@@ -88,6 +108,11 @@ module Merchant
     # liability, tiers) stay lifetime.
 
     GRACE_DAYS = 10 # days after expiry before the workspace is locked
+    ACTIVE_WINDOW = 90.days # "active" = bought within this window
+
+    # created_at rendered in the shop's timezone (the column is naive UTC).
+    LOCAL_CREATED_AT =
+      "created_at AT TIME ZONE 'UTC' AT TIME ZONE '#{Rails.application.config.time_zone}'".freeze
 
     # Returns a banner descriptor when the subscription needs attention, else nil.
     def subscription_warning(ws)
@@ -146,15 +171,23 @@ module Merchant
     end
 
     # New members per month over the last 6 months, with the running total.
+    #
+    # Months are cut in the shop's own timezone. created_at is a naive UTC
+    # timestamp, so a plain date_trunc bucketed by UTC months: a customer who
+    # signed up at 3am on the 1st (UTC+7) was reported under the PREVIOUS month,
+    # and the month that had just started looked emptier than it was. The double
+    # AT TIME ZONE reads the stored value as UTC, then converts it to local before
+    # truncating — and the window boundary is a local month start for the same
+    # reason, so the oldest bar isn't clipped.
     def monthly_member_growth
-      months = (0..5).map { |i| Date.current.beginning_of_month << (5 - i) } # oldest→newest
-      raw = Member.where("created_at >= ?", months.first)
-                  .group("date_trunc('month', created_at)").count
+      months  = (0..5).map { |i| Time.zone.now.beginning_of_month - (5 - i).months } # oldest→newest
+      raw     = Member.where("created_at >= ?", months.first)
+                      .group(Arel.sql("date_trunc('month', #{LOCAL_CREATED_AT})")).count
       running = Member.where("created_at < ?", months.first).count
       months.map do |m|
-        added = raw.find { |k, _| k.to_date.beginning_of_month == m }&.last.to_i
+        added = raw.find { |k, _| k.to_date == m.to_date }&.last.to_i
         running += added
-        { label: I18n.l(m, format: "%m/%y"), value: added, total: running }
+        { label: I18n.l(m.to_date, format: "%m/%y"), value: added, total: running }
       end
     end
 

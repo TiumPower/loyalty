@@ -40,10 +40,21 @@ export default class extends Controller {
       this.refreshBtnTarget.textContent = "⏳ Đang tạo gợi ý…"
     }
     const token = document.querySelector('meta[name="csrf-token"]')?.content
-    await this.swap(() => fetch(`${this.refreshUrlValue}?${this.params()}`, {
+    const resp = await this.swap(() => fetch(`${this.refreshUrlValue}?${this.params()}`, {
       method: "POST",
       headers: { "X-CSRF-Token": token, "Accept": "text/html" }
     }))
+    // The server refuses to re-run the model within its cooldown. Without a word
+    // the panel just redraws the same sentence and the click looks broken.
+    if (resp && resp.headers.get("X-Insight-Cooldown") && this.hasRefreshBtnTarget) {
+      this.refreshBtnTarget.disabled = true
+      this.refreshBtnTarget.textContent = "Gợi ý vừa được tạo"
+      setTimeout(() => {
+        if (!this.hasRefreshBtnTarget) return
+        this.refreshBtnTarget.disabled = false
+        this.refreshBtnTarget.textContent = "🔄 Làm mới gợi ý"
+      }, 4000)
+    }
   }
 
   async swap(request) {
@@ -53,6 +64,7 @@ export default class extends Controller {
       if (!resp.ok) throw new Error(resp.status)
       this.panelTarget.innerHTML = await resp.text()
       this.bindTooltip()
+      return resp
     } catch (e) {
       if (this.hasRefreshBtnTarget) {
         this.refreshBtnTarget.disabled = false

@@ -119,6 +119,10 @@
     <div class="k"><%= d.(:points_redeemed) %> <span class="sc"><%= range_tag %></span></div>
     <div class="v"><%= number_with_delimiter(@points_redeemed) %></div>
     <div class="d"><%= d.(:redemption_rate_suffix, n: @redemption_rate) %></div>
+    <%# Expired points used to be lumped in above, which read as redemptions. %>
+    <% if @points_expired.to_i.positive? %>
+      <div class="d" style="color:var(--ink-2);"><%= d.(:points_expired_suffix, n: number_with_delimiter(@points_expired)) %></div>
+    <% end %>
   </div>
   <div class="l-kpi">
     <div class="k"><%= d.(:outstanding) %> <span class="sc"><%= d.(:scope_all) %></span></div>
@@ -199,8 +203,8 @@
       <p style="color:var(--ink-2); font-size:13px;"><%= d.(:no_tier_data) %></p>
     <% end %>
     <div style="display:flex; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
-      <div style="flex:1;"><div class="l-num" style="font-size:20px;"><%= @redemption_rate %>%</div><div style="font-size:11px; color:var(--ink-2);"><%= d.(:redemption_rate) %></div></div>
-      <div style="flex:1;"><div class="l-num" style="font-size:20px;"><%= @members_count.positive? ? number_with_delimiter((@points_issued / @members_count)) : 0 %></div><div style="font-size:11px; color:var(--ink-2);"><%= d.(:avg_points_per_member) %></div></div>
+      <div style="flex:1;"><div class="l-num" style="font-size:20px;"><%= @redemption_rate %>%</div><div style="font-size:11px; color:var(--ink-2);"><%= d.(:redemption_rate) %> <span class="sc"><%= range_tag %></span></div></div>
+      <div style="flex:1;"><div class="l-num" style="font-size:20px;"><%= @earning_members.to_i.positive? ? number_with_delimiter((@points_issued / @earning_members)) : 0 %></div><div style="font-size:11px; color:var(--ink-2);"><%= d.(:avg_points_per_member) %> <span class="sc"><%= range_tag %></span></div></div>
     </div>
   </div>
 </div>

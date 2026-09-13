@@ -22,7 +22,13 @@ class PointTransaction < ApplicationRecord
   # netted off what was ISSUED — not counted as points the customer redeemed
   # (that would inflate "điểm đã đổi" and the redemption rate).
   scope :net_credits, -> { where("amount > 0 OR kind = 'void'") }
-  scope :redemptions, -> { debits.where.not(kind: "void") }
+  # "expire" is the same trap from the other side: points that lapsed unused are
+  # the OPPOSITE of redeemed. Counting them here told a merchant running a 6-month
+  # expiry window that customers were redeeming heavily when in fact the points
+  # were quietly dying — the one number they would change the programme over.
+  # They are still a real drain on the liability, so report them separately.
+  scope :redemptions, -> { debits.where.not(kind: %w[void expire]) }
+  scope :expirations, -> { where(kind: "expire") }
   # Points that count toward tier standing (earned, not spent) — minus anything
   # reversed by a voided bill.
   scope :tier_qualifying, -> { where("(kind IN (?) AND amount > 0) OR kind = 'void'", TIER_KINDS) }

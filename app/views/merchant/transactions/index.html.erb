@@ -56,6 +56,9 @@
 <div class="l-kpis" style="margin-bottom:16px;">
   <div class="l-kpi"><div class="k"><%= tx.(:earned) %></div><div class="v" style="color:var(--primary);">+<%= number_with_delimiter(@earned) %></div></div>
   <div class="l-kpi"><div class="k"><%= tx.(:spent) %></div><div class="v"><%= @spent.zero? ? "0" : "−#{number_with_delimiter(@spent)}" %></div></div>
+  <% if @expired.to_i.positive? %>
+    <div class="l-kpi"><div class="k"><%= tx.(:expired) %></div><div class="v" style="color:var(--ink-2);">−<%= number_with_delimiter(@expired) %></div></div>
+  <% end %>
   <div class="l-kpi"><div class="k"><%= tx.(:total) %></div><div class="v"><%= number_with_delimiter(@total) %></div></div>
 </div>
 

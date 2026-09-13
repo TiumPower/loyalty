@@ -29,10 +29,14 @@
     <input type="date" data-busyhour-target="toDate" data-action="change->busyhour#switch"
            value="<%= @range[:key] == 'custom' ? @range[:to].to_date.iso8601 : '' %>"
            class="l-field" style="width:auto; padding:5px 8px; font-size:13px;" aria-label="<%= bh.(:range_to) %>">
-    <button type="button" class="l-btn l-btn-soft" style="padding:6px 12px; font-size:13px; white-space:nowrap;"
-            data-busyhour-target="refreshBtn" data-action="busyhour#refresh">
-      🔄 <%= bh.(:busy_refresh) %>
-    </button>
+    <%# Regenerating costs an AI call, so only owners/managers get the button.
+        Everyone still reads the cached insight below. %>
+    <% if current_membership&.can_manage? %>
+      <button type="button" class="l-btn l-btn-soft" style="padding:6px 12px; font-size:13px; white-space:nowrap;"
+              data-busyhour-target="refreshBtn" data-action="busyhour#refresh">
+        🔄 <%= bh.(:busy_refresh) %>
+      </button>
+    <% end %>
   </div>
 </div>
 
