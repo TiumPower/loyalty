@@ -3,6 +3,11 @@ class Member < ApplicationRecord
   # Devise; the password column is unused in dev). Tenant-scoped by workspace.
   acts_as_tenant(:workspace)
 
+  # The merchant logo has had a type and size limit for a while; this upload had
+  # none at all — and it is shown to other customers on the shop's reviews page.
+  AVATAR_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
+  AVATAR_MAX_BYTES = 3.megabytes
+
   has_one_attached :avatar
 
   devise :database_authenticatable, :rememberable, :trackable
@@ -45,6 +50,12 @@ class Member < ApplicationRecord
                     format: { with: /\A0\d{8,10}\z/, message: "số điện thoại không hợp lệ" },
                     allow_blank: true
   validates :locale, inclusion: { in: LOCALES }
+  validate :avatar_is_a_reasonable_image
+  validate :birthday_is_plausible
+
+  # Oldest birthday we will accept. Anything outside this is a typo, and a
+  # birthday in the future silently opts the member out of the birthday gift.
+  OLDEST_BIRTHDAY = 120.years
 
   before_validation :normalize_phone, :normalize_email
   before_create :assign_referral_code, :set_placeholder_password
@@ -158,6 +169,27 @@ class Member < ApplicationRecord
   end
 
   private
+
+  def avatar_is_a_reasonable_image
+    return unless avatar.attached?
+    blob = avatar.blob
+    return if blob.nil?
+    unless AVATAR_TYPES.include?(blob.content_type)
+      errors.add(:avatar, "phải là ảnh PNG, JPG, WEBP hoặc GIF")
+    end
+    if blob.byte_size.to_i > AVATAR_MAX_BYTES
+      errors.add(:avatar, "tối đa #{(AVATAR_MAX_BYTES / 1.megabyte).to_i}MB")
+    end
+  end
+
+  def birthday_is_plausible
+    return if birthday.blank?
+    if birthday > Date.current
+      errors.add(:birthday, "không thể ở tương lai")
+    elsif birthday < OLDEST_BIRTHDAY.ago.to_date
+      errors.add(:birthday, "không hợp lệ")
+    end
+  end
 
   def normalize_phone
     self.phone = phone.to_s.gsub(/\s+/, "").presence

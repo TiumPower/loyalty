@@ -1,0 +1,29 @@
+<% content_for :title, t("customer.profile.email_confirm_title") %>
+<% content_for :tab, "me" %>
+<header class="l-appbar">
+  <%= link_to "←", member_profile_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
+  <div class="nm l-display" style="font-size:20px;"><%= t("customer.profile.email_confirm_title") %></div>
+</header>
+
+<div class="l-screen">
+  <div class="l-tile">
+    <p style="font-size:14px;"><%= t("customer.profile.email_confirm_body_html", email: tag.strong(@pending)).html_safe %></p>
+    <p style="color:var(--ink-2); font-size:13px; margin-top:6px;"><%= t("customer.profile.email_confirm_note") %></p>
+
+    <% if @dev_code %>
+      <div style="margin-top:12px; padding:10px 12px; border-radius:12px; background:var(--surface-2); font-size:13px;">
+        <%= t("customer.profile.email_dev_code") %> <span class="l-mono" style="font-weight:700; letter-spacing:.1em;"><%= @dev_code %></span>
+      </div>
+    <% end %>
+
+    <%= form_with url: member_profile_confirm_email_path, method: :post, data: { turbo: false } do %>
+      <label class="l-label" style="margin-top:14px;"><%= t("customer.profile.email_code_label") %></label>
+      <%= text_field_tag :code, nil, class: "l-field l-mono", inputmode: "numeric", maxlength: 6,
+            autocomplete: "one-time-code", autofocus: true, style: "letter-spacing:.28em; font-size:20px; text-align:center;" %>
+      <%= submit_tag t("customer.profile.email_confirm_cta"), class: "l-btn l-btn-primary l-btn-block", style: "margin-top:14px;" %>
+    <% end %>
+
+    <%= button_to t("customer.profile.email_resend"), member_profile_resend_email_change_path,
+          method: :post, class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:8px;" %>
+  </div>
+</div>

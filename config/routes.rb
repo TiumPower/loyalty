@@ -193,6 +193,11 @@ Rails.application.routes.draw do
     get   "me", to: "profile#show",   as: :profile
     patch "me", to: "profile#update"
     patch "me/avatar", to: "profile#avatar", as: :profile_avatar
+    # Email is the login, so changing it is proven with a code sent to the NEW
+    # address before it takes effect.
+    get   "me/confirm-email", to: "profile#confirm_email",      as: :profile_confirm_email
+    post  "me/confirm-email", to: "profile#verify_email_change"
+    post  "me/confirm-email/resend", to: "profile#resend_email_change", as: :profile_resend_email_change
     # Public shop / feedback page + reviews (members can leave many, edit own)
     get   "shop",            to: "reviews#index",  as: :shop_about
     get   "review",          to: "reviews#new",    as: :new_review
