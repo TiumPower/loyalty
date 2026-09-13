@@ -32,6 +32,25 @@ class Broadcast < ApplicationRecord
                                      q: audience_query, tier: audience_tier).to_a)
   end
 
+  # Take ownership of a scheduled send before doing any work. Returns true only
+  # for the caller that won.
+  #
+  # deliver! writes the notifications FIRST and sets sent_at last, so between
+  # those two statements the row is still `due`. The delivery job runs every
+  # five minutes; a run that overlaps the previous one — a large audience, a
+  # slow push, a retry — picked the same broadcast up again and every customer
+  # got the message twice. Worse, if insert_all succeeded but the final update!
+  # failed, the broadcast stayed due forever and re-sent every five minutes.
+  #
+  # Claiming first trades a duplicate send for a possible silent miss if
+  # delivery then fails. For something that lands in a customer's inbox and on
+  # their phone, that is the right way round, and the job logs the failure.
+  def claim_for_delivery!
+    self.class.where(id: id, sent_at: nil)
+        .update_all(sent_at: Time.current, updated_at: Time.current)
+        .positive?
+  end
+
   # Fan out an in-app notification to every member in the segment.
   def deliver!(members)
     now = Time.current

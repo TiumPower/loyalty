@@ -104,7 +104,9 @@ Rails.application.routes.draw do
     # Trả lời một đánh giá của khách (hiển thị công khai + báo cho khách).
     patch "feedback/:id/reply", to: "feedback#reply", as: :reply_feedback
     resource :automations, only: [:show, :update], controller: "automations"
-    resources :broadcasts, only: [:index, :new, :create]
+    # :destroy cancels a SCHEDULED send that has not gone out yet — see the
+    # controller. A sent broadcast is history and stays.
+    resources :broadcasts, only: [:index, :new, :create, :destroy]
     resources :campaigns, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
       collection do
         post :generate_content # AI content suggestion (title/body), no persisted campaign

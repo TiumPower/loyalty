@@ -61,9 +61,18 @@
             </span>
           </div>
         </div>
-        <div class="bc-side">
+        <div class="bc-side" style="display:flex; align-items:center; gap:8px;">
           <% if b.scheduled? %>
             <span class="bc-badge sched">🕑 <%= t("merchant.broadcasts.scheduled_word") %></span>
+            <%# Scheduling with no way to call it back left a manager who changed
+                their mind watching it go out. %>
+            <% if current_membership&.can_manage? %>
+              <%= button_to t("merchant.broadcasts.cancel"), merchant_broadcast_path(b), method: :delete,
+                    class: "l-btn l-btn-ghost", style: "padding:5px 10px; font-size:12px;",
+                    form: { style: "display:inline;",
+                            data: { turbo_confirm: t("merchant.broadcasts.cancel_confirm",
+                                                     time: l(b.scheduled_at, format: :short)) } } %>
+            <% end %>
           <% else %>
             <span class="bc-badge sent">👥 <%= t("merchant.broadcasts.count", n: b.sent_count) %></span>
           <% end %>

@@ -43,6 +43,24 @@ module Merchant
       render :new, status: :unprocessable_entity
     end
 
+    # Call back a scheduled send. Scheduling existed with no way to undo it, so a
+    # manager who changed their mind could only watch it go out to every
+    # customer's phone. Only ever removes something not yet delivered; a sent
+    # broadcast is a record of what customers received.
+    def destroy
+      broadcast = current_workspace.broadcasts.find(params[:id])
+      if broadcast.sent_at.present?
+        return redirect_to merchant_broadcasts_path, alert: t("merchant.broadcasts.cancel_too_late")
+      end
+      # Claim it first so the delivery job cannot pick it up mid-cancel.
+      if broadcast.claim_for_delivery!
+        broadcast.destroy
+        redirect_to merchant_broadcasts_path, notice: t("merchant.broadcasts.cancelled")
+      else
+        redirect_to merchant_broadcasts_path, alert: t("merchant.broadcasts.cancel_too_late")
+      end
+    end
+
     private
 
     def nav_key = :broadcasts
