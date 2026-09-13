@@ -42,6 +42,16 @@
         </button>
       </span>
       <a href="<%= @share_url %>" target="_blank" rel="noopener" class="l-btn l-btn-soft" style="padding:8px 14px; font-size:13px;">🔗 <%= t("merchant.campaigns.open_link") %></a>
+      <% if @sends.present? %>
+        <%# A campaign already sent is the easy mistake to repeat. %>
+        <span class="l-chip" title="<%= @sends.map { |b| "#{l(b.sent_at, format: :short)} · #{b.sent_count} khách · #{b.audience_label}" }.join(" | ") %>"
+              style="background:#F4EADD; color:var(--ink-2);">
+          <%= t("merchant.campaigns.already_sent",
+                n: @sends.size,
+                when: l(@sends.first.sent_at, format: :short),
+                count: number_with_delimiter(@sends.first.sent_count)) %>
+        </span>
+      <% end %>
       <div data-controller="audiencepick" style="position:relative; display:inline-block;">
         <button type="button" class="l-btn l-btn-primary" style="padding:8px 14px; font-size:13px;"
                 data-action="audiencepick#toggle" data-audiencepick-target="button">

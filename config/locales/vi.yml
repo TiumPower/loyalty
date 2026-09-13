@@ -669,6 +669,7 @@ vi:
       copy_link: "Copy"
       push_now: "📣 Gửi thông báo"
       push_confirm: "Gửi thông báo chiến dịch này tới nhóm “%{audience}”?"
+      already_sent: "Đã gửi %{n} lần · gần nhất %{when} tới %{count} khách"
       push_confirm_multi: "Gửi thông báo chiến dịch này tới các nhóm đã chọn?"
       push_pick: "Chọn nhóm để gửi (chọn nhiều)"
       push_send_prefix: "Gửi tới"

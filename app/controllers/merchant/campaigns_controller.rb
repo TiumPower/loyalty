@@ -36,6 +36,9 @@ module Merchant
       @promo_url = helpers.customer_scan_url(current_workspace, promo: @promo.token) if @promo
       @share_url = public_campaign_url(@campaign.share_token!)
       @counts = MemberSegments.counts if current_membership&.can_manage?
+      # Nothing on this page showed that the campaign had already been pushed,
+      # so a manager could notify every customer a second time without knowing.
+      @sends = @campaign.broadcasts.where.not(sent_at: nil).order(sent_at: :desc).limit(5).to_a
     end
 
     def edit

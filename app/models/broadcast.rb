@@ -3,6 +3,12 @@ class Broadcast < ApplicationRecord
 
   belongs_to :workspace
   belongs_to :created_by, class_name: "User", optional: true
+  # broadcasts.campaign_id exists (with an index) and Campaign declares
+  # has_many :broadcasts, but this side was never declared — so
+  # CampaignsController#push, which does broadcasts.create!(campaign: …),
+  # raised UnknownAttributeError on every send. A broadcast can also be
+  # composed on its own, without a campaign.
+  belongs_to :campaign, optional: true
   has_many :notifications, dependent: :nullify
 
   validates :title, presence: true

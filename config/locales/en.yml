@@ -664,6 +664,7 @@ en:
       copy_link: "Copy"
       push_now: "📣 Send notification"
       push_confirm: "Send this campaign notification to the “%{audience}” group?"
+      already_sent: "Sent %{n}× · last %{when} to %{count} customers"
       push_confirm_multi: "Send this campaign notification to the selected groups?"
       push_pick: "Choose groups to send (multiple)"
       push_send_prefix: "Send to"
