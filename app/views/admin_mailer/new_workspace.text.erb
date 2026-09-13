@@ -1,0 +1,10 @@
+Có workspace mới đăng ký
+
+Tên cửa hàng: <%= @workspace.name %>
+Subdomain:    <%= @workspace.subdomain %>
+Ngành:        <%= @workspace.industry %>
+Chủ cửa hàng: <%= @workspace.billing_email %>
+Trạng thái:   <%= @workspace.status_label %>
+Đăng ký lúc:  <%= @workspace.created_at.strftime("%d/%m/%Y %H:%M") %>
+
+Xem trong Super Admin: <%= @admin_url %>

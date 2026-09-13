@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   layout :layout_by_resource
   before_action :set_locale
   before_action :no_cache_auth_pages
+  before_action :tag_error_context
   after_action :stash_toast_cookie
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
@@ -98,6 +99,25 @@ class ApplicationController < ActionController::Base
 
   def layout_by_resource
     devise_controller? ? "auth" : "application"
+  end
+
+  # Which workspace (and which side of the app) an error came from. Ids only —
+  # config.send_default_pii is off, so no names, phones or request bodies leave
+  # the box; this is enough to find the shop that hit the bug.
+  #
+  # Deliberately reads the request rather than current_workspace/current_member:
+  # this runs before the callbacks that resolve those, and touching a memoised
+  # member accessor that early would cache a nil and sign the customer out.
+  def tag_error_context
+    return unless defined?(Sentry) && Sentry.initialized?
+    Sentry.set_tags(
+      workspace: request.subdomain.presence || "root",
+      app: self.class.name.deconstantize.presence || "public"
+    )
+    Sentry.set_user(id: "user-#{current_user.id}") if respond_to?(:current_user, true) && current_user
+  rescue StandardError
+    # Never let telemetry break a request.
+    nil
   end
 
   def set_locale

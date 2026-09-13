@@ -211,9 +211,36 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
    MERCHANT / ADMIN — dashboard shell
    ===================================================================== */
 .l-shell { display:grid; grid-template-columns: 250px minmax(0,1fr); min-height:100vh; }
-@media (max-width:900px){ .l-shell{ grid-template-columns:1fr; } .l-side{ display:none; } }
 .l-side { background: color-mix(in srgb, var(--ink) 92%, #000); color:#EDE4D8;
   display:flex; flex-direction:column; padding:18px 12px; position:sticky; top:0; height:100vh; overflow:auto; }
+/* Mobile navigation drawer.
+   These rules must come AFTER the .l-side base rule: a media query adds no
+   specificity, so the plain `.l-side { display:flex }` above wins on source
+   order. The original `@media … .l-side{display:none}` sat before it and so
+   never applied — the whole sidebar rendered on phones, a full screen of
+   navigation above every page's content.
+   Hiding it outright would have left phones with no navigation at all, so the
+   sidebar slides in from the edge instead, toggled by #l-navtoggle. */
+.l-navbtn, .l-navscrim { display:none; }
+@media (max-width:900px){
+  .l-shell { grid-template-columns:1fr; }
+  .l-side {
+    position:fixed; top:0; bottom:0; left:0; width:min(284px,84vw); height:100dvh;
+    z-index:60; transform:translateX(-100%); transition:transform .22s ease;
+    box-shadow:0 0 40px rgba(0,0,0,.35);
+  }
+  .l-navtoggle:checked ~ .l-side { transform:none; }
+  .l-navtoggle:checked ~ .l-navscrim {
+    display:block; position:fixed; inset:0; z-index:55; background:rgba(12,8,6,.45);
+  }
+  .l-navbtn {
+    display:flex; flex-direction:column; justify-content:center; gap:4px; flex:none;
+    width:38px; height:38px; padding:0 8px; border-radius:11px; cursor:pointer;
+    border:1px solid var(--line); background:var(--surface);
+  }
+  .l-navbtn span { display:block; height:2px; border-radius:2px; background:var(--ink); }
+  .l-topbar .title { font-size:17px; min-width:0; }
+}
 .l-side .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; }
 .l-side .brand .logo { width:38px; height:38px; border-radius:11px; background:var(--primary); color:var(--on-primary);
   display:grid; place-items:center; font-family:var(--font-display); font-weight:700; }
@@ -399,7 +426,10 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-toast .x:hover { color:var(--ink); }
 
 /* ---- Subscription warning banner (merchant dashboard) ---- */
-.l-subwarn { display:flex; align-items:center; gap:16px; padding:14px 16px; border-radius:14px; margin-bottom:16px;
+/* flex-wrap so the CTA drops below the text on a phone instead of sitting on
+   top of it — the warning is the one thing on the dashboard that must stay
+   readable. */
+.l-subwarn { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:14px 16px; border-radius:14px; margin-bottom:16px;
   border:1px solid var(--line); border-left:4px solid var(--warn); background:color-mix(in srgb, var(--warn) 8%, #fff); color:var(--ink); }
 .l-subwarn.danger { border-left-color:var(--warn); background:color-mix(in srgb, var(--warn) 12%, #fff); }
 .l-subwarn.warn { border-left-color:#C9871F; background:color-mix(in srgb, #C9871F 10%, #fff); }

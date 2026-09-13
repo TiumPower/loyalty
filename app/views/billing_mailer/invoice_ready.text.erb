@@ -1,0 +1,14 @@
+Hoá đơn dịch vụ tháng mới
+
+Xin chào <%= @workspace.name %>,
+
+Hệ thống đã tạo hoá đơn cho kỳ dịch vụ sắp tới:
+
+Gói:      <%= @workspace.plan_record&.name || @workspace.plan %>
+Kỳ:       <%= @invoice.period_label %>
+Số tiền:  <%= number_with_delimiter(@invoice.amount.to_i) %>đ
+
+Thanh toán: <%= @pay_url %>
+
+Vui lòng thanh toán trước ngày đến hạn. Quá 10 ngày kể từ ngày hết hạn mà chưa
+thanh toán, cửa hàng sẽ tự động tạm ngưng cho đến khi thanh toán.

@@ -59,4 +59,22 @@ namespace :deploy do
       execute :sudo, "systemctl restart sidekiq-loyalty"
     end
   end
+
+  # Keep the nightly backup script in shared/ rather than in the release: a bad
+  # deploy (or a rolled-back release) must never be able to stop backups. The
+  # source of truth stays in the repo, copied out on every deploy.
+  desc "Install the nightly backup script and its cron entry"
+  task :install_backup do
+    on roles(:db) do
+      dest = "#{shared_path}/bin/loyalty_backup.sh"
+      execute :mkdir, "-p", "#{shared_path}/bin"
+      upload! "bin/loyalty_backup.sh", dest
+      execute :chmod, "+x", dest
+      line = "45 3 * * * #{dest} >> #{shared_path}/log/backup.log 2>&1"
+      # Idempotent: drop any previous loyalty_backup line, then append ours.
+      execute %(crontab -l 2>/dev/null | grep -v 'loyalty_backup.sh' > /tmp/loyalty_cron || true)
+      execute %(echo "#{line}" >> /tmp/loyalty_cron && crontab /tmp/loyalty_cron && rm -f /tmp/loyalty_cron)
+    end
+  end
+  after :finishing, :install_backup
 end

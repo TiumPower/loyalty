@@ -6,15 +6,44 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = { url: String }
 
+  // This bar lives in the merchant layout, so it polls on EVERY page. It used
+  // to fire every 5s forever, including in a background tab a shop leaves open
+  // all day, whether or not a banner was being generated. Now it polls fast
+  // only while something is actually running, backs off when idle, and stops
+  // entirely while the tab is hidden.
+  ACTIVE_MS = 5000
+  IDLE_MS = 15000
+
   connect() {
     this.acked = this.loadAcked()
+    this.onVisibility = () => (document.hidden ? this.stop() : this.start())
+    document.addEventListener("visibilitychange", this.onVisibility)
+    if (!document.hidden) this.start()
+  }
+
+  disconnect() {
+    document.removeEventListener("visibilitychange", this.onVisibility)
+    this.stop()
+  }
+
+  start() {
+    if (this.timer) return
     this.poll()
-    this.timer = setInterval(() => this.poll(), 5000)
+    this.schedule(this.ACTIVE_MS)
     // Smoothly animate the estimated bar between polls.
     this.tick = setInterval(() => this.render(), 1000)
   }
 
-  disconnect() { clearInterval(this.timer); clearInterval(this.tick) }
+  stop() {
+    clearInterval(this.timer); clearInterval(this.tick)
+    this.timer = null; this.tick = null
+  }
+
+  schedule(ms) {
+    if (this.timer) clearInterval(this.timer)
+    this.every = ms
+    this.timer = setInterval(() => this.poll(), ms)
+  }
 
   async poll() {
     try {
@@ -23,6 +52,9 @@ export default class extends Controller {
       this.jobs = (await resp.json()).jobs || []
       this._t = Date.now()
       this.render()
+      const busy = this.jobs.some((j) => j.status === "generating")
+      const want = busy ? this.ACTIVE_MS : this.IDLE_MS
+      if (this.every !== want) this.schedule(want)
     } catch (e) { /* keep last state */ }
   }
 

@@ -16,3 +16,7 @@ module ActiveSupport
     def with_tenant(ws, &blk) = ActsAsTenant.with_tenant(ws, &blk)
   end
 end
+
+class ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+end

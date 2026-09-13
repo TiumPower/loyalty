@@ -88,7 +88,7 @@
 <% if @sub_warning %>
   <% w = @sub_warning %>
   <div class="l-subwarn <%= w[:level] %>">
-    <div style="flex:1;">
+    <div style="flex:1; min-width:200px;">
       <strong><%= d.("warn_#{w[:kind]}") %></strong>
       <div style="font-size:13px; opacity:.9; margin-top:2px; max-width:760px;">
         <%= d.("warn_#{w[:kind]}_body", days: w[:days]) %>

@@ -70,7 +70,10 @@
   <% if @invoices.any? %>
     <div class="l-panel" style="margin-bottom:20px;">
       <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.billing.invoices") %></div>
-      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <%# The invoice table has four columns and a button; give it its own
+          scroller so it can never push the page sideways on a phone. %>
+      <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:340px;">
         <% @invoices.each do |inv| %>
           <tr style="border-top:1px solid var(--line);">
             <td style="padding:8px 4px;"><%= inv.period_label %></td>
@@ -86,11 +89,14 @@
           </tr>
         <% end %>
       </table>
+      </div>
     </div>
   <% end %>
 
   <div class="l-eyebrow" style="margin-bottom:10px;"><%= t("merchant.billing.plans") %></div>
-  <div style="display:grid; grid-template-columns:repeat(<%= @plans.size %>,1fr); gap:14px;">
+  <%# A hard N-column grid squeezed three plans into 375px, clipping the last
+      card off the screen. Let them wrap instead. %>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;">
     <% @plans.each do |plan| %>
       <% current = !@workspace.trial? && @workspace.plan == plan.key %>
       <div class="l-panel" style="<%= 'border:2px solid var(--primary);' if current %>">

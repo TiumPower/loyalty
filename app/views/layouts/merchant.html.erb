@@ -8,9 +8,17 @@
     <%= render "layouts/merchant_theme_vars" %>
 
     <div class="l-shell">
+      <%# Mobile navigation. The sidebar is hidden below 900px, so without this
+          a phone had no way to move between pages at all. Checkbox + labels so
+          it works with no JS and resets on every Turbo navigation. %>
+      <input type="checkbox" id="l-navtoggle" class="l-navtoggle" hidden>
+      <label for="l-navtoggle" class="l-navscrim" aria-hidden="true"></label>
       <%= render "layouts/merchant_sidebar" %>
       <main class="l-main">
         <header class="l-topbar">
+          <label for="l-navtoggle" class="l-navbtn" role="button" tabindex="0" aria-label="<%= t("merchant.nav.menu", default: "Menu") %>">
+            <span></span><span></span><span></span>
+          </label>
           <% if content_for?(:back) %><%= yield(:back) %><% end %>
           <div class="title">
             <%= content_for?(:title) ? yield(:title) : "Tổng quan" %>

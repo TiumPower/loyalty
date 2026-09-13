@@ -66,7 +66,9 @@ Rails.application.routes.draw do
     resource :appearance,      only: [:show, :update], path: "appearance" do
       post :suggest_theme # AI palette suggestion from the uploaded logo (JSON)
     end
-    resources :outlets do
+    # No :new — the outlets index carries the "add branch" form inline, and
+    # there has never been a new.html.erb, so the route only served an error.
+    resources :outlets, except: [:new] do
       member { get :checkin_qr }
     end
     resources :staff, only: [:index, :create, :update, :destroy]
