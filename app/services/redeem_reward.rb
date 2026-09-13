@@ -33,12 +33,8 @@ class RedeemReward
         raise ActiveRecord::Rollback
       end
 
-      # Claim one unit of stock atomically. An unlimited reward (stock NULL)
-      # always wins; a limited one only while redeemed_count < stock.
-      claimed = Reward.where(id: @reward.id)
-                      .where("stock IS NULL OR redeemed_count < stock")
-                      .update_all("redeemed_count = redeemed_count + 1, updated_at = NOW()")
-      if claimed.zero?
+      # Claim one unit of stock atomically (see Reward#claim_stock!).
+      unless @reward.claim_stock!
         error = I18n.t("customer.redeem.sold_out")
         raise ActiveRecord::Rollback
       end

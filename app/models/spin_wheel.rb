@@ -36,31 +36,65 @@ class SpinWheel < ApplicationRecord
   end
 
   # Perform a spin. Returns { index:, segment:, points:, error: }.
+  #
+  # Concurrency and stock are handled the way RedeemReward does it, because the
+  # same three things were going wrong here:
+  #   * the cost was checked against the CACHED points_balance column rather than
+  #     the ledger, so a spin could go through on a stale number and leave the
+  #     customer on a negative balance;
+  #   * nothing was locked, so two taps could both take the one daily free spin
+  #     or both spend the same points;
+  #   * a reward prize wrote the Voucher directly, ignoring the reward's stock
+  #     entirely — a "1 suất" prize was handed out indefinitely and
+  #     redeemed_count never moved, so the merchant could not even see it.
   def spin!(member)
-    free = free_spin_available?(member)
-    cost = free ? 0 : cost_points
-    return { error: :not_enough } if !free && member.points_balance < cost
-
     index, seg = pick
+    return { error: :unavailable } if seg.nil?
+
     points = seg["kind"] == "points" ? seg["value"].to_i : 0
     reward = (seg["kind"] == "reward" && seg["reward_id"].present?) ?
              Reward.find_by(id: seg["reward_id"], workspace_id: workspace_id) : nil
 
     voucher = nil
+    free = nil
+    cost = nil
+    error = nil
+
     SpinWheel.transaction do
-      SpinLog.create!(workspace: workspace, member: member, segment_index: index,
+      locked  = Member.lock.find(member.id)
+      free    = free_spin_available?(locked)
+      cost    = free ? 0 : cost_points.to_i
+      balance = locked.point_transactions.sum(:amount) # authoritative, not the cached column
+
+      if !free && balance < cost
+        error = :not_enough
+        raise ActiveRecord::Rollback
+      end
+
+      # A limited prize is claimed the same way the catalog claims it: the
+      # affected-row count decides the race. Losing the claim costs the spin
+      # nothing — the customer simply lands on no prize.
+      if reward && !reward.claim_stock!
+        reward = nil
+        seg = seg.merge("kind" => "none", "sold_out" => true)
+      end
+
+      SpinLog.create!(workspace: workspace, member: locked, segment_index: index,
                       result_kind: seg["kind"], result_value: (reward ? reward.id : points), cost: cost)
-      PointTransaction.create!(workspace: workspace, member: member, kind: "adjust",
+      PointTransaction.create!(workspace: workspace, member: locked, kind: "adjust",
                                amount: -cost, note: "Lượt quay") if cost.positive?
-      PointTransaction.create!(workspace: workspace, member: member, kind: "game",
+      PointTransaction.create!(workspace: workspace, member: locked, kind: "game",
                                amount: points, note: "Vòng quay may mắn") if points.positive?
       if reward
-        voucher = Voucher.create!(workspace: workspace, member: member, reward: reward,
+        voucher = Voucher.create!(workspace: workspace, member: locked, reward: reward,
                                   source: "spin", state: "active", points_spent: 0,
                                   expires_at: reward.valid_days.present? ? reward.valid_days.days.from_now : nil)
       end
-      member.recompute_points!
+      locked.recompute_points!
     end
+
+    return { error: error } if error
+    member.reload
     { index: index, segment: seg, points: points, reward: reward, voucher: voucher, free: free, cost: cost }
   end
 end

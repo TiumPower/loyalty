@@ -36,6 +36,21 @@ class Reward < ApplicationRecord
 
   def in_stock?  = stock.nil? || stock > redeemed_count
 
+  # Claim one unit, atomically. Returns true only for the caller that got it —
+  # the affected-row count is what decides the race, so two customers can never
+  # both take the last unit. An unlimited reward (stock NULL) always wins.
+  #
+  # Every path that hands out a voucher must go through this. The spin wheel and
+  # stamp cards used to write the Voucher directly, so a prize limited to "1
+  # suất" was given away indefinitely and redeemed_count never moved — the
+  # merchant could not even see it happening.
+  def claim_stock!
+    self.class.where(id: id)
+        .where("stock IS NULL OR redeemed_count < stock")
+        .update_all("redeemed_count = redeemed_count + 1, updated_at = NOW()")
+        .positive?
+  end
+
   # A reward is available now when: inside its date range AND (no time-windows, or
   # the current weekday+hour falls inside ANY of its windows). Merchants can add
   # several windows (different weekdays/hours) — the scanner uses this same check.

@@ -25,11 +25,18 @@ class StampCardMembership < ApplicationRecord
     result
   end
 
+  # A completed card only pays out while the reward still has stock — this used
+  # to write the Voucher straight out, so a prize limited to N suất was issued
+  # indefinitely and redeemed_count never moved. The card still completes and
+  # resets either way; the customer simply gets no voucher, which the merchant
+  # can see from the reward being out of stock.
   def issue_reward!
+    reward = stamp_card.reward
+    return nil unless reward.claim_stock!
     Voucher.create!(
-      workspace: workspace, member: member, reward: stamp_card.reward,
+      workspace: workspace, member: member, reward: reward,
       source: "campaign", state: "active", points_spent: 0,
-      expires_at: stamp_card.reward.valid_days.days.from_now
+      expires_at: reward.valid_days.days.from_now
     )
   end
 end
