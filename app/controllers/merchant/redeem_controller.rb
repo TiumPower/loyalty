@@ -12,31 +12,29 @@ module Merchant
         return render "merchant/earn/lookup"
       end
 
-      token = params[:token].to_s.gsub(/\D/, "")
-      @voucher = token.present? ? Voucher.where(redeem_token: token).first : nil
-
-      if @voucher.nil?
-        @error = "Mã không hợp lệ hoặc đã hết hạn."
-        render :search, status: :unprocessable_entity
-      elsif @voucher.state == "used"
-        render :used   # already-used warning (with time)
-      elsif @voucher.redeem_token_expires_at.nil? || @voucher.redeem_token_expires_at < Time.current
-        @error = "Mã sử dụng đã hết hiệu lực. Khách vui lòng tạo lại mã."
-        render :search, status: :unprocessable_entity
-      else
-        render :confirm
-      end
+      @voucher = voucher_for(params[:token])
+      return render_token_problem if @voucher.nil? || @token_error
+      render :confirm
     end
 
     # Step 2 — permanently mark the voucher used (anti-fraud lock).
+    #
+    # This used to resolve the voucher from a bare voucher_id in the form, so
+    # the one-time code — the entire proof that the customer is standing at the
+    # counter and agreed to spend it — was only ever checked in step 1. Any
+    # staff login could POST an id and burn any customer's voucher in the shop,
+    # never having seen their phone. The code is re-verified here, against the
+    # same rules, and the id is only used to confirm the two agree.
     def create
-      @voucher = Voucher.find_by(id: params[:voucher_id])
-      if @voucher.nil?
-        @error = "Không tìm thấy ưu đãi."
-        render :search, status: :unprocessable_entity
-      elsif @voucher.state == "used"
-        render :used
-      elsif @voucher.mark_used!(outlet: current_outlet, staff: current_user)
+      @voucher = voucher_for(params[:token])
+      return render_token_problem if @voucher.nil? || @token_error
+
+      if params[:voucher_id].present? && params[:voucher_id].to_s != @voucher.id.to_s
+        @error = "Mã không khớp với ưu đãi. Khách vui lòng tạo lại mã."
+        return render :search, status: :unprocessable_entity
+      end
+
+      if @voucher.mark_used!(outlet: current_outlet, staff: current_user)
         render :success
       else
         # Someone else consumed it between the check above and the write.
@@ -47,5 +45,36 @@ module Merchant
     private
 
     def nav_key = :scanner
+
+    # Resolve a voucher from a typed/scanned use code and decide whether it may
+    # be consumed right now. Sets @token_error to the screen to show when not.
+    def voucher_for(raw)
+      @token_error = nil
+      token = raw.to_s.gsub(/\D/, "")
+      voucher = token.present? ? Voucher.where(redeem_token: token).first : nil
+
+      if voucher.nil?
+        @token_error = :invalid
+      elsif voucher.state == "used"
+        @token_error = :used
+      elsif voucher.redeem_token_expires_at.nil? || voucher.redeem_token_expires_at < Time.current
+        @token_error = :stale
+      elsif voucher.expired?
+        # The nightly sweep may not have flipped the row yet; the customer's
+        # voucher is still past its own expiry date either way.
+        @token_error = :expired
+      end
+      voucher
+    end
+
+    def render_token_problem
+      return render :used if @token_error == :used
+      @error = case @token_error
+               when :stale   then "Mã sử dụng đã hết hiệu lực. Khách vui lòng tạo lại mã."
+               when :expired then "Ưu đãi này đã hết hạn sử dụng."
+               else "Mã không hợp lệ hoặc đã hết hạn."
+               end
+      render :search, status: :unprocessable_entity
+    end
   end
 end

@@ -17,6 +17,9 @@
 
   <%= form_with url: merchant_redeem_path, method: :post do %>
     <input type="hidden" name="voucher_id" value="<%= @voucher.id %>">
+    <%# The confirm step re-verifies this, so the one-time code gates the write
+        and not just the lookup. %>
+    <input type="hidden" name="token" value="<%= @voucher.redeem_token %>">
     <div style="display:flex; gap:10px; margin-top:8px;">
       <%= link_to t("merchant.scan.cancel"), merchant_scanner_path(tab: "redeem"), class: "l-btn l-btn-ghost", data: { turbo_frame: "scan_tool" } %>
       <%= submit_tag t("merchant.scan.confirm_used"), class: "l-btn l-btn-primary", style: "flex:1;" %>

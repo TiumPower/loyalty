@@ -75,6 +75,9 @@ module Merchant
       elsif @voucher.redeem_token_expires_at.nil? || @voucher.redeem_token_expires_at < Time.current
         @error = "Mã sử dụng đã hết hiệu lực. Khách vui lòng tạo lại mã."
         render "merchant/redeem/search", status: :unprocessable_entity
+      elsif @voucher.expired?
+        @error = "Ưu đãi này đã hết hạn sử dụng."
+        render "merchant/redeem/search", status: :unprocessable_entity
       else
         render "merchant/redeem/confirm"
       end

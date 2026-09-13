@@ -102,13 +102,14 @@ class CounterScannerTest < ActionDispatch::IntegrationTest
   test "a voucher is consumed once and only once" do
     v = make_voucher
 
-    post "/merchant/redeem", params: { voucher_id: v.id }
+    # The confirm step re-verifies the one-time code, so it travels with the id.
+    post "/merchant/redeem", params: { voucher_id: v.id, token: v.redeem_token }
     assert_response :success
     assert_equal "used", v.reload.state
     first_used_at = v.used_at
 
     # Second tap on the same confirm button.
-    post "/merchant/redeem", params: { voucher_id: v.id }
+    post "/merchant/redeem", params: { voucher_id: v.id, token: v.redeem_token }
     assert_response :success
     assert_equal first_used_at.to_i, v.reload.used_at.to_i, "the voucher was consumed twice"
     assert_match(/đã dùng|đã sử dụng/i, response.body)
