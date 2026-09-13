@@ -42,19 +42,40 @@ module Merchant
     end
 
     # Manual points correction: comp points, fix a mistake, or gift an apology.
+    # Points are a liability the shop owes, and this writes straight to the
+    # ledger with no purchase behind it, so it is fenced on three sides.
+    MAX_ADJUST = 1_000_000
+
     def adjust
       amount = params[:amount].to_s.gsub(/[^\d-]/, "").to_i
       note   = params[:note].to_s.strip
+
       if amount.zero?
-        return redirect_to merchant_customer_path(@member), alert: "Vui lòng nhập số điểm khác 0."
+        return reject_adjust("Vui lòng nhập số điểm khác 0.")
+      end
+      # An unexplained manual override is the one nobody can account for later.
+      if note.blank?
+        return reject_adjust("Vui lòng nhập lý do điều chỉnh — lý do hiển thị trong lịch sử của khách.")
+      end
+      # One stray keystroke on a 50-point comp used to mint fifty million.
+      if amount.abs > MAX_ADJUST
+        return reject_adjust("Số điểm vượt giới hạn một lần (#{helpers.number_with_delimiter(MAX_ADJUST)}). " \
+                             "Hãy chia nhỏ hoặc kiểm tra lại con số.")
+      end
+      # Deducting more than the customer holds used to drive the balance
+      # NEGATIVE — the app then showed them "-49.999.949 điểm" and every tier,
+      # redemption and expiry calculation ran on a number that cannot exist.
+      if amount.negative? && amount.abs > @member.points_balance.to_i
+        return reject_adjust("Khách chỉ còn #{helpers.number_with_delimiter(@member.points_balance)} điểm — " \
+                             "không thể trừ nhiều hơn số điểm đang có.")
       end
 
       @member.point_transactions.create!(workspace: current_workspace, kind: "adjust",
-                                         amount: amount, note: note.presence, staff: current_user)
+                                         amount: amount, note: note, staff: current_user)
       @member.recompute_points!
       verb = amount.positive? ? "cộng" : "trừ"
       redirect_to merchant_customer_path(@member),
-                  notice: "Đã #{verb} #{amount.abs} điểm cho #{@member.display_name}."
+                  notice: "Đã #{verb} #{helpers.number_with_delimiter(amount.abs)} điểm cho #{@member.display_name}."
     end
 
     # Permanently remove a customer and all their data (points ledger, vouchers,
@@ -66,6 +87,10 @@ module Merchant
     end
 
     private
+
+    def reject_adjust(message)
+      redirect_to merchant_customer_path(@member), alert: message
+    end
 
     def nav_key = :customers
 

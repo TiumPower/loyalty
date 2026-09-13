@@ -213,6 +213,7 @@ vi:
       kpi_purchases: "Số lần mua"
       kpi_spend: "Tổng chi tiêu"
       adjust_title: "Điều chỉnh điểm"
+      adjust_limits: "Tối đa %{max} điểm mỗi lần. Hiện khách có %{balance} điểm — không trừ quá số này."
       adjust_note: "Cộng để tặng/đền, trừ để sửa sai. Dùng số âm để trừ (VD: -50)."
       amount: "Số điểm"
       reason: "Lý do (hiện trong lịch sử)"
@@ -225,7 +226,7 @@ vi:
       state_used: "Đã dùng"
       state_expired: "Hết hạn"
       delete_title: "Xoá khách hàng"
-      delete_note: "Xoá vĩnh viễn khách hàng này cùng toàn bộ dữ liệu: điểm, lịch sử giao dịch, ưu đãi, tem, huy hiệu. Không thể hoàn tác."
+      delete_note: "Xoá vĩnh viễn khách hàng này cùng toàn bộ dữ liệu: điểm, lịch sử giao dịch, ưu đãi, tem, huy hiệu. Doanh thu từ các hoá đơn của khách này cũng biến mất khỏi báo cáo của cửa hàng. Không thể hoàn tác."
       delete: "Xoá khách hàng"
       delete_confirm: "Xoá vĩnh viễn %{name} và toàn bộ dữ liệu của khách? Hành động này không thể hoàn tác."
     scan:

@@ -208,6 +208,7 @@ en:
       kpi_purchases: "Purchases"
       kpi_spend: "Total spend"
       adjust_title: "Adjust points"
+      adjust_limits: "Up to %{max} points at a time. This customer holds %{balance} — you cannot deduct more."
       adjust_note: "Add to gift/comp, subtract to fix a mistake. Use a negative number to subtract (e.g. -50)."
       amount: "Points"
       reason: "Reason (shown in history)"
@@ -220,7 +221,7 @@ en:
       state_used: "Used"
       state_expired: "Expired"
       delete_title: "Delete customer"
-      delete_note: "Permanently delete this customer and all their data: points, transaction history, vouchers, stamps, badges. This cannot be undone."
+      delete_note: "Permanently deletes this customer and everything attached: points, transaction history, vouchers, stamps, badges. Revenue from their bills also disappears from your reports. This cannot be undone."
       delete: "Delete customer"
       delete_confirm: "Permanently delete %{name} and all their data? This cannot be undone."
     scan:

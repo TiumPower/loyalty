@@ -36,17 +36,26 @@
       <h3 class="l-display" style="font-size:17px; margin-bottom:4px;"><%= t("merchant.customer.adjust_title") %></h3>
       <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.customer.adjust_note") %></p>
       <%= form_with url: adjust_merchant_customer_path(@member), method: :post do %>
-        <div style="display:grid; grid-template-columns:120px 1fr auto; gap:8px; align-items:end;">
+        <%# Fixed three-column grid squeezed the reason box on a laptop. %>
+        <div style="display:grid; grid-template-columns:130px minmax(0,1fr) auto; gap:8px; align-items:end;">
           <div>
             <label class="l-label"><%= t("merchant.customer.amount") %></label>
-            <%= number_field_tag :amount, nil, class: "l-field", placeholder: "VD: 100 / -50" %>
+            <%= number_field_tag :amount, nil, class: "l-field", placeholder: "VD: 100 / -50",
+                  min: -Merchant::CustomersController::MAX_ADJUST, max: Merchant::CustomersController::MAX_ADJUST %>
           </div>
           <div>
-            <label class="l-label"><%= t("merchant.customer.reason") %></label>
-            <%= text_field_tag :note, nil, class: "l-field", placeholder: "VD: Đền bù đồ uống lỗi" %>
+            <%# The reason is required — an unexplained manual change to what the
+                shop owes a customer is the one nobody can account for later. %>
+            <label class="l-label"><%= t("merchant.customer.reason") %> <span style="color:#B4402F;">*</span></label>
+            <%= text_field_tag :note, nil, class: "l-field", placeholder: "VD: Đền bù đồ uống lỗi", required: true %>
           </div>
           <%= submit_tag t("merchant.customer.apply"), class: "l-btn l-btn-primary" %>
         </div>
+        <p style="color:var(--ink-2); font-size:12px; margin-top:8px;">
+          <%= t("merchant.customer.adjust_limits",
+                max: number_with_delimiter(Merchant::CustomersController::MAX_ADJUST),
+                balance: number_with_delimiter(@member.points_balance)) %>
+        </p>
       <% end %>
     </div>
   <% end %>
