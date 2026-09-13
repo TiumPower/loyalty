@@ -48,6 +48,18 @@ class Rack::Attack
     end
   end
 
+  # Password reset: unthrottled, this both probes for registered addresses and
+  # lets anyone bomb a known merchant's inbox with reset mail.
+  pw_reset = ->(req) { req.post? && %w[/merchant/password /admin/password].include?(req.path) }
+  throttle("pwreset/ip", limit: 10, period: 1.hour) { |req| req.ip if pw_reset.call(req) }
+  throttle("pwreset/email", limit: 4, period: 1.hour) do |req|
+    if pw_reset.call(req)
+      email = req.params.dig("user", "email").presence ||
+              req.params.dig("admin_user", "email")
+      "pwreset-email:#{email.to_s.strip.downcase}" if email.present?
+    end
+  end
+
   self.throttled_responder = lambda do |req|
     period = (req.env["rack.attack.match_data"] || {})[:period]
     [429, { "Content-Type" => "text/plain", "Retry-After" => period.to_s },

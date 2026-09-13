@@ -1,6 +1,8 @@
 <% admin = resource_name == :admin_user %>
-<h1><%= admin ? "Super Admin" : "Merchant" %></h1>
-<p class="sub"><%= admin ? "Đăng nhập vận hành nền tảng" : "Đăng nhập cửa hàng của bạn" %></p>
+<%# "Merchant" was the H1 on a Vietnamese shop owner's login page — product
+    jargon where the heading should just say what the page does. %>
+<h1><%= admin ? "Super Admin" : "Đăng nhập" %></h1>
+<p class="sub"><%= admin ? "Đăng nhập vận hành nền tảng" : "Quản lý cửa hàng của bạn trên Dynamic Loyalty" %></p>
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { data: { turbo: false } }) do |f| %>
   <div class="field">
@@ -34,6 +36,6 @@
 
 <% unless admin %>
   <p style="text-align:center; color:var(--ink-2); font-size:13px; margin-top:16px;">
-    Chưa có cửa hàng? <%= link_to "Đăng ký miễn phí", merchant_signup_path, style: "color:var(--primary-ink); font-weight:600;" %>
+    Chưa có cửa hàng? <%= link_to "Dùng thử #{Workspace::TRIAL_DAYS} ngày miễn phí", merchant_signup_path, style: "color:var(--primary-ink); font-weight:600;" %>
   </p>
 <% end %>

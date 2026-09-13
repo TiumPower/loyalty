@@ -1,0 +1,18 @@
+# Overrides for the handful of Devise messages a shop owner actually reads.
+# devise-i18n supplies the rest; these were awkward enough to be worth fixing
+# (the default renders as "Tài khoản hay mật khẩu email không hợp lệ", with
+# the interpolated key landing in the middle of the sentence).
+vi:
+  devise:
+    failure:
+      invalid: "Email hoặc mật khẩu không đúng."
+      invalid_token: "Liên kết không hợp lệ hoặc đã hết hạn."
+      timeout: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+      unauthenticated: "Vui lòng đăng nhập để tiếp tục."
+    passwords:
+      send_paranoid_instructions: "Nếu email này có tài khoản, chúng tôi vừa gửi hướng dẫn đặt lại mật khẩu. Kiểm tra hộp thư (và mục spam) trong vài phút tới."
+      updated: "Đã đổi mật khẩu — bạn đã đăng nhập."
+      no_token: "Hãy mở liên kết trong email đặt lại mật khẩu."
+    sessions:
+      signed_in: "Đăng nhập thành công."
+      signed_out: "Đã đăng xuất."

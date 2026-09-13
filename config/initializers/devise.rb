@@ -90,7 +90,11 @@ Devise.setup do |config|
   # It will change confirmation, password recovery and other workflows
   # to behave the same regardless if the e-mail provided was right or wrong.
   # Does not affect registerable.
-  # config.paranoid = true
+  # A "forgot password" form that answers differently for a known and an unknown
+  # address is an account-enumeration oracle: known emails redirected (303),
+  # unknown ones re-rendered the form (422), so anyone could discover which shop
+  # owners are registered. Paranoid mode answers identically either way.
+  config.paranoid = true
 
   # By default Devise will store the user in session. You can skip storage for
   # particular strategies by setting this option.
