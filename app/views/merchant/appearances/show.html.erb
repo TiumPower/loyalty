@@ -6,6 +6,13 @@
      class="l-work wide">
   <%# ---------------- Controls ---------------- %>
   <div>
+    <%# A failed save re-rendered this page with no explanation at all — the
+        merchant saw their change simply not take. %>
+    <% if @workspace.errors.any? %>
+      <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:16px;">
+        <%= @workspace.errors.full_messages.to_sentence %>
+      </div>
+    <% end %>
     <div class="l-panel" style="margin-bottom:16px;">
       <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.presets_title") %></h3>
       <p style="color:var(--ink-2); font-size:13px; margin-bottom:10px;"><%= t("merchant.appearance.presets_note") %></p>

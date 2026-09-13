@@ -11,7 +11,14 @@ class Workspace < ApplicationRecord
   PLAN_PRICES = { "starter" => 199_000, "growth" => 499_000, "scale" => 1_290_000 }.freeze
   PLANS      = %w[starter growth scale].freeze
 
+  # Customers see this on the login screen, in the app and as the icon on their
+  # home screen. Nothing constrained it: a 50MB file or a PDF named "logo" was
+  # accepted and then served to every customer.
+  LOGO_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
+  LOGO_MAX_BYTES = 3.megabytes
+
   has_one_attached :logo
+  validate :logo_is_a_reasonable_image
   has_many :memberships, dependent: :destroy
   has_many :users,   through: :memberships
   has_many :outlets, dependent: :destroy
@@ -38,8 +45,13 @@ class Workspace < ApplicationRecord
   validates :subdomain, uniqueness: true, format: { with: /\A[a-z0-9][a-z0-9-]*\z/ }
   validates :industry, inclusion: { in: INDUSTRIES }
   validates :status,   inclusion: { in: STATUSES }
+  validate  :custom_domain_is_not_the_platform
 
   before_validation :default_subdomain, on: :create
+  before_validation :normalize_custom_domain
+
+  # The platform host itself, e.g. "loyalty.czin.net".
+  def self.platform_host = ENV.fetch("PLATFORM_HOST", "loyalty.czin.net").downcase
 
   # -- Program helpers -----------------------------------------------------
   def program
@@ -260,8 +272,23 @@ class Workspace < ApplicationRecord
     "Be Vietnam Pro"     => '"Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif'
   }.freeze
 
+  # Colour tokens are rendered straight into a <style> block, so a value that is
+  # not a colour would inject CSS and could break the whole customer app. The AI
+  # suggestion path already sanitised to #RRGGBB; the colour pickers did not, so
+  # anything typed or posted went in raw. Fall back to the default rather than
+  # emit something unusable.
+  THEME_COLOR_KEYS = %w[primary primary_2 on_primary surface surface_2 ink ink_2 line].freeze
+  HEX_COLOR_RE = /\A#(?:\h{3}|\h{6}|\h{8})\z/
+
+  def self.hex_color?(value) = value.to_s.strip.match?(HEX_COLOR_RE)
+
   def theme_value(key)
-    theme.presence&.dig(key.to_s).presence || DEFAULT_THEME[key.to_s]
+    stored = theme.presence&.dig(key.to_s).presence
+    if THEME_COLOR_KEYS.include?(key.to_s)
+      return DEFAULT_THEME[key.to_s] unless self.class.hex_color?(stored)
+      return stored.strip
+    end
+    stored || DEFAULT_THEME[key.to_s]
   end
 
   # Radius as valid CSS: the appearance slider stores a bare number (e.g. "16"),
@@ -309,6 +336,45 @@ class Workspace < ApplicationRecord
       else
         slug.presence || normalize_subdomain(name.to_s)
       end
+  end
+
+  # Ops types this by hand in the admin console. "https://shop.vn/" would never
+  # match request.host, so it would simply never work and nobody would know why.
+  def logo_is_a_reasonable_image
+    return unless logo.attached? && logo.changed_for_autosave?
+    blob = logo.blob
+    return if blob.nil?
+    unless LOGO_TYPES.include?(blob.content_type)
+      errors.add(:logo, "phải là ảnh PNG, JPG, WEBP hoặc GIF")
+    end
+    if blob.byte_size.to_i > LOGO_MAX_BYTES
+      errors.add(:logo, "tối đa #{(LOGO_MAX_BYTES / 1.megabyte).to_i}MB")
+    end
+  end
+
+  def normalize_custom_domain
+    return if custom_domain.nil?
+    host = custom_domain.to_s.strip.downcase
+                        .sub(%r{\Ahttps?://}, "")
+                        .split("/").first.to_s
+                        .split(":").first.to_s
+                        .sub(/\.\z/, "")
+    self.custom_domain = host.presence
+  end
+
+  # TenantResolver checks custom_domain BEFORE the subdomain, so a workspace
+  # holding the platform host — an ops typo, say — would take over the marketing
+  # site for every visitor, and one holding another shop's subdomain would
+  # shadow that shop.
+  def custom_domain_is_not_the_platform
+    return if custom_domain.blank?
+    ph = self.class.platform_host
+    if custom_domain == ph || custom_domain.end_with?(".#{ph}")
+      errors.add(:custom_domain, "không thể là tên miền của nền tảng (#{ph})")
+    end
+    unless custom_domain.match?(/\A[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+\z/)
+      errors.add(:custom_domain, "không phải tên miền hợp lệ")
+    end
   end
 
   def normalize_subdomain(raw)

@@ -37,9 +37,30 @@ module Merchant
       if params[:preset].present? && PRESETS.key?(params[:preset])
         @workspace.theme = PRESETS[params[:preset]]["theme"]
       else
-        @workspace.theme    = (@workspace.theme || {}).merge(theme_params.to_h)
+        # theme_value falls back to the default for anything that is not a
+        # colour, so a bad value would silently revert. Say so instead.
+        colors = theme_params.to_h
+        bad = colors.slice(*Workspace::THEME_COLOR_KEYS)
+                    .reject { |_, v| v.blank? || Workspace.hex_color?(v) }
+        if bad.any?
+          @workspace.errors.add(:base, "Màu không hợp lệ (#{bad.keys.join(", ")}) — dùng mã hex, VD #8C4A2F.")
+          @presets = PRESETS
+          return render :show, status: :unprocessable_entity
+        end
+        @workspace.theme    = (@workspace.theme || {}).merge(colors)
         @workspace.branding = (@workspace.branding || {}).merge(branding_params.to_h)
-        @workspace.logo.attach(params[:logo]) if params[:logo].present?
+        # Check the upload BEFORE attaching. Attaching first and letting the
+        # model validation fail leaves an unsaved blob on the record, and
+        # re-rendering this page then raises "Cannot get a signed_id for a new
+        # record" while trying to show it.
+        if params[:logo].present?
+          if (problem = logo_problem(params[:logo]))
+            @workspace.errors.add(:logo, problem)
+            @presets = PRESETS
+            return render :show, status: :unprocessable_entity
+          end
+          @workspace.logo.attach(params[:logo])
+        end
       end
 
       if @workspace.save
@@ -98,6 +119,19 @@ module Merchant
         v = palette[k].to_s.strip
         out[k] = v if v.match?(HEX_RE)
       end
+    end
+
+    # nil when the upload is fine, otherwise why it is not.
+    def logo_problem(upload)
+      return nil unless upload.respond_to?(:content_type)
+      unless Workspace::LOGO_TYPES.include?(upload.content_type)
+        return "phải là ảnh PNG, JPG, WEBP hoặc GIF"
+      end
+      size = upload.respond_to?(:size) ? upload.size : upload.tempfile.size
+      if size.to_i > Workspace::LOGO_MAX_BYTES
+        return "tối đa #{(Workspace::LOGO_MAX_BYTES / 1.megabyte).to_i}MB"
+      end
+      nil
     end
 
     def theme_params
