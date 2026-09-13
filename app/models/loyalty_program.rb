@@ -5,8 +5,35 @@ class LoyaltyProgram < ApplicationRecord
 
   belongs_to :workspace
 
+  # Upper bounds keep the int4 columns from overflowing on the way to Postgres
+  # (a typo used to come back as a 500), and keep a fat-fingered rate from
+  # quietly paying out thousands of points a bill.
+  MAX_EARN_POINTS = 100_000
+  MAX_EARN_PER    = 1_000_000_000
+  MAX_MONTHS      = 120 # 10 years, for both the tier cycle and points expiry
+
   validates :scan_mode, inclusion: { in: SCAN_MODES }
-  validates :earn_points, :earn_per_amount, numericality: { greater_than: 0 }
+  validates :earn_points,
+            numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_EARN_POINTS }
+  validates :earn_per_amount,
+            numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_EARN_PER }
+  # A cycle of 0 made cycle_points count only what was created this instant, so
+  # saving the form dropped every customer in the shop to the bottom tier. The
+  # field had no minimum, so it was one keystroke away.
+  validates :tier_cycle_months,
+            numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: MAX_MONTHS }
+  validates :points_expiry_months,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: MAX_MONTHS }
+  validates :currency, format: { with: /\A[A-Z]{3}\z/, message: :not_a_currency_code }
+
+  normalizes :currency, with: ->(c) { c.to_s.strip.upcase }
+
+  # Legacy rows may hold 0; never let that mean "this instant".
+  DEFAULT_CYCLE_MONTHS = 12
+  def cycle_months
+    m = tier_cycle_months.to_i
+    m.positive? ? m : DEFAULT_CYCLE_MONTHS
+  end
 
   # Points earned for a purchase of `amount` (currency units), before tier multiplier.
   def points_for(amount)

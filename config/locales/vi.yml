@@ -5,6 +5,34 @@ vi:
         value: "Giá trị"
         title: "Tên ưu đãi"
         cost_points: "Điểm đổi"
+      tier:
+        name: "Tên hạng"
+        threshold_points: "Mốc điểm"
+        multiplier: "Hệ số điểm"
+        benefits: "Quyền lợi"
+        gradient_from: "Màu đầu"
+        gradient_to: "Màu cuối"
+      loyalty_program:
+        earn_points: "Số điểm"
+        earn_per_amount: "Mức chi tiêu"
+        currency: "Đơn vị tiền"
+        tier_cycle_months: "Chu kỳ xét hạng"
+        points_expiry_months: "Hạn dùng điểm"
+    errors:
+      models:
+        tier:
+          attributes:
+            gradient_from:
+              not_a_hex_color: "phải là mã màu dạng #RRGGBB"
+            gradient_to:
+              not_a_hex_color: "phải là mã màu dạng #RRGGBB"
+            benefits:
+              too_many: "tối đa %{count} dòng"
+              too_long: "mỗi dòng tối đa %{count} ký tự"
+        loyalty_program:
+          attributes:
+            currency:
+              not_a_currency_code: "phải là mã tiền tệ 3 chữ cái (VD: VND)"
   merchant:
     void:
       undo_btn: "↩️ Hoàn tác giao dịch này"
@@ -479,6 +507,8 @@ vi:
       m_tiers: "Hạng thành viên (Tiers)"
       m_stamps: "Thẻ tem (Stamp)"
       m_gami: "Gamification"
+      plan_locked: "(cần gói cao hơn)"
+      plan_blocked: "%{features} thuộc gói cao hơn nên chưa bật được. Các thay đổi khác đã lưu."
       earn: "Tích điểm"
       earn_per: "Số điểm mỗi mốc chi tiêu"
       points_slash: "điểm /"
@@ -489,6 +519,7 @@ vi:
       sm_member: "Khách tự quét mã quầy"
       sm_both: "Cho phép cả hai"
       tier_cycle: "Chu kỳ tính hạng (tháng)"
+      tier_cycle_note: "Hạng xét theo điểm tích trong %{n} tháng gần nhất. Rút ngắn chu kỳ sẽ hạ hạng những khách lâu không quay lại."
       save: "Lưu cấu hình"
     tiers:
       title: "Hạng thành viên"
@@ -503,6 +534,7 @@ vi:
       multiplier_hint: "Hệ số điểm: khách ở hạng này tích điểm nhân với hệ số (VD 1.5 = +50%)."
       save: "Lưu hạng"
       saved: "Đã lưu cấu hình hạng."
+      threshold_order: "Mốc điểm hạng %{higher} phải cao hơn hạng %{lower}."
     account:
       info: "Thông tin"
       email_role: "Email: %{email} · Vai trò: %{role}"

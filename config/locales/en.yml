@@ -1,5 +1,35 @@
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      tier:
+        name: "Tier name"
+        threshold_points: "Threshold"
+        multiplier: "Points multiplier"
+        benefits: "Perks"
+        gradient_from: "Start colour"
+        gradient_to: "End colour"
+      loyalty_program:
+        earn_points: "Points"
+        earn_per_amount: "Spend per point"
+        currency: "Currency"
+        tier_cycle_months: "Tier cycle"
+        points_expiry_months: "Points expiry"
+    errors:
+      models:
+        tier:
+          attributes:
+            gradient_from:
+              not_a_hex_color: "must be a #RRGGBB colour"
+            gradient_to:
+              not_a_hex_color: "must be a #RRGGBB colour"
+            benefits:
+              too_many: "at most %{count} lines"
+              too_long: "at most %{count} characters per line"
+        loyalty_program:
+          attributes:
+            currency:
+              not_a_currency_code: "must be a 3-letter currency code (e.g. VND)"
   merchant:
     void:
       undo_btn: "↩️ Undo this transaction"
@@ -474,6 +504,8 @@ en:
       m_tiers: "Tiers"
       m_stamps: "Stamp cards"
       m_gami: "Gamification"
+      plan_locked: "(higher plan)"
+      plan_blocked: "%{features} needs a higher plan, so it stayed off. Your other changes were saved."
       earn: "Earning"
       earn_per: "Points per spend unit"
       points_slash: "pts /"
@@ -484,6 +516,7 @@ en:
       sm_member: "Customer scans counter code"
       sm_both: "Allow both"
       tier_cycle: "Tier cycle (months)"
+      tier_cycle_note: "Tiers are judged on points earned in the last %{n} months. Shortening this demotes customers who have not been back."
       save: "Save settings"
     tiers:
       title: "Membership tiers"
@@ -498,6 +531,7 @@ en:
       multiplier_hint: "Multiplier: members at this tier earn points times this factor (e.g. 1.5 = +50%)."
       save: "Save tiers"
       saved: "Tier settings saved."
+      threshold_order: "The %{higher} threshold must be above %{lower}."
     account:
       info: "Info"
       email_role: "Email: %{email} · Role: %{role}"

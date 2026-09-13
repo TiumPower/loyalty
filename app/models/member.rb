@@ -61,17 +61,22 @@ class Member < ApplicationRecord
   # Points accumulated within the current tier cycle (drives tier standing;
   # not reduced by redemptions).
   def cycle_points
-    since = (workspace.program.tier_cycle_months || 12).months.ago
+    since = workspace.program.cycle_months.months.ago
     point_transactions.tier_qualifying.where("created_at >= ?", since).sum(:amount)
   end
 
-  # The tier a given cycle-point total qualifies for.
+  # The tier a given cycle-point total qualifies for. Picked by threshold rather
+  # than by position: these used to assume thresholds climb with position, so a
+  # workspace whose rungs were out of order (nothing stopped that) put customers
+  # on the wrong tier and told them the wrong next rung.
   def tier_for(points)
-    ordered_tiers.select { |t| t.threshold_points <= points }.last || ordered_tiers.first
+    ordered_tiers.select { |t| t.threshold_points <= points }
+                 .max_by { |t| [t.threshold_points, t.position] } || ordered_tiers.first
   end
 
   def next_tier
-    ordered_tiers.detect { |t| t.threshold_points > (tier&.threshold_points || 0) }
+    ordered_tiers.select { |t| t.threshold_points > (tier&.threshold_points || 0) }
+                 .min_by { |t| [t.threshold_points, t.position] }
   end
 
   def points_to_next

@@ -1,15 +1,46 @@
 <% content_for :title, t("merchant.nav.program") %>
 <% content_for :title_en, "LOYALTY PROGRAM" %>
 
+<%# A refused save re-rendered this page with nothing to show for it, so a
+    rejected value simply looked like a save that did nothing. %>
+<% if @program.errors.any? %>
+  <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:16px; max-width:900px;">
+    <%= @program.errors.full_messages.to_sentence %>
+  </div>
+<% end %>
+
 <%= form_with model: @program, url: merchant_loyalty_program_path, method: :patch do |f| %>
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:900px;">
+  <%# Two fixed 1fr columns squeezed the right-hand panel to 137px on a phone —
+      narrower than the earn-rate fields inside it. auto-fit drops to one column
+      instead (same idiom as the retention panel). %>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; max-width:900px;">
     <div class="l-panel">
       <h3 class="l-display" style="font-size:18px; margin-bottom:6px;"><%= t("merchant.program.mechanisms") %></h3>
       <p style="color:var(--ink-2); font-size:13px; margin-bottom:8px;"><%= t("merchant.program.mechanisms_note") %></p>
-      <% [[:points_enabled, t("merchant.program.m_points")], [:tiers_enabled, t("merchant.program.m_tiers")], [:stamps_enabled, t("merchant.program.m_stamps")], [:gamification_enabled, t("merchant.program.m_gami")]].each do |attr, label| %>
+      <%# Mechanisms the plan doesn't include were accepted by the form and then
+          forced back off on save, so the merchant got "Đã lưu" and a toggle that
+          had flipped itself back with no explanation. Show the lock instead. %>
+      <% [[:points_enabled, t("merchant.program.m_points"), nil],
+          [:tiers_enabled, t("merchant.program.m_tiers"), nil],
+          [:stamps_enabled, t("merchant.program.m_stamps"), :stamps],
+          [:gamification_enabled, t("merchant.program.m_gami"), :gamification]].each do |attr, label, feature| %>
+        <% locked = feature && feature_locked?(feature) %>
         <div class="l-toggle-row">
-          <span><%= label %></span>
-          <label class="l-switch"><%= f.check_box attr %><span class="knob"></span></label>
+          <span>
+            <%= label %>
+            <% if locked %>
+              <%= link_to t("merchant.program.plan_locked"), merchant_billing_path,
+                          style: "font-size:11px; color:var(--ink-2); text-decoration:underline; margin-left:6px; white-space:nowrap;" %>
+            <% end %>
+          </span>
+          <%# A locked mechanism is off whatever the stored flag says (every
+              screen behind it is gated on the plan, not the flag), so don't
+              draw it as on. %>
+          <% opts = { disabled: locked } %>
+          <% opts[:checked] = false if locked %>
+          <label class="l-switch" style="<%= 'opacity:.45; cursor:not-allowed;' if locked %>">
+            <%= f.check_box attr, opts %><span class="knob"></span>
+          </label>
         </div>
       <% end %>
     </div>
@@ -20,10 +51,10 @@
       <%# The three fields are fixed-width and this panel sits in a two-column
           grid, so they used to spill out of it on a laptop. %>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-        <%= f.number_field :earn_points, class: "l-field", style: "max-width:100px;", min: 0 %>
+        <%= f.number_field :earn_points, class: "l-field", style: "max-width:100px;", min: 1, max: LoyaltyProgram::MAX_EARN_POINTS %>
         <span style="color:var(--ink-2);"><%= t("merchant.program.points_slash") %></span>
-        <%= f.number_field :earn_per_amount, class: "l-field", style: "max-width:140px;", min: 1 %>
-        <%= f.text_field :currency, class: "l-field", style: "max-width:80px;" %>
+        <%= f.number_field :earn_per_amount, class: "l-field", style: "max-width:140px;", min: 1, max: LoyaltyProgram::MAX_EARN_PER %>
+        <%= f.text_field :currency, class: "l-field", style: "max-width:80px; text-transform:uppercase;", maxlength: 3, pattern: "[A-Za-z]{3}" %>
       </div>
       <%# This setting decides how much the shop gives away, but it was three
           bare numbers. Spell out what the saved rate actually does. %>
@@ -38,12 +69,16 @@
 
       <label class="l-label"><%= t("merchant.program.expiry") %></label>
       <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
-        <%= f.number_field :points_expiry_months, class: "l-field", style: "max-width:100px;", min: 0 %>
+        <%= f.number_field :points_expiry_months, class: "l-field", style: "max-width:100px;", min: 0, max: LoyaltyProgram::MAX_MONTHS %>
         <span style="color:var(--ink-2); font-size:13px;"><%= t("merchant.program.expiry_note") %></span>
       </div>
 
       <label class="l-label"><%= t("merchant.program.tier_cycle") %></label>
-      <%= f.number_field :tier_cycle_months, class: "l-field", style: "max-width:120px;" %>
+      <%# 0 here used to reset every customer to the bottom tier. %>
+      <%= f.number_field :tier_cycle_months, class: "l-field", style: "max-width:120px;", min: 1, max: LoyaltyProgram::MAX_MONTHS %>
+      <p style="font-size:12.5px; color:var(--ink-2); margin-top:6px;">
+        <%= t("merchant.program.tier_cycle_note", n: @program.cycle_months) %>
+      </p>
     </div>
   </div>
 
@@ -70,9 +105,9 @@
             <% @tiers.each do |tier| %>
               <tr>
                 <td style="padding:9px 8px;"><span style="display:inline-block; width:22px; height:22px; border-radius:6px; background:<%= tier.gradient_css %>; vertical-align:middle;"></span></td>
-                <td><input type="text" name="tiers[<%= tier.id %>][name]" value="<%= tier.name %>" class="l-field" style="min-width:120px;"></td>
-                <td><input type="number" name="tiers[<%= tier.id %>][threshold_points]" value="<%= tier.threshold_points %>" class="l-field" style="max-width:110px;" min="0"></td>
-                <td><input type="number" step="0.1" name="tiers[<%= tier.id %>][multiplier]" value="<%= tier.multiplier %>" class="l-field" style="max-width:80px;" min="1"></td>
+                <td><input type="text" name="tiers[<%= tier.id %>][name]" maxlength="40" value="<%= tier.name %>" class="l-field" style="min-width:120px;"></td>
+                <td><input type="number" name="tiers[<%= tier.id %>][threshold_points]" value="<%= tier.threshold_points %>" class="l-field" style="max-width:110px;" min="0" max="<%= Tier::MAX_THRESHOLD %>"></td>
+                <td><input type="number" step="0.1" name="tiers[<%= tier.id %>][multiplier]" value="<%= tier.multiplier %>" class="l-field" style="max-width:80px;" min="1" max="<%= Tier::MAX_MULTIPLIER %>" step="0.1"></td>
                 <td>
                   <% effective = Array(tier.benefits).presence || default_benefits(tier) %>
                   <textarea name="tiers[<%= tier.id %>][benefits]" class="l-field" rows="3"
