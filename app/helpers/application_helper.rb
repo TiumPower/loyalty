@@ -45,13 +45,18 @@ module ApplicationHelper
   end
   # Icon/favicon URL for a workspace: the uploaded logo when present, else the
   # platform default. Root-relative so it works on any shop host.
-  def workspace_icon_url(ws)
+  def workspace_icon_url(ws, **opts)
     if ws&.logo&.attached?
       # Proxy (not redirect): a stable, cacheable URL that streams the bytes
       # through the app. The redirect variant hands back a short-lived signed
       # disk URL that expires (~5 min) — once the browser/PWA caches that 302,
       # the favicon/logo later 404s and shows a broken "?" image.
       rails_storage_proxy_path(ws.logo, only_path: true)
+    elsif ws
+      # A white-label app must never show the PLATFORM's logo to a shop's own
+      # customers. With no upload, draw the shop's initials on its brand colour.
+      pwa_icon_path(workspace_slug: ws.slug, format: opts[:format] || "svg",
+                    size: opts[:size], only_path: true)
     else
       "/icon.png"
     end
@@ -60,11 +65,18 @@ module ApplicationHelper
   # Workspace avatar: the uploaded logo (cover-cropped, inherits the box shape)
   # if present, otherwise the initials. Pass extra style for the box.
   def workspace_avatar(ws, klass: "avatar", style: nil)
-    # Uploaded logo if present, otherwise the default Loyalty logo (/icon.png) —
-    # never the shop-name initials.
-    content_tag(:div,
-                image_tag(workspace_icon_url(ws), alt: "", style: "width:100%;height:100%;object-fit:cover;"),
-                class: klass, style: ["overflow:hidden", style].compact.join(";"))
+    # Uploaded logo if present, otherwise the shop's initials on its brand
+    # colour — rendered inline rather than fetched, since the markup is cheaper
+    # than a request and picks up the live theme variables.
+    inner = if ws&.logo&.attached?
+      image_tag(workspace_icon_url(ws), alt: "", style: "width:100%;height:100%;object-fit:cover;")
+    else
+      content_tag(:span, ws&.logo_initials,
+                  style: "display:grid;place-items:center;width:100%;height:100%;" \
+                         "background:linear-gradient(150deg,var(--primary),color-mix(in srgb,var(--primary) 58%,#000));" \
+                         "color:var(--on-primary,#fff);font-weight:700;letter-spacing:.02em;")
+    end
+    content_tag(:div, inner, class: klass, style: ["overflow:hidden", style].compact.join(";"))
   end
 
   # Member avatar: uploaded image (cover-cropped) if present, else initials.

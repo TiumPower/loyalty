@@ -1,9 +1,8 @@
 <% content_for :title, t("customer.session.login_title", name: current_workspace.name) %>
 <div class="l-screen" style="display:flex; flex-direction:column; justify-content:center; min-height:100dvh;">
   <div style="text-align:center; margin-bottom:26px;">
-    <div style="width:72px; height:72px; border-radius:22px; margin:0 auto 16px; overflow:hidden;">
-      <%= image_tag workspace_icon_url(current_workspace), alt: "", style: "width:100%;height:100%;object-fit:cover;" %>
-    </div>
+    <%= workspace_avatar(current_workspace, klass: "",
+          style: "width:72px; height:72px; border-radius:22px; margin:0 auto 16px; font-size:27px;") %>
     <h1 class="l-display" style="font-size:26px;"><%= current_workspace.name %></h1>
     <p style="color:var(--ink-2); font-size:14px;"><%= current_workspace.branding_value("tagline") %></p>
   </div>

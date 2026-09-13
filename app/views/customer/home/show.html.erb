@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="name"><%= @member.display_name.upcase %></div>
-      <div class="meta">MEMBER · <%= @member.email.presence || @member.phone %></div>
+      <div class="meta">MEMBER · <%= @member.masked_contact %></div>
     </div>
   <% end %>
 

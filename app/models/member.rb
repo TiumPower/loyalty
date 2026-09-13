@@ -139,6 +139,19 @@ class Member < ApplicationRecord
     display_name.split.map { |w| w[0] }.first(2).join.upcase
   end
 
+  # Contact line for screens the customer holds up to a stranger — the QR code
+  # they show a cashier, the membership card. Enough to tell two members apart,
+  # not enough to read someone's address off their phone across the counter.
+  def masked_contact
+    if email.present?
+      user, _, domain = email.partition("@")
+      head = user[0, 2]
+      "#{head}#{'•' * [user.length - 2, 1].max}@#{domain}"
+    elsif phone.present?
+      "#{phone[0, 3]}#{'•' * [phone.length - 5, 1].max}#{phone[-2, 2]}"
+    end
+  end
+
   private
 
   def normalize_phone

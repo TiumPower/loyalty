@@ -16,10 +16,19 @@ module Pwa
       shop  = ws&.name || "Dynamic Loyalty"
       theme = ws&.theme_value("primary") || "#8C4A2F"
       bg    = ws&.theme_value("surface") || "#FBF6EF"
-      icon_src = if ws&.logo&.attached?
-        Rails.application.routes.url_helpers.rails_blob_path(ws.logo, only_path: true)
-      else
-        "/icon.png"
+      # Without an uploaded logo, shops were installing onto their customers'
+      # home screens under the PLATFORM's icon. Draw the shop's own initials
+      # instead — see Pwa::IconsController.
+      icon = lambda do |px|
+        if ws&.logo&.attached?
+          Rails.application.routes.url_helpers.rails_blob_path(ws.logo, only_path: true)
+        elsif ws
+          Rails.application.routes.url_helpers.pwa_icon_path(
+            workspace_slug: ws.slug, size: px, format: "png", only_path: true
+          )
+        else
+          "/icon.png"
+        end
       end
       # Staff scanner installs as a separate "Quản lý · <shop>" app so a phone can
       # hold both the customer app and the staff scanner without them colliding.
@@ -47,8 +56,11 @@ module Pwa
         theme_color: theme,
         lang: ws&.locale_default || "vi",
         icons: [
-          { src: icon_src, sizes: "512x512", type: "image/png", purpose: "any" },
-          { src: icon_src, sizes: "192x192", type: "image/png", purpose: "any" }
+          { src: icon.call(512), sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: icon.call(192), sizes: "192x192", type: "image/png", purpose: "any" },
+          # Android crops the launcher icon to its own shape; without a maskable
+          # entry it pads the square and the icon sits in a white box.
+          { src: icon.call(512), sizes: "512x512", type: "image/png", purpose: "maskable" }
         ]
       }
     end

@@ -5,7 +5,7 @@
   <span class="l-chip l-chip-brand" style="margin-left:auto;"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span>
 </header>
 
-<div class="l-screen" data-controller="tabs" data-tabs-active-class-value="active" data-tabs-active-value="<%= %w[rewards owned expiring].include?(params[:tab]) ? params[:tab] : 'owned' %>">
+<div class="l-screen" data-controller="tabs" data-tabs-active-class-value="active" data-tabs-active-value="<%= %w[rewards owned expiring].include?(params[:tab]) ? params[:tab] : @default_tab %>">
   <% usable_count = @vouchers.count(&:usable?) %>
   <div class="l-wtabs">
     <button data-tabs-target="tab" data-name="rewards" data-action="tabs#select"><%= t("customer.wallet.tab_redeemable") %></button>

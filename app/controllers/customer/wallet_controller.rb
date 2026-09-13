@@ -14,6 +14,11 @@ module Customer
                     .sort_by { |r| [state_order.fetch(r.redeem_state, 9), r.position, r.id] }
       @vouchers = @member.vouchers.recent.includes(:reward).to_a
       @expiring = @vouchers.select { |v| v.usable? && v.expires_at && v.expires_at <= 7.days.from_now }
+      # The wallet always opened on "Khả dụng", so a member holding points but
+      # no vouchers yet — every new member — was greeted with "bạn chưa có ưu
+      # đãi nào" and never saw what their points could buy. Land on whichever
+      # tab actually has something in it.
+      @default_tab = @vouchers.any?(&:usable?) ? "owned" : "rewards"
     end
   end
 end

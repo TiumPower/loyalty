@@ -23,6 +23,16 @@
     </div>
   <% end %>
 
+  <%# How long the voucher lasts was only revealed AFTER the points were spent.
+      A customer choosing between rewards needs it beforehand. %>
+  <% if @reward.valid_days.to_i.positive? %>
+    <div class="l-tile" style="margin-bottom:16px; display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-2);">
+      <span style="font-size:17px;">⏳</span>
+      <span>Sau khi đổi, ưu đãi có hiệu lực <strong style="color:var(--ink);"><%= @reward.valid_days %> ngày</strong>
+        (đến <strong style="color:var(--ink);"><%= l(@reward.valid_days.to_i.days.from_now.to_date, format: :short) %></strong>).</span>
+    </div>
+  <% end %>
+
   <div class="l-tile" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <div><div class="l-eyebrow"><%= t("customer.reward_detail.cost") %></div><div class="l-num" style="font-size:24px;"><%= t("customer.common.points_count", n: number_with_delimiter(@reward.cost_points)) %></div></div>
     <div style="text-align:right;"><div class="l-eyebrow"><%= t("customer.reward_detail.your_points") %></div><div class="l-num" style="font-size:20px; color:<%= enough ? 'var(--good)' : 'var(--warn)' %>;"><%= number_with_delimiter(@member.points_balance) %></div></div>

@@ -20,7 +20,10 @@ module Customer
     end
 
     def new
-      @rating = Rating.new(stars: 5) # always a fresh review
+      # Deliberately no default star count. Pre-selecting 5 meant anyone who
+      # tapped "Gửi đánh giá" without touching the stars filed a 5-star review,
+      # quietly inflating the public average every shop is judged on.
+      @rating = Rating.new
     end
 
     def create
@@ -51,7 +54,13 @@ module Customer
     private
 
     def own_rating = Rating.where(member: current_member).find_by(id: params[:id])
-    def stars_param = params[:stars].to_i.clamp(1, 5)
+    # nil, not 1, when nothing was chosen: clamping an empty field to 1 turned
+    # "I forgot to tap a star" into the harshest possible review. The model's
+    # inclusion validation then asks for a real choice.
+    def stars_param
+      n = params[:stars].to_i
+      n.between?(1, 5) ? n : nil
+    end
     def comment_param = params[:comment].to_s.strip.presence
     def after_save_path = current_workspace.feedback_public? ? member_shop_about_path : member_profile_path
 

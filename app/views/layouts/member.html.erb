@@ -3,10 +3,11 @@
   <head>
     <%= render "layouts/head" %>
     <% if current_workspace %>
-      <link rel="manifest" href="<%= pwa_manifest_path(host: request.host_with_port) %>">
+      <link rel="manifest" href="<%= pwa_manifest_path(workspace_slug: params[:workspace_slug], host: request.host_with_port) %>">
       <meta name="theme-color" content="<%= current_workspace.theme_value(:primary) %>">
       <link rel="icon" href="<%= workspace_icon_url(current_workspace) %>">
-      <link rel="apple-touch-icon" href="<%= workspace_icon_url(current_workspace) %>">
+      <%# iOS will not take an SVG for the home-screen icon, so ask for a PNG. %>
+      <link rel="apple-touch-icon" href="<%= workspace_icon_url(current_workspace, format: "png", size: 180) %>">
     <% end %>
   </head>
   <body class="pwa-app">

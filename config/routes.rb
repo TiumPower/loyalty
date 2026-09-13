@@ -18,7 +18,18 @@ Rails.application.routes.draw do
   post "webhooks/payos" => "webhooks/payos#receive", as: :payos_webhook
 
   # ---- PWA (per-workspace, dynamic) --------------------------------------
-  get "manifest.webmanifest" => "pwa/manifests#show",       as: :pwa_manifest
+  # Per-shop app icon drawn from the shop's initials (fallback when no logo).
+  # The optional /w/:workspace_slug prefix mirrors the customer app so it
+  # resolves in dev, where shops live on a path rather than a subdomain.
+  scope "(/w/:workspace_slug)" do
+    get "shop-icon(-:size).:format" => "pwa/icons#show", as: :pwa_icon,
+        constraints: { format: /svg|png/, size: /\d+/ }
+  end
+  # Same optional slug prefix as the icon, so the manifest resolves its shop in
+  # dev too. On production the shop subdomain resolves it and no slug is used.
+  scope "(/w/:workspace_slug)" do
+    get "manifest.webmanifest" => "pwa/manifests#show",     as: :pwa_manifest
+  end
   get "service-worker.js"    => "pwa/service_workers#show", as: :pwa_service_worker
 
   # ---- Locale toggle (shared) --------------------------------------------

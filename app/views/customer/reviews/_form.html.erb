@@ -2,17 +2,34 @@
   <div style="font-weight:700; margin-bottom:6px;"><%= current_workspace.name %></div>
   <p style="color:var(--ink-2); font-size:13px; margin-bottom:16px;">Chia sẻ trải nghiệm của bạn — đánh giá sẽ hiển thị công khai để giúp khách khác.</p>
 
+  <% if rating.errors.any? %>
+    <div style="background:#FBE6E2; color:#B4402F; border-radius:12px; padding:10px 13px; margin-bottom:14px; font-size:13px;">
+      Vui lòng chọn số sao trước khi gửi.
+    </div>
+  <% end %>
+
   <%= form_with url: url, method: method do %>
-    <input type="hidden" name="stars" value="<%= rating.stars || 5 %>" data-rating-target="input">
-    <div style="display:flex; gap:8px; justify-content:center; font-size:40px; margin:6px 0 18px; cursor:pointer;">
+    <%# The stars column defaults to 5 in the database, so a new Rating object
+        arrives pre-rated. Start an unsaved review blank and make the customer
+        choose. %>
+    <% chosen = rating.new_record? ? nil : rating.stars %>
+    <input type="hidden" name="stars" value="<%= chosen %>" data-rating-target="input">
+    <div style="display:flex; gap:8px; justify-content:center; font-size:40px; margin:6px 0 8px; cursor:pointer;">
       <% (1..5).each do |i| %>
-        <span data-rating-target="star" data-value="<%= i %>" data-action="click->rating#set" style="user-select:none; color:var(--primary-2,#E08A3C);">★</span>
+        <span data-rating-target="star" data-value="<%= i %>"
+              data-action="click->rating#set keydown.enter->rating#set"
+              role="radio" tabindex="0" aria-label="<%= t("customer.review.stars_n", n: i, default: "%{n} sao") %>"
+              style="user-select:none; color:var(--primary-2,#E08A3C);">★</span>
       <% end %>
     </div>
+    <p data-rating-target="hint" style="text-align:center; font-size:12.5px; color:var(--ink-2); margin:0 0 16px;">
+      Chạm vào sao để chấm điểm
+    </p>
 
     <label class="l-label">Nhận xét (không bắt buộc)</label>
     <%= text_area_tag :comment, rating.comment, class: "l-field", rows: 4, placeholder: "Đồ uống ngon, phục vụ thân thiện…" %>
 
-    <%= submit_tag submit_label, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;" %>
+    <%= submit_tag submit_label, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;",
+          data: { rating_target: "submit" }, disabled: chosen.blank? %>
   <% end %>
 </div>

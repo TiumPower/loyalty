@@ -62,8 +62,19 @@
       <% @outlets.each do |o| %>
         <div style="padding:10px 0; border-bottom:1px solid var(--line);">
           <div style="font-weight:600;">🏬 <%= o.name %></div>
-          <% if o.address.present? %><div style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= o.address %></div><% end %>
-          <% if o.phone.present? %><div style="font-size:13px; color:var(--ink-2);">📞 <%= o.phone %></div><% end %>
+          <%# The address and phone were plain text, so a customer looking up the
+              shop had to copy them out by hand. Make them do their obvious job. %>
+          <% if o.address.present? %>
+            <%= link_to "https://maps.google.com/?q=#{CGI.escape("#{o.name} #{o.address}")}",
+                  target: "_blank", rel: "noopener",
+                  style: "display:block; font-size:13px; color:var(--primary); margin-top:2px; text-decoration:none;" do %>
+              📍 <%= o.address %> <span style="color:var(--ink-2);">· Chỉ đường ›</span>
+            <% end %>
+          <% end %>
+          <% if o.phone.present? %>
+            <%= link_to "📞 #{o.phone}", "tel:#{o.phone.gsub(/\s+/, '')}",
+                  style: "display:block; font-size:13px; color:var(--primary); text-decoration:none;" %>
+          <% end %>
         </div>
       <% end %>
     </div>

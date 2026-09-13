@@ -18,7 +18,9 @@
       <div class="avatar" style="width:38px; height:38px; border-radius:12px; background:<%= @member.tier&.gradient_css || 'var(--primary)' %>; color:#fff; display:grid; place-items:center; font-weight:700;"><%= @member.initials %></div>
       <div style="text-align:left;">
         <div style="font-weight:700; line-height:1;"><%= @member.display_name %></div>
-        <div style="color:var(--ink-2); font-size:12px;"><%= @member.tier&.name %> · <%= @member.email.presence || @member.phone %></div>
+        <%# Shown across the counter on every visit — mask the contact so a cashier
+            reads a member, not someone's email address. %>
+        <div style="color:var(--ink-2); font-size:12px;"><%= @member.tier&.name %> · <%= @member.masked_contact %></div>
       </div>
     </div>
 
