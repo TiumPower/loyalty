@@ -4,7 +4,10 @@ import { Controller } from "@hotwired/stimulus"
 // the resolve endpoint, which auto-detects promo-claim vs POS-earn.
 export default class extends Controller {
   static targets = ["video", "status", "overlay"]
-  static values = { resolveUrl: String }
+  static values = {
+    resolveUrl: String,
+    scanningText: String, deniedText: String, unsupportedText: String, failedText: String
+  }
 
   async connect() {
     // Ask the browser what the real camera-permission state is. When it's
@@ -19,7 +22,7 @@ export default class extends Controller {
       this.start()
     } else if (state === "denied") {
       if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
-      this.statusTarget.textContent = "Camera đang bị chặn — hãy bật lại quyền camera trong cài đặt trình duyệt, hoặc nhập mã bên dưới."
+      this.statusTarget.textContent = this.deniedTextValue
     } else if (state === "prompt") {
       if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
     } else {
@@ -27,6 +30,7 @@ export default class extends Controller {
       this.start()
     }
     this.watchPermission()
+    document.addEventListener("visibilitychange", this.visibility)
   }
 
   async cameraState() {
@@ -52,7 +56,7 @@ export default class extends Controller {
 
   async start() {
     if (!navigator.mediaDevices?.getUserMedia) {
-      this.statusTarget.textContent = "Trình duyệt không hỗ trợ camera — hãy nhập mã bên dưới."
+      this.statusTarget.textContent = this.unsupportedTextValue
       return
     }
     try {
@@ -72,13 +76,13 @@ export default class extends Controller {
         this.jsqr = (await import("jsqr")).default || window.jsQR
         this.canvas = document.createElement("canvas")
       }
-      this.statusTarget.textContent = "Đang quét…"
+      this.statusTarget.textContent = this.scanningTextValue
       this.timer = setInterval(() => this.tick(), this.mode === "jsqr" ? 250 : 400)
     } catch (e) {
       // Access failed/denied — restore the overlay button so the user can retry.
       this.rememberCamera(false)
       if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
-      this.statusTarget.textContent = "Không truy cập được camera — hãy nhập mã bên dưới."
+      this.statusTarget.textContent = this.failedTextValue
     }
   }
 
@@ -113,7 +117,17 @@ export default class extends Controller {
   stop() {
     if (this.timer) clearInterval(this.timer)
     if (this.stream) this.stream.getTracks().forEach((t) => t.stop())
+    this.stream = null // so coming back to the tab can start a fresh one
   }
 
-  disconnect() { this.stop() }
+  // Decoding every frame with the camera live is the most expensive thing this
+  // app does on a phone; there is nothing to scan while the screen is off.
+  visibility = () => {
+    if (document.hidden) { this.stop() } else if (!this.stream) { this.start() }
+  }
+
+  disconnect() {
+    this.stop()
+    document.removeEventListener("visibilitychange", this.visibility)
+  }
 }

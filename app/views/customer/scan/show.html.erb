@@ -1,7 +1,14 @@
 <% content_for :title, t("customer.scan.title") %>
 <% content_for :tab, "" %>
 
+<%# Every status the scanner shows used to be a Vietnamese literal inside the
+    Stimulus controller, so an English customer was told in Vietnamese that
+    their camera was blocked. Handed in, like the PWA prompts already are. %>
 <div class="l-screen" data-controller="qrnav" data-qrnav-resolve-url-value="<%= member_scan_resolve_path %>"
+     data-qrnav-scanning-text-value="<%= t("customer.scan.js_scanning") %>"
+     data-qrnav-denied-text-value="<%= t("customer.scan.js_denied") %>"
+     data-qrnav-unsupported-text-value="<%= t("customer.scan.js_unsupported") %>"
+     data-qrnav-failed-text-value="<%= t("customer.scan.js_failed") %>"
      style="display:flex; flex-direction:column;">
   <header class="l-appbar" style="padding-left:0;">
     <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>

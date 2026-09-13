@@ -1225,6 +1225,10 @@ en:
       balance_pre: "Balance:"
       show_to_staff: "Show this code to staff to earn points on your bill."
     scan:
+      js_scanning: "Scanning…"
+      js_denied: "The camera is blocked — allow camera access in your browser settings, or type the code below."
+      js_unsupported: "This browser doesn't support the camera — type the code below."
+      js_failed: "Couldn't open the camera — type the code below."
       title: "Scan"
       prompt: "Scan a counter code or promo code to get rewards"
       start_camera: "Start camera"

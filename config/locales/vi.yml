@@ -1266,6 +1266,10 @@ vi:
       balance_pre: "Số dư:"
       show_to_staff: "Đưa mã này cho nhân viên quét để tích điểm vào hoá đơn của %{term}."
     scan:
+      js_scanning: "Đang quét…"
+      js_denied: "Camera đang bị chặn — hãy bật lại quyền camera trong cài đặt trình duyệt, hoặc nhập mã bên dưới."
+      js_unsupported: "Trình duyệt không hỗ trợ camera — hãy nhập mã bên dưới."
+      js_failed: "Không truy cập được camera — hãy nhập mã bên dưới."
       title: "Quét mã"
       prompt: "Quét mã tại quầy hoặc mã khuyến mãi để nhận ưu đãi"
       start_camera: "Bật camera"

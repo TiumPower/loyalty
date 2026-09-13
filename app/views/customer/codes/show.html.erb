@@ -11,7 +11,8 @@
      data-mycode-token-url-value="<%= member_my_code_token_path %>"
      data-mycode-recent-url-value="<%= member_my_code_recent_path %>"
      data-mycode-since-value="<%= @since %>"
-     data-mycode-ttl-value="<%= MemberQr::TTL %>">
+     data-mycode-ttl-value="<%= MemberQr::TTL %>"
+     data-mycode-locale-value="<%= I18n.locale %>">
 
   <div class="l-tile" style="text-align:center; padding:26px 26px 20px; width:100%; position:relative; overflow:hidden;">
     <div style="display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:16px;">
@@ -30,7 +31,9 @@
 
     <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; color:var(--ink-2); font-size:13px;">
       <span style="width:8px; height:8px; border-radius:50%; background:var(--good); display:inline-block;"></span>
-      <%= t("customer.my_code.refresh_pre") %> <strong data-mycode-target="count" style="color:var(--ink);">45</strong>s
+      <%# Seeded with a literal 45 while the token actually lives MemberQr::TTL
+          seconds, so the first paint showed a number that then jumped. %>
+      <%= t("customer.my_code.refresh_pre") %> <strong data-mycode-target="count" style="color:var(--ink);"><%= MemberQr::TTL %></strong>s
     </div>
 
     <%# +X điểm reveal overlay %>
