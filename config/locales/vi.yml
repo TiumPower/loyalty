@@ -1118,6 +1118,8 @@ vi:
       sold_out: "Ưu đãi vừa hết lượt — bạn chưa bị trừ điểm."
       success: "Đổi thưởng thành công!"
     common:
+      close: "Đóng"
+      member_fallback: "Thành viên"
       all: "Tất cả"
       points_word: "điểm"
       points_count: "%{n} điểm"
@@ -1146,12 +1148,15 @@ vi:
       expire: "Điểm hết hạn"
       adjust: "Điều chỉnh điểm"
     reward:
+      redeem_cta: "Đổi ngay"
       free: "Miễn phí"
       state:
         active: "Khả dụng"
         used: "Đã dùng"
         expired: "Hết hạn"
     home:
+      expiring_html: "<strong>%{n}</strong> điểm sẽ hết hạn %{when} — đổi ngay ›"
+      expiring_on: "vào %{date}"
       greeting: "Chào %{name}, chúc ngày tốt lành 👋"
       points_balance: "Điểm hiện có"
       tier_badge: "Hạng %{name}"
@@ -1182,6 +1187,12 @@ vi:
       offer_refer_sub: "Mời bạn, cả hai cùng nhận"
       missions_today: "Nhiệm vụ hôm nay"
     profile:
+      avatar_title: "Ảnh đại diện"
+      avatar_hint: "Chạm vào ảnh để chọn ảnh mới."
+      avatar_change: "Đổi ảnh đại diện"
+      avatar_save: "Lưu ảnh"
+      review_shop: "⭐ Đánh giá quán"
+      about_shop: "🏬 Về quán & đánh giá"
       email_code_label: "Mã xác thực (6 số)"
       email_hint: "Email là cách bạn đăng nhập. Đổi email cần xác nhận bằng mã gửi tới địa chỉ mới."
       email_taken: "Email này đã có tài khoản ở cửa hàng."
@@ -1331,6 +1342,7 @@ vi:
       bill: "hoá đơn %{amount}đ"
       load_more: "Xem thêm"
     missions:
+      refer: "Mời bạn"
       title: "Nhiệm vụ"
       today: "Hôm nay"
       this_week: "Tuần này"

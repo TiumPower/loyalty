@@ -38,7 +38,10 @@
   <% exp_amt, exp_date = current_workspace.program.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
   <% if exp_amt.to_i > 0 %>
     <%= link_to member_wallet_path(tab: "rewards"), style: "display:flex; align-items:center; gap:8px; margin-top:12px; padding:11px 14px; border-radius:14px; background:#F7E0DA; color:#B4402F; text-decoration:none; font-size:13px; font-weight:600;" do %>
-      ⏳ <span><strong><%= number_with_delimiter(exp_amt) %></strong> điểm sẽ hết hạn <%= "vào #{l(exp_date.to_date, format: :short)}" if exp_date %> — đổi ngay ›</span>
+      <%# This sentence was written straight into the markup in Vietnamese, so an
+          English customer got it in Vietnamese and nothing flagged it. %>
+      ⏳ <span><%= t("customer.home.expiring_html", n: number_with_delimiter(exp_amt),
+                     when: (exp_date ? t("customer.home.expiring_on", date: l(exp_date.to_date, format: :short)) : "")).html_safe %></span>
     <% end %>
   <% end %>
 
@@ -78,7 +81,7 @@
             <div class="big"><%= r.title %></div>
             <div style="font-size:12.5px; opacity:.9;">
               <% if open %>
-                <% if r.cost_points %><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %> · <% end %><%= t("customer.reward.redeem_cta", default: "Đổi ngay") %> ›
+                <% if r.cost_points %><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %> · <% end %><%= t("customer.reward.redeem_cta") %> ›
               <% else %>
                 🕑 <%= r.redeem_window_hint %>
               <% end %>
@@ -111,7 +114,7 @@
                       style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
               <% end %>
             <% elsif m.mission_type == "refer" %>
-              <%= link_to t("customer.missions.refer", default: "Mời bạn"), member_refer_path, class: "l-btn l-btn-soft", style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
+              <%= link_to t("customer.missions.refer"), member_refer_path, class: "l-btn l-btn-soft", style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
             <% end %>
           <% end %>
         </div>

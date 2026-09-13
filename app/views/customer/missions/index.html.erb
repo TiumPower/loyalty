@@ -36,7 +36,7 @@
             <% elsif m.mission_type == "checkin" %>
               <%= link_to t("customer.common.checkin"), member_scan_path, class: "l-btn l-btn-primary", style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
             <% elsif m.mission_type == "refer" %>
-              <%= link_to "Mời bạn", member_refer_path, class: "l-btn l-btn-primary", style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
+              <%= link_to t("customer.missions.refer"), member_refer_path, class: "l-btn l-btn-primary", style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
             <% else %>
               <span class="l-chip" style="font-size:11px;">Tự động khi mua hàng</span>
             <% end %>

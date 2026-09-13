@@ -1077,6 +1077,8 @@ en:
       sold_out: "This reward just sold out — no points were deducted."
       success: "Redeemed successfully!"
     common:
+      close: "Close"
+      member_fallback: "Member"
       all: "All"
       points_word: "pts"
       points_count: "%{n} pts"
@@ -1105,12 +1107,15 @@ en:
       expire: "Points expired"
       adjust: "Points adjustment"
     reward:
+      redeem_cta: "Redeem"
       free: "Free"
       state:
         active: "Available"
         used: "Used"
         expired: "Expired"
     home:
+      expiring_html: "<strong>%{n}</strong> points expire %{when} — redeem now ›"
+      expiring_on: "on %{date}"
       greeting: "Hi %{name}, have a great day 👋"
       points_balance: "Points balance"
       tier_badge: "%{name} tier"
@@ -1141,6 +1146,12 @@ en:
       offer_refer_sub: "Invite a friend, both get rewarded"
       missions_today: "Today's missions"
     profile:
+      avatar_title: "Profile photo"
+      avatar_hint: "Tap the photo to pick a new one."
+      avatar_change: "Change profile photo"
+      avatar_save: "Save photo"
+      review_shop: "⭐ Review this shop"
+      about_shop: "🏬 About the shop & reviews"
       email_code_label: "Verification code (6 digits)"
       email_hint: "Your email is how you sign in. Changing it needs a code sent to the new address."
       email_taken: "That email already has an account at this shop."
@@ -1290,6 +1301,7 @@ en:
       bill: "bill %{amount}đ"
       load_more: "Load more"
     missions:
+      refer: "Invite"
       title: "Missions"
       today: "Today"
       this_week: "This week"

@@ -13,7 +13,7 @@
   <div class="l-tile" style="margin-bottom:14px;">
     <%= form_with url: member_profile_avatar_path, method: :patch, multipart: true, data: { controller: "avatarupload", turbo: false } do %>
       <div style="display:flex; align-items:center; gap:16px;">
-        <label style="position:relative; flex:none; cursor:pointer;" title="Đổi ảnh đại diện">
+        <label style="position:relative; flex:none; cursor:pointer;" title="<%= t("customer.profile.avatar_change") %>">
           <div data-avatarupload-target="box" style="width:72px; height:72px; border-radius:20px; overflow:hidden; background:var(--surface-2); color:var(--ink-2); display:grid; place-items:center; font-weight:700; font-size:22px;">
             <% if @member.avatar.attached? %>
               <%= image_tag rails_storage_proxy_path(@member.avatar, only_path: true), style: "width:100%;height:100%;object-fit:cover;" %>
@@ -25,9 +25,9 @@
           <%= file_field_tag "member[avatar]", accept: "image/*", data: { avatarupload_target: "input", action: "avatarupload#change" }, style: "position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" %>
         </label>
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600;">Ảnh đại diện</div>
-          <div style="font-size:13px; color:var(--ink-2); margin-top:2px;">Chạm vào ảnh để chọn ảnh mới.</div>
-          <%= button_tag "Lưu ảnh", type: "submit", class: "l-btn l-btn-primary", data: { avatarupload_target: "save" }, style: "margin-top:10px; display:none; padding:8px 16px; font-size:13px;" %>
+          <div style="font-weight:600;"><%= t("customer.profile.avatar_title") %></div>
+          <div style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= t("customer.profile.avatar_hint") %></div>
+          <%= button_tag t("customer.profile.avatar_save"), type: "submit", class: "l-btn l-btn-primary", data: { avatarupload_target: "save" }, style: "margin-top:10px; display:none; padding:8px 16px; font-size:13px;" %>
         </div>
       </div>
     <% end %>
@@ -84,11 +84,11 @@
       <span><%= t("customer.profile.refer") %></span><span style="color:var(--ink-2);">›</span>
     <% end %>
     <%= link_to member_new_review_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span>⭐ Đánh giá quán</span><span style="color:var(--ink-2);">›</span>
+      <span><%= t("customer.profile.review_shop") %></span><span style="color:var(--ink-2);">›</span>
     <% end %>
     <% if current_workspace.feedback_public? %>
       <%= link_to member_shop_about_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-        <span>🏬 Về quán &amp; đánh giá</span><span style="color:var(--ink-2);">›</span>
+        <span><%= t("customer.profile.about_shop") %></span><span style="color:var(--ink-2);">›</span>
       <% end %>
     <% end %>
   </div>

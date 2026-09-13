@@ -148,7 +148,8 @@ class Member < ApplicationRecord
   end
 
   def display_name
-    name.presence || "Thành viên"
+    # Printed on the membership card, so it has to follow the customer's locale.
+    name.presence || I18n.t("customer.common.member_fallback")
   end
 
   def initials
