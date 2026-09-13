@@ -1,5 +1,7 @@
 module Merchant
   class RewardsController < BaseController
+    LOW_STOCK = 5 # remaining units at or below this are flagged on the card
+
     before_action :require_manager!, except: [:index]
     before_action :set_reward, only: [:edit, :update, :destroy, :toggle]
 
@@ -17,6 +19,12 @@ module Merchant
       when "inactive" then scope = scope.where(active: false)
       end
       @rewards = scope.ordered.to_a
+      # The cards showed issued/used counts with two queries each, so the list
+      # cost two per reward on top of the page. One grouped count covers both.
+      ids = @rewards.map(&:id)
+      issued = Voucher.where(reward_id: ids).group(:reward_id).count
+      used   = Voucher.where(reward_id: ids, state: "used").group(:reward_id).count
+      @voucher_counts = ids.index_with { |id| { issued: issued[id].to_i, used: used[id].to_i } }
     end
 
     def new
@@ -42,9 +50,15 @@ module Merchant
       end
     end
 
-    # Quick enable/disable issuing (without editing or deleting).
+    # Quick enable/disable issuing (without editing or deleting). The return
+    # value used to be dropped, so a row that failed validation still reported
+    # "Đã bật ưu đãi." while staying exactly as it was.
     def toggle
-      @reward.update(active: !@reward.active)
+      unless @reward.update(active: !@reward.active)
+        return redirect_to merchant_rewards_path(request.query_parameters),
+                           alert: @reward.errors.full_messages.to_sentence.presence ||
+                                  t("merchant.rewards.toggle_failed")
+      end
       redirect_to merchant_rewards_path(request.query_parameters),
                   notice: @reward.active? ? "Đã bật ưu đãi." : "Đã tắt ưu đãi."
     end
@@ -57,7 +71,11 @@ module Merchant
       elsif @reward.vouchers.exists?
         # Voucher đã phát cho khách → không xoá cứng được (mất lịch sử/ví khách).
         # Lưu trữ: ẩn khỏi danh sách + ngừng phát hành, giữ nguyên voucher cũ.
-        @reward.update(active: false, archived_at: Time.current)
+        unless @reward.update(active: false, archived_at: Time.current)
+          return redirect_to merchant_rewards_path,
+                             alert: @reward.errors.full_messages.to_sentence.presence ||
+                                    t("merchant.rewards.archive_failed")
+        end
         redirect_to merchant_rewards_path,
           notice: "Đã lưu trữ ưu đãi (còn voucher đã phát nên giữ lịch sử; đã ẩn khỏi danh sách và ngừng phát hành)."
       else

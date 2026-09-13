@@ -5,6 +5,14 @@ vi:
         value: "Giá trị"
         title: "Tên ưu đãi"
         cost_points: "Điểm đổi"
+      reward:
+        cost_points: "Điểm đổi"
+        stock: "Số suất"
+        valid_days: "Số ngày hiệu lực"
+        starts_at: "Ngày bắt đầu"
+        ends_at: "Ngày kết thúc"
+        expires_at: "Hạn dùng voucher"
+        schedule: "Khung giờ áp dụng"
       tier:
         name: "Tên hạng"
         threshold_points: "Mốc điểm"
@@ -33,6 +41,15 @@ vi:
           attributes:
             currency:
               not_a_currency_code: "phải là mã tiền tệ 3 chữ cái (VD: VND)"
+        reward:
+          attributes:
+            ends_at:
+              before_start: "phải sau ngày bắt đầu"
+            expires_at:
+              already_past: "đã qua — hãy chọn ngày trong tương lai"
+            schedule:
+              bad_hour: "giờ không hợp lệ (0–23)"
+              bad_day: "ngày trong tuần không hợp lệ"
   merchant:
     void:
       undo_btn: "↩️ Hoàn tác giao dịch này"
@@ -340,6 +357,11 @@ vi:
       all_kinds: "Tất cả loại"
       all_status: "Mọi trạng thái"
       status_active: "Đang bật"
+      state_out_of_stock: "Hết suất"
+      state_ended: "Đã kết thúc"
+      state_upcoming: "Chưa tới ngày"
+      state_closed: "Ngoài khung giờ"
+      state_inactive: "Đang tắt"
       status_inactive: "Đang tắt"
       turn_on: "Bật"
       turn_off: "Tắt"
@@ -347,6 +369,8 @@ vi:
       no_matches_sub: "Thử đổi từ khoá hoặc bộ lọc."
       points_n: "%{n} điểm"
       uses: "lượt"
+      toggle_failed: "Không bật/tắt được ưu đãi này — hãy mở ưu đãi và sửa các ô còn thiếu."
+      archive_failed: "Không lưu trữ được ưu đãi này — hãy mở ưu đãi và sửa các ô còn thiếu."
       redeemed: "%{n} đã đổi"
       used: "%{n} đã dùng"
       edit: "Sửa"

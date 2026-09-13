@@ -66,8 +66,21 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
             <% if r.cost_points %><span class="l-chip l-chip-brand"><%= t("merchant.rewards.points_n", n: number_with_delimiter(r.cost_points)) %></span><% end %>
-            <span class="l-chip"><%= r.stock.nil? ? "∞" : r.remaining %> <%= t("merchant.rewards.uses") %></span>
-            <span class="l-chip"><%= t("merchant.rewards.redeemed", n: r.vouchers.count) %></span><span class="l-chip"><%= t("merchant.rewards.used", n: r.vouchers.where(state: "used").count) %></span>
+            <%# "0 lượt" sat on a card that looked exactly like a healthy one —
+                green "Đang bật" and all — so the one question this screen exists
+                to answer, which offers have run out, had to be worked out by
+                reading numbers. Same for an offer that is on but outside its
+                window: customers can't redeem it and the card said nothing. %>
+            <% state = r.redeem_state %>
+            <% low = r.remaining && r.remaining.positive? && r.remaining <= Merchant::RewardsController::LOW_STOCK %>
+            <span class="l-chip" style="<%= 'background:#F7E0DA; color:#B4402F; font-weight:700;' if state == :out_of_stock %><%= 'background:#FBEFD6; color:#8A5A16; font-weight:700;' if low %>">
+              <%= r.stock.nil? ? "∞" : r.remaining %> <%= t("merchant.rewards.uses") %>
+            </span>
+            <% if r.active? && state != :open %>
+              <span class="l-chip" style="background:#F7E0DA; color:#B4402F; font-weight:700;"><%= t("merchant.rewards.state_#{state}") %></span>
+            <% end %>
+            <% c = @voucher_counts[r.id] || { issued: 0, used: 0 } %>
+            <span class="l-chip"><%= t("merchant.rewards.redeemed", n: c[:issued]) %></span><span class="l-chip"><%= t("merchant.rewards.used", n: c[:used]) %></span>
             <% if r.schedule_summary %><span class="l-chip" style="background:var(--primary)18; color:var(--primary-ink);">🕒 <%= r.schedule_summary %></span><% end %>
           </div>
           <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">

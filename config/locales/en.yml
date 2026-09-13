@@ -2,6 +2,14 @@ en:
   hello: "Hello world"
   activerecord:
     attributes:
+      reward:
+        cost_points: "Point cost"
+        stock: "Stock"
+        valid_days: "Valid days"
+        starts_at: "Starts"
+        ends_at: "Ends"
+        expires_at: "Voucher expiry"
+        schedule: "Availability window"
       tier:
         name: "Tier name"
         threshold_points: "Threshold"
@@ -30,6 +38,15 @@ en:
           attributes:
             currency:
               not_a_currency_code: "must be a 3-letter currency code (e.g. VND)"
+        reward:
+          attributes:
+            ends_at:
+              before_start: "must be after the start date"
+            expires_at:
+              already_past: "has already passed — pick a future date"
+            schedule:
+              bad_hour: "is not a valid hour (0–23)"
+              bad_day: "is not a valid weekday"
   merchant:
     void:
       undo_btn: "↩️ Undo this transaction"
@@ -337,6 +354,11 @@ en:
       all_kinds: "All kinds"
       all_status: "Any status"
       status_active: "Active"
+      state_out_of_stock: "Sold out"
+      state_ended: "Ended"
+      state_upcoming: "Not started"
+      state_closed: "Outside window"
+      state_inactive: "Off"
       status_inactive: "Inactive"
       turn_on: "Enable"
       turn_off: "Disable"
@@ -344,6 +366,8 @@ en:
       no_matches_sub: "Try a different keyword or filter."
       points_n: "%{n} pts"
       uses: "left"
+      toggle_failed: "Could not switch this reward — open it and fix the missing fields."
+      archive_failed: "Could not archive this reward — open it and fix the missing fields."
       redeemed: "%{n} redeemed"
       used: "%{n} used"
       edit: "Edit"

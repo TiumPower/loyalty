@@ -27,6 +27,30 @@ class Reward < ApplicationRecord
   validates :value, numericality: { less_than_or_equal_to: 100 },
                     if: -> { value_unit == "percent" && value.present? }
 
+  # Bounds that were simply missing. cost_points in particular had none, and a
+  # negative one sailed through RedeemReward: the balance check passed trivially
+  # and the debit became a credit, so "redeeming" printed points for the
+  # customer. The ceilings also keep the int4 columns from overflowing on the
+  # way to Postgres, which used to surface as a 500 rather than a field error.
+  MAX_COST_POINTS = 10_000_000
+  MAX_STOCK       = 1_000_000
+  MAX_VALID_DAYS  = 3650
+  validates :cost_points,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0,
+                            less_than_or_equal_to: MAX_COST_POINTS },
+            allow_nil: true
+  validates :stock,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0,
+                            less_than_or_equal_to: MAX_STOCK },
+            allow_nil: true
+  validates :valid_days,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0,
+                            less_than_or_equal_to: MAX_VALID_DAYS },
+            allow_nil: true
+  validate :availability_window_is_ordered
+  validate :fixed_expiry_is_not_already_past
+  validate :schedule_hours_are_valid
+
   scope :active,   -> { where(active: true) }
   scope :listed,   -> { where(archived_at: nil) } # hide archived (soft-deleted) rewards
   scope :ordered,  -> { order(:position, :id) }
@@ -61,7 +85,10 @@ class Reward < ApplicationRecord
     return true if wins.empty?
     wins.any? { |w| window_matches?(w, now) }
   end
-  def available?(now = Time.current) = active? && in_stock? && within_window?(now)
+  # Defined off redeem_state so the two can never disagree — available? used to
+  # miss the elapsed fixed-expiry case that redeem_state knows about, and
+  # RedeemReward gates on this one.
+  def available?(now = Time.current) = redeem_state(now) == :open
 
   # Redemption state for the customer catalog. We now SHOW rewards even outside
   # their redeem window (dimmed + a notice) instead of hiding them, so a member
@@ -71,6 +98,9 @@ class Reward < ApplicationRecord
   #   · :out_of_stock → no stock left · :inactive → turned off
   def redeem_state(now = Time.current)
     return :inactive if !active?
+    # expires_at is the fixed date every issued voucher dies on — once it has
+    # passed, redeeming would spend points on a voucher that is already dead.
+    return :ended    if expires_at.present? && expires_at < now
     return :ended    if ends_at.present? && ends_at < now
     return :upcoming if starts_at.present? && starts_at > now
     return :out_of_stock unless in_stock?
@@ -125,12 +155,52 @@ class Reward < ApplicationRecord
 
   private
 
+  # A happy hour that runs past midnight (22h–02h) is ordinary in F&B, and
+  # (22..2) is an empty Ruby range — so the window was shut at every hour of the
+  # day, 22h and 23h included, while the form summarised it as "22h–02h".
+  # The weekday is matched on the hour the window STARTED, so "Thứ Bảy 22h–02h"
+  # covers Sunday 1am as the merchant means it.
   def window_matches?(w, now)
-    days = Array(w["days"]).map(&:to_i)
-    return false if days.present? && !days.include?(now.wday)   # 0=CN … 6=T7
     fh, th = w["from_hour"], w["to_hour"]
-    return true unless fh.present? && th.present?
-    (fh.to_i..th.to_i).cover?(now.hour)
+    days   = Array(w["days"]).map(&:to_i)
+
+    if fh.present? && th.present?
+      fh, th = fh.to_i, th.to_i
+      hour   = now.hour
+      if fh <= th
+        return false unless (fh..th).cover?(hour)
+        day = now.wday
+      else
+        return false unless hour >= fh || hour <= th
+        # Past midnight still belongs to the previous day's window.
+        day = hour <= th ? (now - 1.day).wday : now.wday
+      end
+      return days.blank? || days.include?(day)
+    end
+
+    days.blank? || days.include?(now.wday)   # 0=CN … 6=T7
+  end
+
+  def availability_window_is_ordered
+    return if starts_at.blank? || ends_at.blank?
+    errors.add(:ends_at, :before_start) if ends_at < starts_at
+  end
+
+  # Only checked when the merchant actually sets it, so a reward whose date has
+  # since elapsed stays editable (they still need to turn it off).
+  def fixed_expiry_is_not_already_past
+    return if expires_at.blank? || !will_save_change_to_expires_at?
+    errors.add(:expires_at, :already_past) if expires_at < Time.current
+  end
+
+  def schedule_hours_are_valid
+    schedule_windows.each do |w|
+      %w[from_hour to_hour].each do |k|
+        next if w[k].blank?
+        errors.add(:schedule, :bad_hour) unless (0..23).cover?(w[k].to_i)
+      end
+      errors.add(:schedule, :bad_day) if Array(w["days"]).any? { |d| !(0..6).cover?(d.to_i) }
+    end
   end
 
   def window_label(w)
