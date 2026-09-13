@@ -3,10 +3,18 @@ module Customer
     before_action :require_workspace!
     before_action :require_member!
 
+    PER = 50
+
     def index
-      @notifications = current_member.notifications.recent.limit(50).to_a
-      # Opening the inbox marks everything as read.
-      current_member.notifications.unread.update_all(read_at: Time.current)
+      @page = [params[:page].to_i, 1].max
+      scope = current_member.notifications.recent
+      @notifications = scope.limit(PER).offset((@page - 1) * PER).to_a
+      @has_more = scope.count > @page * PER
+      # Opening the inbox marks what it shows as read — it used to mark every
+      # unread row, including the ones past the page limit, so a notification
+      # could be marked read without ever having been on screen.
+      unread = @notifications.reject(&:read?).map(&:id)
+      Notification.where(id: unread).update_all(read_at: Time.current) if unread.any?
     end
 
     def read_all

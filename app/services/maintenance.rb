@@ -10,7 +10,26 @@ module Maintenance
   def run_all
     { vouchers_expired: expire_vouchers, points_expired: ExpirePoints.run,
       birthday_rewards: Automations.run_birthday, winback: Automations.run_winback,
-      members_recomputed: recompute_members, subscriptions: sync_subscriptions }
+      members_recomputed: recompute_members, subscriptions: sync_subscriptions,
+      notifications_pruned: prune_notifications }
+  end
+
+  # Every broadcast writes one notification row per member and nothing ever
+  # removed them, so a shop with a few thousand members writes six figures of
+  # rows a year — all of it scanned by the unread badge on every home screen.
+  # Deliberately conservative: only rows the customer has actually read, and
+  # only once they are well past the point of being useful. Anything unread is
+  # kept however old it is, because it is still owed to the customer.
+  NOTIFICATION_TTL = 180.days
+
+  def prune_notifications
+    n = ActsAsTenant.without_tenant do
+      Notification.where.not(read_at: nil)
+                  .where("read_at < ?", NOTIFICATION_TTL.ago)
+                  .delete_all
+    end
+    Rails.logger.info("[Maintenance] pruned #{n} read notifications older than #{NOTIFICATION_TTL.inspect}")
+    n
   end
 
   # Billing lifecycle: an active workspace whose subscription lapsed moves to

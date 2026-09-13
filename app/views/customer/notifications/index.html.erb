@@ -30,5 +30,11 @@
         <%= content_tag :div, inner, class: "l-tile", style: base %>
       <% end %>
     <% end %>
+    <%# The inbox was capped at one page with no way back, so anything older
+        than the limit was simply unreachable. %>
+    <% if @has_more %>
+      <%= link_to t("customer.notifications.load_more"), member_notifications_path(page: @page + 1),
+            class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:4px;" %>
+    <% end %>
   <% end %>
 </div>

@@ -1319,6 +1319,7 @@ vi:
       confirm: "Xác nhận"
       change_phone: "← Đổi email"
     notifications:
+      load_more: "Xem thêm"
       title: "Thông báo"
       empty: "Chưa có thông báo"
       empty_sub: "Ưu đãi và nhắc nhở sẽ hiện ở đây."

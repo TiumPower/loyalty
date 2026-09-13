@@ -1278,6 +1278,7 @@ en:
       confirm: "Confirm"
       change_phone: "← Change email"
     notifications:
+      load_more: "Load more"
       title: "Notifications"
       empty: "No notifications yet"
       empty_sub: "Offers and reminders will show up here."
