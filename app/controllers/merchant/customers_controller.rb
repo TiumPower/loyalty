@@ -45,6 +45,7 @@ module Merchant
     # Points are a liability the shop owes, and this writes straight to the
     # ledger with no purchase behind it, so it is fenced on three sides.
     MAX_ADJUST = 1_000_000
+    MAX_NOTE   = 140 # the reason is printed on the customer's own history screen
 
     def adjust
       amount = params[:amount].to_s.gsub(/[^\d-]/, "").to_i
@@ -56,6 +57,9 @@ module Merchant
       # An unexplained manual override is the one nobody can account for later.
       if note.blank?
         return reject_adjust("Vui lòng nhập lý do điều chỉnh — lý do hiển thị trong lịch sử của khách.")
+      end
+      if note.length > MAX_NOTE
+        return reject_adjust("Lý do quá dài (tối đa #{MAX_NOTE} ký tự) — lý do này hiển thị trong lịch sử của khách.")
       end
       # One stray keystroke on a 50-point comp used to mint fifty million.
       if amount.abs > MAX_ADJUST

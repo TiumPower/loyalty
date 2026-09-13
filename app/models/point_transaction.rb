@@ -15,7 +15,10 @@ class PointTransaction < ApplicationRecord
   validates :kind, inclusion: { in: KINDS }
   validates :amount, numericality: { other_than: 0 }
 
-  scope :recent, -> { order(created_at: :desc) }
+  # A purchase writes several rows in the same instant. Ordered on created_at
+  # alone, Postgres may return ties in any order, so an offset-paginated ledger
+  # could show one row on two pages and never show another.
+  scope :recent, -> { order(created_at: :desc, id: :desc) }
   scope :credits, -> { where("amount > 0") }
   scope :debits,  -> { where("amount < 0") }
   # Reporting scopes. A "void" row is a negative mirror of an earn, so it must be

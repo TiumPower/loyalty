@@ -1273,6 +1273,7 @@ en:
       title: "Points history"
       empty: "No point transactions yet"
       empty_sub: "Earn points on your next purchase to get started."
+      bill: "bill %{amount}đ"
       load_more: "Load more"
     missions:
       title: "Missions"

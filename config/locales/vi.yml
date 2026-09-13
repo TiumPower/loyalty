@@ -1314,6 +1314,7 @@ vi:
       title: "Lịch sử điểm"
       empty: "Chưa có giao dịch điểm"
       empty_sub: "Tích điểm ở lần mua tiếp theo để bắt đầu."
+      bill: "hoá đơn %{amount}đ"
       load_more: "Xem thêm"
     missions:
       title: "Nhiệm vụ"
