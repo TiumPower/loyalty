@@ -1,1 +1,12 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# See https://www.robotstxt.org/robotstxt.html
+
+# The marketing site is the only part meant for search results. Everything
+# below is a signed-in app or an operator console; this file is served on the
+# apex host and on every shop subdomain, so the rules cover both.
+User-agent: *
+Disallow: /merchant/
+Disallow: /admin/
+Disallow: /w/
+Disallow: /scan
+Disallow: /set_locale/
+Allow: /

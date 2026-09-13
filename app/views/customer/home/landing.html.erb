@@ -11,7 +11,7 @@
       <div class="hp-amt"><%= t("landing.hook_amount") %><span><%= t("landing.hook_per") %></span></div>
     </div>
     <div class="m-cta">
-      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.hero_cta") %></a>
+      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.hero_cta", days: Workspace::TRIAL_DAYS) %></a>
       <a class="m-btn ghost lg" href="#features"><%= t("landing.hero_cta2") %> →</a>
     </div>
     <div class="m-trust"><%= t("landing.trust") %></div>
@@ -104,7 +104,7 @@
 <section class="m-sec alt" id="pricing"><div class="m-in">
   <div class="m-head">
     <div class="eyebrow"><%= t("landing.nav_pricing") %></div>
-    <h2><%= t("landing.pricing_title") %></h2>
+    <h2><%= t("landing.pricing_title", days: Workspace::TRIAL_DAYS) %></h2>
     <p><%= t("landing.pricing_sub") %></p>
   </div>
   <div class="m-price">
@@ -123,17 +123,17 @@
       </div>
     <% end %>
   </div>
-  <p style="text-align:center;color:var(--ink-2);font-size:13px;margin-top:20px;"><%= t("landing.price_trial") %></p>
+  <p style="text-align:center;color:var(--ink-2);font-size:13px;margin-top:20px;"><%= t("landing.price_trial", days: Workspace::TRIAL_DAYS) %></p>
 </div></section>
 
 <%# ---- FAQ ---- %>
-<section class="m-sec"><div class="m-in">
+<section class="m-sec" id="faq"><div class="m-in">
   <div class="m-head"><h2><%= t("landing.faq_title") %></h2></div>
   <div class="m-faq">
     <% [:q1,:q2,:q3,:q4].each_with_index do |q, i| %>
       <details <%= "open" if i.zero? %>>
         <summary><%= t("landing.#{q}") %></summary>
-        <p><%= t("landing.a#{i + 1}") %></p>
+        <p><%= t("landing.a#{i + 1}", days: Workspace::TRIAL_DAYS, grace: Workspace::GRACE_DAYS) %></p>
       </details>
     <% end %>
   </div>
@@ -143,9 +143,9 @@
 <section style="padding:8px 0 80px;"><div class="m-in" style="padding:0;">
   <div class="m-band">
     <h2><%= t("landing.cta_title") %></h2>
-    <p><%= t("landing.cta_sub") %></p>
+    <p><%= t("landing.cta_sub", days: Workspace::TRIAL_DAYS) %></p>
     <div class="m-cta">
-      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.cta_btn") %></a>
+      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.cta_btn", days: Workspace::TRIAL_DAYS) %></a>
     </div>
   </div>
 </div></section>

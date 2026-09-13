@@ -3,6 +3,25 @@
   <head>
     <%= render "layouts/head" %>
     <link rel="icon" href="/icon.png" type="image/png">
+    <%# This is the product's sales page and it carried no description and no
+        Open Graph tags, so search results showed a scraped snippet and a link
+        pasted into Zalo or Messenger — the channels this is actually sold
+        through — rendered as a bare URL with no title, image or blurb. %>
+    <% page_title = "Dynamic Loyalty — #{t('landing.hero_eyebrow')}" %>
+    <% page_desc  = t("landing.hero_sub") %>
+    <meta name="description" content="<%= page_desc %>">
+    <link rel="canonical" href="<%= request.base_url %><%= request.path %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Dynamic Loyalty">
+    <meta property="og:locale" content="<%= I18n.locale == :vi ? "vi_VN" : "en_US" %>">
+    <meta property="og:title" content="<%= page_title %>">
+    <meta property="og:description" content="<%= page_desc %>">
+    <meta property="og:url" content="<%= request.base_url %><%= request.path %>">
+    <meta property="og:image" content="<%= request.base_url %>/icon.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="<%= page_title %>">
+    <meta name="twitter:description" content="<%= page_desc %>">
+    <meta name="twitter:image" content="<%= request.base_url %>/icon.png">
     <style>
       .m{
         --ink:#2A1B12; --ink-2:#6E5A4B; --cream:#FBF6EF; --cream-2:#F4EADD; --line:#EADBCA;
@@ -35,7 +54,23 @@
       .m-btn.solid{background:linear-gradient(180deg,var(--brown),#7A3E28);color:#FFF7EE;box-shadow:0 8px 20px rgba(140,74,47,.28)}
       .m-btn.solid:hover{filter:brightness(1.06);transform:translateY(-1px)}
       .m-btn.lg{padding:15px 26px;font-size:16px;border-radius:14px}
-      @media(max-width:760px){.m-links{display:none}.m-btn.ghost{display:none}}
+      /* Mobile header. The old rule hid .m-links AND .m-btn.ghost, which took
+         the section nav, the hero's secondary CTA and — worse — the LOGIN link
+         with it, so an existing shop owner arriving on a phone had no way to
+         sign in. The section links move to a scrollable strip under the brand
+         row; login stays as a compact text link. */
+      .m-navscroll{display:none;gap:18px;overflow-x:auto;padding:0 0 10px;
+        -webkit-overflow-scrolling:touch;scrollbar-width:none}
+      .m-navscroll::-webkit-scrollbar{display:none}
+      .m-navscroll a{color:var(--ink-2);text-decoration:none;font-size:13.5px;font-weight:600;white-space:nowrap}
+      @media(max-width:760px){
+        .m-nav .row{gap:12px;height:60px}
+        .m-links{display:none}
+        .m-hero .m-btn.ghost{display:none}
+        .m-actions .m-btn.ghost{padding:8px 12px;font-size:13px;border:none;background:none}
+        .m-lang{display:none}
+        .m-navscroll{display:flex}
+      }
 
       /* hero */
       .m-hero{position:relative;overflow:hidden;background:
@@ -177,7 +212,15 @@
         <a class="m-btn ghost" href="/merchant/login"><%= t("landing.nav_login") %></a>
         <a class="m-btn solid" href="/merchant/signup"><%= t("landing.nav_signup") %></a>
       </div>
-    </div></header>
+    </div>
+    <%# Section links for phones, where the inline nav does not fit. %>
+    <div class="m-in"><nav class="m-navscroll">
+      <a href="#features"><%= t("landing.nav_features") %></a>
+      <a href="#how"><%= t("landing.nav_how") %></a>
+      <a href="#pricing"><%= t("landing.nav_pricing") %></a>
+      <a href="#faq"><%= t("landing.faq_title") %></a>
+    </nav></div>
+    </header>
 
     <%# shared logo symbol %>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
