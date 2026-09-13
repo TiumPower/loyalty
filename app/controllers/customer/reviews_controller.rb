@@ -78,6 +78,10 @@ module Customer
 
       reward = current_workspace.rewards.find_by(id: cfg["reward_id"])
       return nil unless reward
+      # The last of the paths that handed out a voucher without checking the
+      # merchant's stock. No apology gift is better than one that quietly
+      # exceeds the limit they set.
+      return nil unless reward.claim_stock!
 
       voucher = Voucher.create!(workspace: current_workspace, member: current_member,
                                 reward: reward, source: "campaign", state: "active",

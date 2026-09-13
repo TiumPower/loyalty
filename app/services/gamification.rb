@@ -97,7 +97,9 @@ module Gamification
         member.recompute_points!
       end
       # Gift voucher for earning the badge (once), if the merchant attached one.
-      if badge.reward_id.present? && (reward = badge.reward)
+      # Respect the reward's own stock — a badge gift used to be issued
+      # regardless of how few the merchant said there were.
+      if badge.reward_id.present? && (reward = badge.reward) && reward.claim_stock!
         voucher = Voucher.create!(workspace: ws, member: member, reward: reward,
                                   source: "campaign", state: "active", points_spent: 0,
                                   expires_at: reward.voucher_expiry_from)

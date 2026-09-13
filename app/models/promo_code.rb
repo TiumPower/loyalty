@@ -40,6 +40,9 @@ class PromoCode < ApplicationRecord
     PromoCode.transaction do
       locked = PromoCode.lock.find(id)
       return [nil, :unavailable] if locked.out_of_claims?
+      # The campaign's own max_claims is not the only limit — the reward itself
+      # may be capped, and that cap was being ignored here.
+      return [nil, :unavailable] unless reward.claim_stock!
       voucher = Voucher.create!(
         workspace: workspace, member: member, reward: reward,
         source: "claim_qr", state: "active", points_spent: 0,

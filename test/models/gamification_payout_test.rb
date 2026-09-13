@@ -122,6 +122,59 @@ class GamificationPayoutTest < ActiveSupport::TestCase
     assert_equal 1, sm.completed_count
   end
 
+  # --- automations (welcome / birthday / win-back) -------------------------
+
+  test "a birthday gift stops when the prize runs out" do
+    reward = limited_reward(stock: 1)
+    @ws.update!(settings: @ws.settings.merge("automations" => {
+      "birthday" => { "enabled" => true, "reward_id" => reward.id.to_s }
+    }))
+    today = Date.current
+    3.times { create(:member, workspace: @ws, birthday: Date.new(1990, today.month, today.day)) }
+
+    Automations.run_birthday(today: today)
+
+    assert_equal 1, Voucher.where(reward_id: reward.id).count, "the automation over-issued the gift"
+    assert_equal 1, reward.reload.redeemed_count
+  end
+
+  test "a customer who could not be given the birthday gift is not told they were" do
+    reward = limited_reward(stock: 0)
+    @ws.update!(settings: @ws.settings.merge("automations" => {
+      "birthday" => { "enabled" => true, "reward_id" => reward.id.to_s }
+    }))
+    today = Date.current
+    m = create(:member, workspace: @ws, birthday: Date.new(1990, today.month, today.day))
+
+    assert_no_difference -> { Notification.where(member_id: m.id).count } do
+      Automations.run_birthday(today: today)
+    end
+  end
+
+  test "a welcome gift respects the stock too" do
+    reward = limited_reward(stock: 1)
+    @ws.update!(settings: @ws.settings.merge("automations" => {
+      "welcome" => { "enabled" => true, "reward_id" => reward.id.to_s }
+    }))
+
+    3.times { Automations.on_signup(create(:member, workspace: @ws)) }
+    assert_equal 1, Voucher.where(reward_id: reward.id).count
+  end
+
+  # --- campaign QR claims --------------------------------------------------
+
+  test "a promo QR cannot hand out more than the reward's stock" do
+    reward = limited_reward(stock: 1)
+    campaign = Campaign.create!(workspace: @ws, name: "C", campaign_type: "promo_voucher", reward: reward)
+    promo = PromoCode.create!(workspace: @ws, campaign: campaign, reward: reward,
+                              token: "tok1", active: true, max_claims: 100)
+
+    results = 3.times.map { promo.claim!(create(:member, workspace: @ws)) }
+
+    assert_equal 1, Voucher.where(reward_id: reward.id).count, "the QR over-issued the prize"
+    assert_equal 2, results.count { |(_, err)| err == :unavailable }
+  end
+
   test "stamps accumulate towards the target" do
     card = StampCard.create!(workspace: @ws, title: "Mua 3 tặng 1", target_count: 3, active: true)
     sm = card.membership_for(@member)
