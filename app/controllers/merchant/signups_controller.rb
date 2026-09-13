@@ -73,6 +73,11 @@ module Merchant
 
     def valid_signup?
       ok = @workspace.valid?
+      # "Subdomain đã tồn tại" left the owner to guess another one. Offer a free
+      # address built from what they typed so the form can be finished in a tap.
+      if @workspace.errors.of_kind?(:subdomain, :taken)
+        @suggested_subdomain = free_subdomain_near(@workspace.subdomain)
+      end
       if @email.blank? || !@email.include?("@")
         @workspace.errors.add(:base, "Email không hợp lệ"); ok = false
       end
@@ -92,6 +97,21 @@ module Merchant
         ok = false
       end
       ok
+    end
+
+    # First free variant of `base`: base2, base3, … (capped so a pathological
+    # case cannot spin).
+    def free_subdomain_near(base)
+      base = base.to_s
+      return nil if base.blank?
+      ActsAsTenant.without_tenant do
+        (2..30).each do |n|
+          candidate = "#{base}#{n}"
+          next if RESERVED.include?(candidate)
+          return candidate unless Workspace.exists?(subdomain: candidate)
+        end
+      end
+      nil
     end
 
     def preset_for(industry)

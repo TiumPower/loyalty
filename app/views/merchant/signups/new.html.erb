@@ -1,13 +1,22 @@
 <% content_for :title, "Tạo cửa hàng — Dynamic Loyalty" %>
 
-<div class="m-formwrap"><div class="m-in">
+<div class="m-formwrap" data-controller="subsuggest"><div class="m-in">
   <div class="m-formcard">
     <h1><%= t("merchant.signup.title") %></h1>
-    <p class="sub"><%= t("merchant.signup.sub") %></p>
+    <p class="sub"><%= t("merchant.signup.sub", days: Workspace::TRIAL_DAYS) %></p>
 
     <% if @workspace.errors.any? %>
       <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:18px;">
         <%= @workspace.errors.full_messages.to_sentence %>
+        <% if @suggested_subdomain.present? %>
+          <div style="margin-top:8px; color:var(--ink);">
+            <%= t("merchant.signup.subdomain_free", sub: @suggested_subdomain) %>
+            <button type="button" class="l-chip" style="border:none; cursor:pointer; margin-left:4px;"
+                    data-action="click->subsuggest#apply" data-sub="<%= @suggested_subdomain %>">
+              <%= t("merchant.signup.subdomain_use") %>
+            </button>
+          </div>
+        <% end %>
       </div>
     <% end %>
 
@@ -19,9 +28,13 @@
 
       <div class="m-field">
         <%= f.label :subdomain, t("merchant.signup.subdomain"), class: "l-label" %>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <%= f.text_field :subdomain, class: "l-field", placeholder: "moccaphe", style: "text-align:right;" %>
-          <span class="l-mono" style="color:var(--ink-2); white-space:nowrap;">.loyalty.czin.net</span>
+        <%# The suffix used to sit beside the input and eat most of a phone's
+            width, so the owner could not see the address they were typing. %>
+        <div class="m-subwrap">
+          <%= f.text_field :subdomain, class: "l-field", placeholder: "moccaphe",
+                autocapitalize: "none", autocorrect: "off", spellcheck: false,
+                data: { subsuggest_target: "field" } %>
+          <span class="l-mono m-subsuffix">.loyalty.czin.net</span>
         </div>
         <div style="font-size:12px; color:var(--ink-2); margin-top:4px;"><%= t("merchant.signup.subdomain_note") %></div>
       </div>
@@ -45,7 +58,13 @@
       </div>
       <div class="m-field">
         <%= label_tag :password, t("merchant.signup.password"), class: "l-label" %>
-        <%= password_field_tag :password, nil, class: "l-field", placeholder: t("merchant.signup.password_ph") %>
+        <div style="position:relative;">
+          <%= password_field_tag :password, nil, class: "l-field", placeholder: t("merchant.signup.password_ph"),
+                autocomplete: "new-password", data: { subsuggest_target: "password" } %>
+          <button type="button" data-action="click->subsuggest#toggle" data-subsuggest-target="reveal"
+                  aria-label="<%= t("merchant.signup.password_show") %>"
+                  style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; line-height:1;">👁</button>
+        </div>
       </div>
 
       <%= submit_tag t("merchant.signup.submit"), class: "l-btn l-btn-primary l-btn-block", style: "margin-top:6px;" %>

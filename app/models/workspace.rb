@@ -297,8 +297,25 @@ class Workspace < ApplicationRecord
 
   private
 
+  # A shop owner's natural instinct is to type their shop's name here, which the
+  # format validation then rejected as "không hợp lệ" — even though the same
+  # slugify already ran for a BLANK field. Normalise whatever they typed the
+  # same way, so "Mộc Cà Phê" becomes "moccaphe" instead of an error.
   def default_subdomain
-    self.subdomain = slug if subdomain.blank? && slug.present?
-    self.subdomain ||= name.to_s.parameterize
+    typed = subdomain.to_s.strip
+    self.subdomain =
+      if typed.present?
+        normalize_subdomain(typed)
+      else
+        slug.presence || normalize_subdomain(name.to_s)
+      end
+  end
+
+  def normalize_subdomain(raw)
+    I18n.transliterate(raw.to_s).downcase
+        .gsub(/[^a-z0-9-]+/, "")   # spaces and punctuation simply go
+        .gsub(/-+/, "-")
+        .sub(/\A-+/, "")          # must start with a letter or digit
+        .sub(/-+\z/, "")
   end
 end

@@ -184,6 +184,16 @@
       .m-formcard h1{font-size:30px}
       .m-formcard .sub{color:var(--ink-2);margin:8px 0 26px;font-size:15px}
       .m-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+      .m-subwrap{display:flex;align-items:center;gap:6px}
+      .m-subwrap .l-field{text-align:right;min-width:0}
+      .m-subsuffix{color:var(--ink-2);white-space:nowrap}
+      /* On a phone the suffix takes most of the row, so it goes underneath and
+         the owner can actually read the address they are typing. */
+      @media(max-width:560px){
+        .m-subwrap{flex-direction:column;align-items:stretch;gap:4px}
+        .m-subwrap .l-field{text-align:left}
+        .m-subsuffix{font-size:12px}
+      }
       @media(max-width:560px){.m-grid2{grid-template-columns:1fr}}
       .m-field{margin-bottom:16px}
 
