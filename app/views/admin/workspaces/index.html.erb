@@ -71,11 +71,6 @@
               <%= link_to admin_workspace_path(ws), class: "l-btn l-btn-ghost", style: "padding:7px 12px; font-size:12px;" do %>
                 <%= ui_icon(:eye, size: 15) %> Xem
               <% end %>
-              <%= button_to admin_workspace_path(ws), method: :delete, class: "l-btn l-btn-ghost",
-                    style: "padding:7px 12px; font-size:12px; color:var(--warn);",
-                    form: { style: "display:inline;", data: { turbo_confirm: "XOÁ VĨNH VIỄN “#{ws.name}” và toàn bộ dữ liệu (khách, điểm, ưu đãi, hoá đơn…)? Không thể hoàn tác." } } do %>
-                <%= ui_icon(:trash, size: 15) %> Xoá
-              <% end %>
             </div>
           </td>
         </tr>

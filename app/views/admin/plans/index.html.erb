@@ -8,6 +8,15 @@
         <h3 class="l-display" style="font-size:20px;"><%= plan.name %></h3>
         <span class="l-mono" style="color:var(--ink-2); font-size:12px;"><%= plan.key %></span>
       </div>
+      <% used = @plan_usage.to_h.fetch(plan.key, 0) %>
+      <div style="margin-top:6px; font-size:12.5px; <%= used.positive? ? "color:var(--warn,#B4402F);" : "color:var(--ink-2);" %>">
+        <% if used.positive? %>
+          ⚠ <strong><%= used %></strong> workspace đang dùng gói này
+          (<%= number_with_delimiter(@plan_members.to_h.fetch(plan.key, 0)) %> khách) — sửa là áp dụng ngay cho tất cả.
+        <% else %>
+          Chưa có workspace nào dùng gói này.
+        <% end %>
+      </div>
       <%= form_with model: plan, url: admin_plan_path(plan), method: :patch do |f| %>
         <label class="l-label" style="margin-top:10px;">Tên gói</label>
         <%= f.text_field :name, class: "l-field" %>

@@ -1,4 +1,19 @@
 <% content_for :title, @workspace.name %>
+<%# Shown once, straight after creation, and only when no set-password email
+    could be sent. Deliberately not a flash notice: those are copied into a
+    JS-readable cookie. %>
+<% if (cred = flash[:owner_credentials]).present? %>
+  <div class="l-panel" style="margin-bottom:16px; border-color:#C9871F; background:color-mix(in srgb, #C9871F 8%, #fff);">
+    <div style="font-weight:700; margin-bottom:4px;">🔑 Thông tin đăng nhập cho chủ cửa hàng</div>
+    <p style="font-size:13px; color:var(--ink-2); margin:0 0 10px;">
+      Chỉ hiển thị một lần. Gửi cho chủ cửa hàng qua kênh riêng và nhắc họ đổi mật khẩu sau khi đăng nhập.
+    </p>
+    <div class="l-mono" style="font-size:14px;">
+      <div>Email: <strong><%= cred["email"] %></strong></div>
+      <div>Mật khẩu: <strong><%= cred["password"] %></strong></div>
+    </div>
+  </div>
+<% end %>
 <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
   <div class="l-panel">
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
@@ -53,5 +68,21 @@
       <div class="l-mono" style="overflow-wrap:anywhere;"><%= @workspace.subdomain %>.loyalty.czin.net</div>
       <div class="l-mono" style="overflow-wrap:anywhere; opacity:.75;">hoặc loyalty.czin.net/w/<%= @workspace.slug %></div>
     </div>
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
+      <div style="font-weight:700; color:var(--warn,#B4402F); margin-bottom:4px;">Vùng nguy hiểm</div>
+      <p style="font-size:12.5px; color:var(--ink-2); margin:0 0 10px; line-height:1.5;">
+        Xoá vĩnh viễn workspace này cùng toàn bộ khách hàng, điểm, ưu đãi, hoá đơn và tệp đã tải lên.
+        <strong>Không thể hoàn tác.</strong> Nếu chỉ muốn ngừng dịch vụ, hãy dùng “Tạm ngưng”.
+      </p>
+      <%= form_with url: admin_workspace_path(@workspace), method: :delete do %>
+        <label class="l-label">Gõ <span class="l-mono"><strong><%= @workspace.subdomain %></strong></span> để xác nhận</label>
+        <%= text_field_tag :confirm, nil, class: "l-field", autocomplete: "off",
+              placeholder: @workspace.subdomain %>
+        <%= submit_tag "Xoá vĩnh viễn workspace", class: "l-btn l-btn-ghost l-btn-block",
+              style: "margin-top:10px; color:var(--warn,#B4402F);",
+              data: { turbo_confirm: "Xoá vĩnh viễn “#{@workspace.name}”? Không thể hoàn tác." } %>
+      <% end %>
+    </div>
+
   </div>
 </div>

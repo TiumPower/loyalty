@@ -2,8 +2,12 @@
 <div class="l-kpis">
   <div class="l-kpi"><div class="k">Workspaces</div><div class="v"><%= @workspaces_count %></div><div class="d"><%= @active_count %> active · <%= @trial_count %> trial</div></div>
   <div class="l-kpi"><div class="k">Tổng thành viên</div><div class="v"><%= number_with_delimiter(@members_count) %></div><div class="d">toàn nền tảng</div></div>
-  <div class="l-kpi"><div class="k">Điểm phát hành</div><div class="v">0</div><div class="d">Phase 1+</div></div>
-  <div class="l-kpi"><div class="k">Cảnh báo</div><div class="v">0</div><div class="d">Monitoring</div></div>
+  <div class="l-kpi"><div class="k">Điểm phát hành</div><div class="v"><%= number_with_delimiter(@points_issued) %></div><div class="d">toàn nền tảng</div></div>
+  <%= link_to admin_monitoring_path, class: "l-kpi", style: "text-decoration:none; color:inherit; display:block;" do %>
+    <div class="k">Cảnh báo</div>
+    <div class="v" style="<%= "color:var(--warn,#B4402F);" if @alerts_count.positive? %>"><%= @alerts_count %></div>
+    <div class="d" style="color:var(--ink-2);"><%= @alerts_count.positive? ? "chờ duyệt / quá hạn ›" : "Không có cảnh báo" %></div>
+  <% end %>
 </div>
 
 <div class="l-panel" style="margin-top:20px;">

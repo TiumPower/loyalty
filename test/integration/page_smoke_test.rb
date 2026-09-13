@@ -57,4 +57,32 @@ class AdminPageSmokeTest < ActionDispatch::IntegrationTest
     get "/admin/workspaces/#{@ws.to_param}"
     assert_response :success
   end
+
+  # The dashboard shipped with these hardcoded to 0 and a "Phase 1+" caption,
+  # so the operator's first screen disagreed with /admin/monitoring.
+  test "the dashboard reports the same points as monitoring" do
+    ActsAsTenant.with_tenant(@ws) do
+      member = create(:member, workspace: @ws)
+      PointTransaction.create!(workspace: @ws, member: member, kind: "earn", amount: 1234)
+    end
+
+    get "/admin"
+    assert_response :success
+    assert_match "1.234", response.body, "the dashboard is not counting points"
+
+    get "/admin/monitoring"
+    assert_match "1.234", response.body
+  end
+
+  test "no development placeholder is left on the dashboard" do
+    get "/admin"
+    assert_no_match(/Phase 1\+/, response.body)
+  end
+
+  test "plans show how many workspaces a change would affect" do
+    create(:workspace, subdomain: "onstarter", plan: "starter")
+    get "/admin/plans"
+    assert_response :success
+    assert_match(/workspace đang dùng gói này/, response.body)
+  end
 end

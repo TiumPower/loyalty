@@ -39,18 +39,40 @@ module Admin
         return render :new, status: :unprocessable_entity
       end
 
+      owner = nil
+      new_owner = false
       ActiveRecord::Base.transaction do
         @workspace.save!
         owner = User.find_or_initialize_by(email: @email)
-        if owner.new_record?
+        new_owner = owner.new_record?
+        if new_owner
           owner.assign_attributes(name: @owner_name, password: @password, locale: "vi")
           owner.save!
         end
         ActsAsTenant.with_tenant(@workspace) { @workspace.memberships.create!(user: owner, role: "owner") }
         WorkspaceBootstrap.call(@workspace)
       end
-      redirect_to admin_workspace_path(@workspace),
-                  notice: "Đã tạo workspace #{@workspace.name}. Owner: #{@email} / #{@password}"
+
+      # The password used to go into flash[:notice], which stash_toast_cookie
+      # copies verbatim into a JS-readable cookie — a working shop-owner
+      # credential sitting in document.cookie. It also showed a freshly
+      # generated password even when the account already existed and kept its
+      # old one, so the operator handed the customer a password that never
+      # worked. Only :notice and :alert reach that cookie, so the credential
+      # travels in its own flash key and is rendered once, in the page.
+      if !new_owner
+        redirect_to admin_workspace_path(@workspace),
+          notice: "Đã tạo workspace #{@workspace.name}. Owner #{@email} đã có tài khoản — dùng mật khẩu sẵn có."
+      elsif EmailOtp.configured?
+        token = owner.send(:set_reset_password_token)
+        StaffMailer.invite(owner, @workspace, token).deliver_later
+        redirect_to admin_workspace_path(@workspace),
+          notice: "Đã tạo workspace #{@workspace.name}. Email đặt mật khẩu đã gửi tới #{@email}."
+      else
+        flash[:owner_credentials] = { "email" => @email, "password" => @password }
+        redirect_to admin_workspace_path(@workspace),
+          notice: "Đã tạo workspace #{@workspace.name}."
+      end
     rescue ActiveRecord::RecordInvalid
       render :new, status: :unprocessable_entity
     end
@@ -81,7 +103,19 @@ module Admin
     def reactivate = transition("active",    "Đã kích hoạt lại workspace.")
 
     # Permanently delete a workspace and ALL its data (irreversible).
+    #
+    # This is the most destructive action in the product — a paying customer's
+    # members, points, vouchers, invoices and uploaded files, gone. It used to
+    # be a button in the workspace LIST, one row among many, behind a browser
+    # confirm() that Enter dismisses. Deleting now happens from the workspace's
+    # own page and requires typing its subdomain, checked here rather than only
+    # in the form, so a stray or replayed POST cannot purge a shop either.
     def destroy
+      typed = params[:confirm].to_s.strip.downcase
+      if typed != @workspace.subdomain.to_s.downcase
+        return redirect_to admin_workspace_path(@workspace),
+          alert: "Chưa xoá: cần gõ đúng subdomain “#{@workspace.subdomain}” để xác nhận."
+      end
       name = @workspace.name
       WorkspacePurge.call(@workspace)
       redirect_to admin_workspaces_path,
