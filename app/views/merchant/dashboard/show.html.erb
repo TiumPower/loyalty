@@ -99,12 +99,32 @@
   </div>
 <% end %>
 
-<%# ---- KPI strip ---- %>
+<%# ---- KPI strip ----
+     Two of these follow the selected range and two are all-time totals. Without
+     saying which, "4.266 điểm đã phát" sitting next to "27.870 chưa dùng" reads
+     as a contradiction rather than as two different questions. ---- %>
+<% range_tag = @range[:key] == "all" ? d.(:scope_all) : @range[:label] %>
 <div class="l-kpis">
-  <div class="l-kpi"><div class="k"><%= d.(:members) %></div><div class="v"><%= number_with_delimiter(@members_count) %></div><div class="d"><%= d.(:active_suffix, n: number_with_delimiter(@active_members)) %></div></div>
-  <div class="l-kpi"><div class="k"><%= d.(:points_issued) %></div><div class="v"><%= number_with_delimiter(@points_issued) %></div><div class="d"><%= d.(:transactions, n: @purchases_count) %></div></div>
-  <div class="l-kpi"><div class="k"><%= d.(:points_redeemed) %></div><div class="v"><%= number_with_delimiter(@points_redeemed) %></div><div class="d"><%= d.(:redemption_rate_suffix, n: @redemption_rate) %></div></div>
-  <div class="l-kpi"><div class="k"><%= d.(:outstanding) %></div><div class="v"><%= number_with_delimiter(@points_outstanding) %></div><div class="d"><%= d.(:outstanding_note) %></div></div>
+  <div class="l-kpi">
+    <div class="k"><%= d.(:members) %> <span class="sc"><%= d.(:scope_all) %></span></div>
+    <div class="v"><%= number_with_delimiter(@members_count) %></div>
+    <div class="d"><%= d.(:active_suffix, n: number_with_delimiter(@active_members)) %></div>
+  </div>
+  <div class="l-kpi">
+    <div class="k"><%= d.(:points_issued) %> <span class="sc"><%= range_tag %></span></div>
+    <div class="v"><%= number_with_delimiter(@points_issued) %></div>
+    <div class="d"><%= d.(:transactions, n: @purchases_count) %></div>
+  </div>
+  <div class="l-kpi">
+    <div class="k"><%= d.(:points_redeemed) %> <span class="sc"><%= range_tag %></span></div>
+    <div class="v"><%= number_with_delimiter(@points_redeemed) %></div>
+    <div class="d"><%= d.(:redemption_rate_suffix, n: @redemption_rate) %></div>
+  </div>
+  <div class="l-kpi">
+    <div class="k"><%= d.(:outstanding) %> <span class="sc"><%= d.(:scope_all) %></span></div>
+    <div class="v"><%= number_with_delimiter(@points_outstanding) %></div>
+    <div class="d" style="color:var(--ink-2);"><%= d.(:outstanding_note) %></div>
+  </div>
 </div>
 
 <%# ---- Doanh thu & giữ chân: câu trả lời cho "chương trình này có sinh tiền không?" ---- %>

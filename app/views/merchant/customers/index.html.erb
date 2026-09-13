@@ -49,6 +49,11 @@
     <strong><%= MemberSegments.icon(@segment) %> <%= MemberSegments.label(@segment) %></strong>
     <span style="color:var(--ink-2); font-size:13px;"><%= t("merchant.customers.count", n: @total) %></span>
   </div>
+  <%# Shops rename their tiers, so the list must show the shop's own names —
+      this printed the internal key ("gold"), which meant the filter above said
+      "Vàng" while the column beside it said "Gold". Indexed from @tiers, which
+      is already loaded, rather than Member#tier's per-row lookup. %>
+  <% tier_names = @tiers.index_by(&:key).transform_values(&:name) %>
   <table style="width:100%; border-collapse:collapse;">
     <thead><tr style="text-align:left; color:var(--ink-2); font-size:12px; text-transform:uppercase; letter-spacing:.08em;">
       <th style="padding:10px 8px;"><%= t("merchant.customers.th_name") %></th><th>Email</th><th><%= t("merchant.customers.th_phone") %></th><th><%= t("merchant.customers.th_points") %></th><th><%= t("merchant.customers.th_tier") %></th><th><%= t("merchant.customers.th_birthday") %></th><th><%= t("merchant.customers.th_joined") %></th>
@@ -60,7 +65,7 @@
           <td class="l-mono"><%= m.email.presence || "—" %></td>
           <td class="l-mono"><%= m.phone.presence || "—" %></td>
           <td><%= number_with_delimiter(m.points_balance) %></td>
-          <td><%= (m.tier_key.presence || m.tier&.key)&.capitalize || "—" %></td>
+          <td><%= tier_names[m.tier_key] || "—" %></td>
           <td style="color:var(--ink-2);"><%= m.birthday ? l(m.birthday, format: :short) : "—" %></td>
           <td style="color:var(--ink-2); display:flex; align-items:center; gap:8px;"><%= l(m.created_at.to_date, format: :short) %> <%= link_to t("merchant.customers.view"), merchant_customer_path(m), class: "l-chip", style: "font-size:11px;" %></td>
         </tr>

@@ -142,4 +142,9 @@ class Reward < ApplicationRecord
   end
 
   def display_icon = icon.presence || { "voucher" => "🎟️", "gift" => "🎁", "discount" => "🏷️" }[kind]
+
+  # The raw column value was being printed straight to the screen, so a shop
+  # filtering by "Quà tặng" saw cards labelled "gift", and customers read
+  # "VOUCHER"/"GIFT" on the reward ticket in an otherwise Vietnamese app.
+  def kind_label = I18n.t("merchant.rewards.kind_#{kind}", default: kind.to_s.humanize)
 end

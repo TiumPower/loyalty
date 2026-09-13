@@ -27,7 +27,7 @@
         <% open = r.redeem_open? %>
         <% hint = r.redeem_window_hint %>
         <%= link_to member_reward_path(r), class: "l-ticket", style: "margin-bottom:12px; position:relative; #{'opacity:.62; filter:grayscale(.35);' unless open}" do %>
-          <div class="stub"><div class="v"><%= r.value_label %></div><div class="u"><%= r.kind %></div></div>
+          <div class="stub"><div class="v"><%= r.value_label %></div><div class="u"><%= r.kind_label %></div></div>
           <div class="perf"></div>
           <div class="body">
             <div style="font-weight:700;"><%= r.display_icon %> <%= r.title %></div>

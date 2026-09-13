@@ -43,13 +43,22 @@ module Merchant
 
     def update
       m = current_workspace.memberships.find(params[:id])
-      m.update(role: params[:role], outlet_id: params[:outlet_id].presence) if Membership::ROLES.include?(params[:role])
+      return redirect_to(merchant_staff_index_path, alert: "Vai trò không hợp lệ.") unless Membership::ROLES.include?(params[:role])
+      # #destroy already refuses to remove the last owner; demoting them reaches
+      # the same dead end by another door. With no owner or manager left, nobody
+      # can open this page to undo it — the shop is locked out of its own
+      # settings, billing and staff for good.
+      if m.owner? && params[:role] != "owner" && last_owner?(m)
+        return redirect_to merchant_staff_index_path,
+          alert: "Không thể đổi vai trò của chủ cửa hàng duy nhất — hãy chỉ định một chủ khác trước."
+      end
+      m.update(role: params[:role], outlet_id: params[:outlet_id].presence)
       redirect_to merchant_staff_index_path, notice: "Đã cập nhật phân quyền."
     end
 
     def destroy
       m = current_workspace.memberships.find(params[:id])
-      if m.owner? && current_workspace.memberships.where(role: "owner").count <= 1
+      if m.owner? && last_owner?(m)
         redirect_to merchant_staff_index_path, alert: "Không thể xoá chủ cửa hàng duy nhất."
       else
         m.destroy
@@ -58,6 +67,10 @@ module Merchant
     end
 
     private
+
+    def last_owner?(membership)
+      current_workspace.memberships.where(role: "owner").where.not(id: membership.id).none?
+    end
 
     def nav_key = :staff
   end

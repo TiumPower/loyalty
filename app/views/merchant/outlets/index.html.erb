@@ -1,7 +1,7 @@
 <% content_for :title, t("merchant.nav.outlets") %>
 <% content_for :title_en, "OUTLETS" %>
 
-<div style="display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;">
+<div class="l-work">
   <div>
     <% if @outlets.empty? %>
       <div class="l-panel" style="text-align:center; padding:40px; color:var(--ink-2);"><%= t("merchant.outlets.empty") %></div>

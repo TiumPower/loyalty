@@ -2,7 +2,7 @@
 <% content_for :title_en, "BROADCAST" %>
 <% merchant_back merchant_broadcasts_path %>
 
-<div data-controller="campaign-preview" style="display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start;">
+<div data-controller="campaign-preview" class="l-work wide">
   <%= form_with model: @broadcast, url: merchant_broadcasts_path, method: :post do |f| %>
     <% if @broadcast.errors.any? %>
       <div class="l-panel" style="margin-bottom:16px; background:#F7E0DA; color:#B4402F; border:none;">

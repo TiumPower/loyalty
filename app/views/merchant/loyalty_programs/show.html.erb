@@ -17,12 +17,24 @@
     <div class="l-panel">
       <h3 class="l-display" style="font-size:18px; margin-bottom:6px;"><%= t("merchant.program.earn") %></h3>
       <label class="l-label"><%= t("merchant.program.earn_per") %></label>
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
-        <%= f.number_field :earn_points, class: "l-field", style: "max-width:100px;" %>
+      <%# The three fields are fixed-width and this panel sits in a two-column
+          grid, so they used to spill out of it on a laptop. %>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+        <%= f.number_field :earn_points, class: "l-field", style: "max-width:100px;", min: 0 %>
         <span style="color:var(--ink-2);"><%= t("merchant.program.points_slash") %></span>
-        <%= f.number_field :earn_per_amount, class: "l-field", style: "max-width:140px;" %>
+        <%= f.number_field :earn_per_amount, class: "l-field", style: "max-width:140px;", min: 1 %>
         <%= f.text_field :currency, class: "l-field", style: "max-width:80px;" %>
       </div>
+      <%# This setting decides how much the shop gives away, but it was three
+          bare numbers. Spell out what the saved rate actually does. %>
+      <% if @program.earn_per_amount.to_i.positive? %>
+        <% sample = 100_000 %>
+        <div style="font-size:12.5px; color:var(--ink-2); background:var(--surface-2,#F4ECE3); border-radius:10px; padding:9px 12px; margin-bottom:14px;">
+          Đang áp dụng: hoá đơn <strong><%= number_with_delimiter(sample) %><%= @program.currency == "VND" ? "đ" : " #{@program.currency}" %></strong>
+          → <strong><%= number_with_delimiter((sample / @program.earn_per_amount.to_i) * @program.earn_points.to_i) %> điểm</strong>
+          <span style="opacity:.75;">(chưa tính hệ số hạng)</span>
+        </div>
+      <% end %>
 
       <label class="l-label"><%= t("merchant.program.expiry") %></label>
       <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">

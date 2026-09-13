@@ -1,6 +1,6 @@
 <div data-controller="campaign-preview campaigngen"
      data-campaigngen-url-value="<%= generate_content_merchant_campaigns_path %>"
-     style="display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start;">
+     class="l-work wide">
   <%= form_with model: [:merchant, @campaign] do |f| %>
     <% if @campaign.errors.any? %>
       <div class="l-chip" style="background:#F3DDD7; color:#B4402F; margin-bottom:12px;"><%= @campaign.errors.full_messages.to_sentence %></div>

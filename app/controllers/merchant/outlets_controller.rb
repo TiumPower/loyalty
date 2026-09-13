@@ -1,5 +1,6 @@
 module Merchant
   class OutletsController < BaseController
+    include ActionView::Helpers::NumberHelper
     before_action :require_manager!, except: [:index]
     before_action :set_outlet, only: [:show, :edit, :update, :destroy, :checkin_qr]
 
@@ -55,8 +56,17 @@ module Merchant
     end
 
     def destroy
+      unless @outlet.destroyable?
+        return redirect_to merchant_outlets_path,
+          alert: "Chi nhánh “#{@outlet.name}” đã có #{number_with_delimiter(@outlet.history_count)} giao dịch nên không xoá được — " \
+                 "hãy tắt hoạt động để ẩn khỏi máy quét mà vẫn giữ lịch sử."
+      end
       @outlet.destroy
       redirect_to merchant_outlets_path, notice: "Đã xoá chi nhánh."
+    rescue ActiveRecord::InvalidForeignKey
+      # Belt and braces: anything else still pointing at the branch.
+      redirect_to merchant_outlets_path,
+        alert: "Không xoá được chi nhánh này vì đang có dữ liệu liên quan. Hãy tắt hoạt động thay vì xoá."
     end
 
     private

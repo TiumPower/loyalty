@@ -14,7 +14,7 @@
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
     <div>
       <label class="l-label"><%= t("merchant.rewards.kind") %></label>
-      <%= f.select :kind, [["Voucher", "voucher"], [t("merchant.rewards.kind_gift"), "gift"], [t("merchant.rewards.kind_discount"), "discount"]], {},
+      <%= f.select :kind, [[t("merchant.rewards.kind_voucher"), "voucher"], [t("merchant.rewards.kind_gift"), "gift"], [t("merchant.rewards.kind_discount"), "discount"]], {},
             class: "l-field", data: { rewardform_target: "kind", action: "change->rewardform#kindChanged" } %>
     </div>
     <div data-controller="iconpick" style="position:relative;">

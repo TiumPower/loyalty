@@ -1,6 +1,6 @@
 <% state = v.expired? ? "expired" : v.state %>
 <%= link_to member_voucher_path(v), class: "l-ticket #{state}", style: "margin-bottom:12px;" do %>
-  <div class="stub"><div class="v"><%= v.reward.value_label %></div><div class="u"><%= v.reward.kind %></div></div>
+  <div class="stub"><div class="v"><%= v.reward.value_label %></div><div class="u"><%= v.reward.kind_label %></div></div>
   <div class="perf"></div>
   <div class="body">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
