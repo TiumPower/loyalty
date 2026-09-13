@@ -44,11 +44,23 @@ class Voucher < ApplicationRecord
     [(redeem_token_expires_at - Time.current).to_i, 0].max
   end
 
-  # Permanently redeem the voucher at the counter — locks it so it can't be
-  # reused. The one-time token is retained so a re-scan shows an "already used"
-  # warning (with time) rather than "not found".
+  # Permanently redeem the voucher at the counter, exactly once. Returns true
+  # only for the caller that actually consumed it. The one-time token is
+  # retained so a re-scan shows an "already used" warning (with time) rather
+  # than "not found".
+  #
+  # This used to be a bare update! after a separate `state == "used"` read in
+  # the controller, so two scans of the same code — a double tap at the till,
+  # or two tills at once — both passed the check and both got a success screen.
+  # The row ends up "used" either way; the customer walked away with the reward
+  # twice. The WHERE clause is what makes the second caller lose.
   def mark_used!(outlet:, staff:)
-    update!(state: "used", used_at: Time.current, used_outlet: outlet, used_by_staff: staff)
+    claimed = self.class.unscoped.where(id: id).where.not(state: "used").update_all(
+      state: "used", used_at: Time.current, used_outlet_id: outlet&.id,
+      used_by_staff_id: staff&.id, updated_at: Time.current
+    )
+    reload
+    claimed.positive?
   end
 
   def self.fresh_use_token(workspace)

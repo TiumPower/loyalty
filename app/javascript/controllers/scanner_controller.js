@@ -88,7 +88,25 @@ export default class extends Controller {
     } catch (e) {
       this.rememberCamera(false)
       if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
-      this.statusTarget.textContent = "Không truy cập được camera — hãy nhập mã thủ công."
+      this.statusTarget.textContent = this.cameraError(e)
+    }
+  }
+
+  // Every camera failure used to read "Không truy cập được camera" — the same
+  // sentence whether the cashier had denied permission (fixable in seconds),
+  // the phone has no camera, or another app is holding it. Say which.
+  cameraError(e) {
+    switch (e && e.name) {
+      case "NotAllowedError":
+      case "SecurityError":
+        return "Camera đang bị chặn. Bấm vào biểu tượng 🔒 trên thanh địa chỉ → cho phép Camera, rồi tải lại trang. Hoặc nhập mã thủ công bên dưới."
+      case "NotFoundError":
+      case "OverconstrainedError":
+        return "Không tìm thấy camera trên thiết bị này — hãy nhập mã thủ công bên dưới."
+      case "NotReadableError":
+        return "Camera đang được ứng dụng khác sử dụng. Đóng ứng dụng đó rồi thử lại, hoặc nhập mã thủ công."
+      default:
+        return "Không mở được camera — hãy nhập mã thủ công bên dưới."
     }
   }
 

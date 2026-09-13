@@ -27,7 +27,8 @@
 
 <%= form_with url: merchant_earn_lookup_path, method: :post do %>
   <div style="display:flex; gap:8px;">
-    <input name="email" type="email" class="l-field" placeholder="<%= t("merchant.scan.email_ph") %>" autocomplete="off">
+    <input name="q" type="text" inputmode="email" class="l-field"
+           placeholder="<%= t("merchant.scan.lookup_ph") %>" autocomplete="off">
     <%= submit_tag t("merchant.scan.find_customer"), class: "l-btn l-btn-primary", style: "white-space:nowrap;" %>
   </div>
 <% end %>

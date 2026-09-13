@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_12_100300) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_13_132332) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -458,11 +458,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_12_100300) do
     t.datetime "voided_at"
     t.string "void_reason"
     t.bigint "voided_by_id"
+    t.string "idempotency_key"
     t.index ["member_id"], name: "index_purchases_on_member_id"
     t.index ["outlet_id"], name: "index_purchases_on_outlet_id"
     t.index ["staff_id"], name: "index_purchases_on_staff_id"
     t.index ["voided_by_id"], name: "index_purchases_on_voided_by_id"
     t.index ["workspace_id", "created_at"], name: "index_purchases_on_workspace_id_and_created_at"
+    t.index ["workspace_id", "idempotency_key"], name: "index_purchases_on_workspace_and_idempotency_key", unique: true, where: "(idempotency_key IS NOT NULL)"
     t.index ["workspace_id", "voided_at"], name: "index_purchases_on_workspace_id_and_voided_at"
     t.index ["workspace_id"], name: "index_purchases_on_workspace_id"
   end

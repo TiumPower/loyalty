@@ -11,9 +11,12 @@ module Merchant
 
       @member = find_member
       if @member
+        # One key per lookup: every scan of a customer gets its own, and every
+        # submit of that form carries it, so a repeat submit is recognisable.
+        @earn_key = SecureRandom.uuid
         render :lookup
       else
-        @error = params[:token].present? ? "Mã không hợp lệ hoặc đã hết hạn." : "Không tìm thấy khách với SĐT này."
+        @error = params[:token].present? ? "Mã không hợp lệ hoặc đã hết hạn." : "Không tìm thấy khách với email/SĐT này."
         render :search, status: :unprocessable_entity
       end
     end
@@ -28,12 +31,16 @@ module Merchant
       end
       if amount <= 0
         @error = "Vui lòng nhập số tiền hoá đơn hợp lệ."
+        # Keep the same key across a correction, so fixing a typo and
+        # resubmitting is still the same single award.
+        @earn_key = params[:earn_key].presence || SecureRandom.uuid
         return render :lookup, status: :unprocessable_entity
       end
 
       @result = EarnPoints.new(
         member: @member, amount: amount,
-        outlet: current_outlet, staff: current_user, source: "staff_scan"
+        outlet: current_outlet, staff: current_user, source: "staff_scan",
+        idempotency_key: params[:earn_key].presence
       ).call
       render :create
     end
@@ -43,12 +50,20 @@ module Merchant
     def nav_key = :scanner
 
     def find_member
-      if params[:token].present?
-        MemberQr.decode(params[:token], workspace: current_workspace)
-      elsif params[:email].present?
-        Member.find_by(email: params[:email].to_s.strip.downcase)
-      elsif params[:phone].present?
-        Member.find_by(phone: params[:phone].to_s.gsub(/\s+/, ""))
+      return MemberQr.decode(params[:token], workspace: current_workspace) if params[:token].present?
+
+      # One box for both. The form used to be type="email" only, so a customer
+      # at the counter had to spell out an address even though looking up by
+      # phone already worked — and members imported with a phone and no email
+      # could not be found manually at all.
+      raw = params[:q].presence || params[:email].presence || params[:phone].presence
+      return nil if raw.blank?
+      raw = raw.to_s.strip
+      if raw.include?("@")
+        Member.find_by(email: Member.canonical_email(raw))
+      else
+        digits = raw.gsub(/[^\d]/, "")
+        digits.present? ? Member.find_by(phone: digits) : nil
       end
     end
 

@@ -6,6 +6,9 @@ module Merchant
       # the earn flow so a single scan "just works".
       if (member = ScanRouter.member(params[:token], current_workspace))
         @member = member
+        # This renders the earn form, which needs its own idempotency key —
+        # without one, awarding from this path had no double-tap protection.
+        @earn_key = SecureRandom.uuid
         return render "merchant/earn/lookup"
       end
 
@@ -33,9 +36,11 @@ module Merchant
         render :search, status: :unprocessable_entity
       elsif @voucher.state == "used"
         render :used
-      else
-        @voucher.mark_used!(outlet: current_outlet, staff: current_user)
+      elsif @voucher.mark_used!(outlet: current_outlet, staff: current_user)
         render :success
+      else
+        # Someone else consumed it between the check above and the write.
+        render :used
       end
     end
 

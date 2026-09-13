@@ -259,6 +259,7 @@ vi:
       start_camera: "Bật camera"
       camera_hint: "Nếu trình duyệt hỏi quyền camera, hãy chọn Cho phép."
       or_manual: "hoặc nhập mã thủ công"
+      lookup_ph: "Email hoặc số điện thoại"
       email_ph: "Email khách"
       find_customer: "Tìm khách"
       redeem_prompt: "Quét mã ưu đãi trên máy khách"

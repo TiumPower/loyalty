@@ -254,6 +254,7 @@ en:
       start_camera: "Start camera"
       camera_hint: "If your browser asks for camera access, tap Allow."
       or_manual: "or enter code manually"
+      lookup_ph: "Email or phone number"
       email_ph: "Customer email"
       find_customer: "Find customer"
       redeem_prompt: "Scan the reward code on the customer's phone"

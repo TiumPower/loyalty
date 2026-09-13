@@ -26,6 +26,7 @@
                 earn_calc_per_value: current_program.earn_per_amount,
                 earn_calc_mult_value: mult } do %>
     <input type="hidden" name="member_id" value="<%= @member.id %>">
+    <input type="hidden" name="earn_key" value="<%= @earn_key %>">
     <label class="l-label" style="margin-top:16px;"><%= t("merchant.scan.bill_amount") %></label>
     <div style="display:flex; align-items:center; gap:8px;">
       <input name="amount" inputmode="numeric" autofocus autocomplete="off"
