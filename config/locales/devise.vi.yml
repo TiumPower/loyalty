@@ -3,6 +3,24 @@
 # (the default renders as "Tài khoản hay mật khẩu email không hợp lệ", with
 # the interpolated key landing in the middle of the sentence).
 vi:
+  errors:
+    messages:
+      # rails-i18n renders this as "không khớp với xác nhận", so the full
+      # message came out "Xác nhận mật khẩu không khớp với xác nhận" — nonsense
+      # at the exact moment the owner is already confused about their typo.
+      confirmation: "không khớp"
+  activerecord:
+    attributes:
+      user:
+        name: "Họ tên"
+        email: "Email"
+        password: "Mật khẩu"
+        password_confirmation: "Xác nhận mật khẩu"
+        reset_password_token: "Mã đặt lại mật khẩu"
+      workspace:
+        name: "Tên cửa hàng"
+        subdomain: "Địa chỉ app"
+        industry: "Ngành"
   devise:
     failure:
       invalid: "Email hoặc mật khẩu không đúng."

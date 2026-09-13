@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   devise_for :users,
              path: "merchant",
              path_names: { sign_in: "login", sign_out: "logout", password: "password" },
-             controllers: { sessions: "users/sessions" },
+             controllers: { sessions: "users/sessions", passwords: "users/passwords" },
              skip: [:registrations]
   devise_for :admin_users,
              path: "admin",

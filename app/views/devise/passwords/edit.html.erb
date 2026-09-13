@@ -1,29 +1,62 @@
-<h1><%= host_workspace&.name || "Dynamic Loyalty" %></h1>
-<p class="sub">Tạo mật khẩu để truy cập bảng điều khiển.</p>
+<%# This page serves two arrivals: a staff invite ("set your first password")
+    and a shop owner who clicked "forgot password". The heading used to be the
+    shop's name with "Tạo mật khẩu để truy cập bảng điều khiển", which reads as
+    new-account setup and is confusing for a reset. Say what is happening, and
+    keep the shop's name as context where there is one. %>
+<% invite = params[:invite].present? || host_workspace.present? %>
+<% dead = resource.errors[:reset_password_token].any? %>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name),
-      html: { method: :put, data: { turbo: false } }) do |f| %>
-  <%= f.hidden_field :reset_password_token %>
-
-  <% if resource.errors.any? %>
-    <div class="l-chip" style="display:block; background:#F7E0DA; color:#B4402F; margin-bottom:14px;">
-      <%= resource.errors.full_messages.to_sentence %>
-    </div>
+<h1><%= dead ? "Liên kết không dùng được" : (invite ? "Tạo mật khẩu" : "Đặt lại mật khẩu") %></h1>
+<p class="sub">
+  <% if dead %>
+    Liên kết đặt lại đã hết hạn hoặc đã được dùng. Hãy yêu cầu một liên kết mới.
+  <% elsif host_workspace %>
+    <%= host_workspace.name %> — chọn mật khẩu để vào bảng điều khiển.
+  <% else %>
+    Chọn mật khẩu mới cho tài khoản của bạn.
   <% end %>
+</p>
 
-  <div class="field">
-    <label class="l-label">Mật khẩu mới</label>
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password",
-          autocapitalize: "none", autocorrect: "off", spellcheck: "false",
-          class: "l-field", placeholder: "tối thiểu 6 ký tự" %>
+<% if resource.errors.any? %>
+  <div class="l-chip" style="display:block; background:#F7E0DA; color:#B4402F; margin-bottom:14px;">
+    <%= resource.errors.full_messages.to_sentence %>
   </div>
-  <div class="field">
-    <label class="l-label">Nhập lại mật khẩu</label>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password",
-          autocapitalize: "none", autocorrect: "off", spellcheck: "false", class: "l-field" %>
-  </div>
+<% end %>
 
-  <%= f.submit "Đặt mật khẩu & đăng nhập", class: "l-btn l-btn-primary", style: "width:100%; margin-top:6px;" %>
+<% if dead %>
+  <%# A dead link used to leave the owner staring at two password boxes that
+      could never work. Send them straight back to ask for a fresh one. %>
+  <%= link_to "Gửi liên kết mới", new_password_path(resource_name),
+        class: "l-btn l-btn-primary", style: "width:100%; margin-top:6px;" %>
+<% else %>
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name),
+        html: { method: :put, data: { turbo: false } }) do |f| %>
+    <%= f.hidden_field :reset_password_token %>
+
+    <div class="field" data-controller="reveal">
+      <label class="l-label">Mật khẩu mới</label>
+      <div style="position:relative;">
+        <%= f.password_field :password, autofocus: true, autocomplete: "new-password",
+              autocapitalize: "none", autocorrect: "off", spellcheck: "false",
+              class: "l-field", placeholder: "tối thiểu 6 ký tự",
+              data: { reveal_target: "input" }, style: "padding-right:46px;" %>
+        <%# Two blind password boxes is exactly where a typo locks someone out
+            of the account they are trying to recover. %>
+        <button type="button" data-action="reveal#toggle" aria-label="Hiện/ẩn mật khẩu"
+                style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--ink-2); padding:6px; display:grid; place-items:center; line-height:0;">
+          <span data-reveal-target="off"><%= ui_icon(:eye, size: 20) %></span>
+          <span data-reveal-target="on" hidden><%= ui_icon(:eye_off, size: 20) %></span>
+        </button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="l-label">Nhập lại mật khẩu</label>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password",
+            autocapitalize: "none", autocorrect: "off", spellcheck: "false", class: "l-field" %>
+    </div>
+
+    <%= f.submit "Đặt mật khẩu & đăng nhập", class: "l-btn l-btn-primary", style: "width:100%; margin-top:6px;" %>
+  <% end %>
 <% end %>
 
 <p style="text-align:center; margin-top:18px; font-size:13px;">
