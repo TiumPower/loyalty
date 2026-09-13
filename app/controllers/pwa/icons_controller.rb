@@ -66,17 +66,17 @@ module Pwa
       ink      = ws&.theme_value("on_primary") || Workspace::DEFAULT_THEME["on_primary"]
       # Two sizes of text so one long initial pair still fits the tile.
       font = initials.length > 1 ? 230 : 280
+      # Deliberately flat, and no <defs>: ImageMagick's SVG renderer does not
+      # resolve fill="url(#gradient)" and silently painted the tile BLACK, so
+      # the PNG on a customer's home screen looked nothing like the SVG in the
+      # browser. A solid brand colour renders identically everywhere.
+      # dominant-baseline is also unsupported there, so the text is positioned
+      # with an explicit baseline instead of being centred by attribute.
       <<~SVG
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="#{ERB::Util.h(ws&.name)}">
-          <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#{ERB::Util.h(primary)}"/>
-              <stop offset="1" stop-color="#{ERB::Util.h(darken(primary))}"/>
-            </linearGradient>
-          </defs>
-          <rect width="512" height="512" rx="112" fill="url(#g)"/>
-          <text x="256" y="256" fill="#{ERB::Util.h(ink)}" font-size="#{font}" font-weight="700"
-                font-family="Helvetica, Arial, sans-serif" text-anchor="middle" dominant-baseline="central">#{ERB::Util.h(initials)}</text>
+          <rect width="512" height="512" rx="112" fill="#{ERB::Util.h(primary)}"/>
+          <text x="256" y="#{font == 280 ? 350 : 336}" fill="#{ERB::Util.h(ink)}" font-size="#{font}" font-weight="bold"
+                font-family="Helvetica, Arial, sans-serif" text-anchor="middle">#{ERB::Util.h(initials)}</text>
         </svg>
       SVG
     end
