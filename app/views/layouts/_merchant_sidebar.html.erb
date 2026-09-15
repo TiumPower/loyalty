@@ -16,7 +16,11 @@
       </summary>
       <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
         <% accessible_workspaces.each do |ws| %>
+          <%# turbo: false — đổi workspace xong là redirect sang subdomain của
+              workspace đó; Turbo không theo được redirect chéo origin (nó gửi
+              OPTIONS rồi im lặng bỏ), nên bấm vào nút này sẽ không có gì xảy ra. %>
           <%= button_to ws.name, merchant_switch_workspace_path(ws), class: "l-nav-item",
+                form: { data: { turbo: false } },
                 style: "background:none;border:none;text-align:left;width:100%;#{'font-weight:700;' if ws.id == current_workspace&.id}" %>
         <% end %>
       </div>
