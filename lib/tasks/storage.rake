@@ -15,7 +15,7 @@ namespace :storage do
     service.upload(key, StringIO.new("ok"), content_type: "text/plain")
     ok = service.download(key) == "ok"
     service.delete(key)
-    puts ok ? "✓ Spaces OK — bucket #{ENV['DO_SPACES_BUCKET']} (#{ENV.fetch('DO_SPACES_REGION', 'sgp1')})" : "✗ Ghi được nhưng đọc lại sai."
+    puts ok ? "✓ Spaces OK — bucket #{ENV['SPACES_BUCKET']} (#{ENV.fetch('SPACES_REGION', 'sgp1')})" : "✗ Ghi được nhưng đọc lại sai."
   end
 
   desc "Chép mọi tệp đang nằm trên đĩa lên Spaces (DRY=1 để chạy thử)"
@@ -60,8 +60,8 @@ namespace :storage do
   end
 
   def spaces_service
-    unless ENV["DO_SPACES_KEY"].present? && ENV["DO_SPACES_BUCKET"].present?
-      abort "Thiếu DO_SPACES_KEY / DO_SPACES_BUCKET trong .env — xem config/storage.yml."
+    unless ENV["SPACES_KEY"].present? && ENV["SPACES_BUCKET"].present?
+      abort "Thiếu SPACES_KEY / SPACES_BUCKET trong .env — xem config/storage.yml."
     end
     ActiveStorage::Blob.services.fetch(:spaces)
   end

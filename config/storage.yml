@@ -6,26 +6,29 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-# DigitalOcean Spaces — dùng giao thức tương thích S3.
-# Region ví dụ: sgp1, fra1, nyc3. Endpoint suy ra từ region nên chỉ cần đặt
-# DO_SPACES_REGION, trừ khi muốn chỉ định riêng bằng DO_SPACES_ENDPOINT.
+# DigitalOcean Spaces — S3-compatible, nên dùng service S3 với endpoint riêng.
+# Cùng khối này chạy được với mọi nhà cung cấp S3-compatible khác chỉ bằng cách
+# đổi SPACES_ENDPOINT và SPACES_REGION.
+#
+# Bucket dùng CHUNG với các app khác trên cùng server, nên mỗi app ghi vào tiền
+# tố riêng (xem lib/active_storage/service/prefixed_s3_service.rb).
 spaces:
-  service: S3
-  access_key_id:     <%= ENV["DO_SPACES_KEY"] %>
-  secret_access_key: <%= ENV["DO_SPACES_SECRET"] %>
-  region:            <%= ENV.fetch("DO_SPACES_REGION", "sgp1") %>
-  bucket:            <%= ENV["DO_SPACES_BUCKET"] %>
-  endpoint:          <%= ENV.fetch("DO_SPACES_ENDPOINT") { "https://#{ENV.fetch('DO_SPACES_REGION', 'sgp1')}.digitaloceanspaces.com" } %>
-  force_path_style:  false
+  service: PrefixedS3
+  prefix: <%= ENV.fetch("SPACES_PREFIX", "loyalty") %>
+  access_key_id:     <%= ENV["SPACES_KEY"] %>
+  secret_access_key: <%= ENV["SPACES_SECRET"] %>
+  region:            <%= ENV.fetch("SPACES_REGION", "sgp1") %>
+  bucket:            <%= ENV["SPACES_BUCKET"] %>
+  endpoint:          <%= ENV.fetch("SPACES_ENDPOINT") { "https://#{ENV.fetch('SPACES_REGION', 'sgp1')}.digitaloceanspaces.com" } %>
   # Tệp để RIÊNG TƯ; app phát đường dẫn ký tên có hạn khi cần tải.
   public: false
 
-# Ghi song song: đọc từ đĩa, ghi lên cả hai. Dùng khi chuyển dần từ đĩa sang
-# Spaces mà chưa muốn cắt hẳn.
-disk_then_spaces:
+# Spaces là kho chính, đĩa máy chủ là bản sao — bản sao lưu hằng đêm đóng gói
+# shared/storage, nên vẫn cần tệp nằm trên đĩa để backup không rỗng.
+spaces_mirrored:
   service: Mirror
-  primary: local
-  mirrors: [spaces]
+  primary: spaces
+  mirrors: [ local ]
 
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:

@@ -39,10 +39,11 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   # Lưu tệp lên DigitalOcean Spaces khi đã có khoá; chưa có thì vẫn dùng đĩa
   # máy chủ, để thiếu cấu hình không làm hỏng việc tải tệp lên.
-  # DO_SPACES_MIRROR=1 = giai đoạn chuyển tiếp: đọc từ đĩa, ghi lên cả hai.
+  # Mặc định ghi cả hai nơi (Spaces là chính, đĩa là bản sao cho backup đêm);
+  # SPACES_MIRROR_LOCAL=false để chỉ ghi lên Spaces.
   config.active_storage.service =
-    if ENV["DO_SPACES_KEY"].present? && ENV["DO_SPACES_BUCKET"].present?
-      ENV["DO_SPACES_MIRROR"] == "1" ? :disk_then_spaces : :spaces
+    if ENV["SPACES_KEY"].present? && ENV["SPACES_BUCKET"].present?
+      ENV["SPACES_MIRROR_LOCAL"] == "false" ? :spaces : :spaces_mirrored
     else
       :local
     end
