@@ -211,8 +211,12 @@ ActsAsTenant.without_tenant do
       6.times do |n|
         phone = "09#{format('%08d', ws.id * 1_000_000 + n)}"
         member = Member.find_or_initialize_by(workspace: ws, phone: phone)
+        # Login is email + OTP, so a demo member without one can be seen on the
+        # merchant dashboard but never signed into — which is exactly the account
+        # you want when testing the customer app against a real points history.
         member.assign_attributes(name: Faker::Name.name,
                                  birthday: Faker::Date.birthday(min_age: 18, max_age: 55))
+        member.email ||= "khach#{n + 1}@#{cfg[:subdomain]}.vn"
         member.save!
 
         if member.point_transactions.empty?
