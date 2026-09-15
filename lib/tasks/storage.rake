@@ -21,10 +21,15 @@ namespace :storage do
   desc "Chép mọi tệp đang nằm trên đĩa lên Spaces (DRY=1 để chạy thử)"
   task to_spaces: :environment do
     dry    = ENV["DRY"].present?
+    # Ghi thẳng lên Spaces (kho chính) — tệp vốn đã nằm trên đĩa, cho đi qua
+    # Mirror nữa chỉ tổ chép lại đúng những byte đó xuống chính chỗ cũ.
     target = spaces_service
+    # …nhưng blob phải trỏ về kho MẶC ĐỊNH của app (production: spaces_mirrored),
+    # để mọi thao tác sau này (ghi đè, xoá) còn đi qua mirror như tệp mới.
+    target_name = Rails.configuration.active_storage.service.to_s
     disk   = ActiveStorage::Blob.services.fetch(:local)
 
-    pending = ActiveStorage::Blob.where.not(service_name: "spaces")
+    pending = ActiveStorage::Blob.where.not(service_name: target_name)
     total   = pending.count
     puts "#{total} tệp chưa nằm trên Spaces.#{' (chạy thử — không ghi gì)' if dry}"
 
@@ -33,7 +38,7 @@ namespace :storage do
       if target.exist?(blob.key)
         # Đã có sẵn trên Spaces (lần chạy trước dừng giữa chừng) — chỉ cần
         # trỏ blob sang đúng service.
-        blob.update_columns(service_name: "spaces") unless dry
+        blob.update_columns(service_name: target_name) unless dry
         skipped += 1
       elsif !disk.exist?(blob.key)
         # Bản ghi còn nhưng tệp đã mất trên đĩa — báo để xoá dọn riêng.
@@ -46,7 +51,7 @@ namespace :storage do
           target.upload(blob.key, file, checksum: blob.checksum,
                         content_type: blob.content_type, filename: blob.filename)
         end
-        blob.update_columns(service_name: "spaces")
+        blob.update_columns(service_name: target_name)
         copied += 1
       end
       print "\r  #{i}/#{total}…" if (i % 20).zero?
@@ -56,7 +61,7 @@ namespace :storage do
     end
 
     puts "\nXong: #{copied} chép, #{skipped} đã có sẵn, #{missing} thiếu tệp gốc, #{failed} lỗi."
-    puts "Còn #{ActiveStorage::Blob.where.not(service_name: 'spaces').count} blob chưa ở trên Spaces."
+    puts "Còn #{ActiveStorage::Blob.where.not(service_name: target_name).count} blob chưa ở trên Spaces."
   end
 
   desc "Kiểm tra mọi tệp Active Storage đều đọc được từ kho đang dùng"
