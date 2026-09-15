@@ -59,6 +59,21 @@ namespace :storage do
     puts "Còn #{ActiveStorage::Blob.where.not(service_name: 'spaces').count} blob chưa ở trên Spaces."
   end
 
+  desc "Kiểm tra mọi tệp Active Storage đều đọc được từ kho đang dùng"
+  task verify: :environment do
+    ok = 0
+    broken = []
+    ActiveStorage::Blob.find_each do |blob|
+      blob.service.download(blob.key).bytesize
+      ok += 1
+    rescue StandardError => e
+      broken << [blob.key, blob.service_name, blob.filename.to_s, "#{e.class}"]
+    end
+    puts "Đọc được #{ok} tệp, hỏng #{broken.size}."
+    broken.first(20).each { |key, svc, name, err| puts "  ✗ #{key} [#{svc}] #{name} — #{err}" }
+    abort "Có tệp không đọc được." if broken.any?
+  end
+
   def spaces_service
     unless ENV["SPACES_KEY"].present? && ENV["SPACES_BUCKET"].present?
       abort "Thiếu SPACES_KEY / SPACES_BUCKET trong .env — xem config/storage.yml."
