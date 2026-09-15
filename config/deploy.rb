@@ -52,6 +52,17 @@ namespace :deploy do
     end
   end
 
+  desc "Chép tệp Active Storage từ đĩa lên DigitalOcean Spaces (cap production deploy:to_spaces)"
+  task :to_spaces do
+    on roles(:app) do
+      within current_path do
+        with rails_env: fetch(:rails_env) do
+          execute :rake, "storage:to_spaces"
+        end
+      end
+    end
+  end
+
   after :publishing, :restart
 
   after :finishing, :restart_sidekiq do
