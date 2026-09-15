@@ -51,6 +51,8 @@ gem "rqrcode"
 
 # File uploads / image variants
 gem "image_processing", "~> 1.2"
+# S3 client — dùng cho DigitalOcean Spaces (xem config/storage.yml)
+gem "aws-sdk-s3", require: false
 
 # Env management
 gem "dotenv-rails"

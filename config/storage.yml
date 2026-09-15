@@ -6,6 +6,27 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# DigitalOcean Spaces — dùng giao thức tương thích S3.
+# Region ví dụ: sgp1, fra1, nyc3. Endpoint suy ra từ region nên chỉ cần đặt
+# DO_SPACES_REGION, trừ khi muốn chỉ định riêng bằng DO_SPACES_ENDPOINT.
+spaces:
+  service: S3
+  access_key_id:     <%= ENV["DO_SPACES_KEY"] %>
+  secret_access_key: <%= ENV["DO_SPACES_SECRET"] %>
+  region:            <%= ENV.fetch("DO_SPACES_REGION", "sgp1") %>
+  bucket:            <%= ENV["DO_SPACES_BUCKET"] %>
+  endpoint:          <%= ENV.fetch("DO_SPACES_ENDPOINT") { "https://#{ENV.fetch('DO_SPACES_REGION', 'sgp1')}.digitaloceanspaces.com" } %>
+  force_path_style:  false
+  # Tệp để RIÊNG TƯ; app phát đường dẫn ký tên có hạn khi cần tải.
+  public: false
+
+# Ghi song song: đọc từ đĩa, ghi lên cả hai. Dùng khi chuyển dần từ đĩa sang
+# Spaces mà chưa muốn cắt hẳn.
+disk_then_spaces:
+  service: Mirror
+  primary: local
+  mirrors: [spaces]
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3

@@ -37,7 +37,15 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Lưu tệp lên DigitalOcean Spaces khi đã có khoá; chưa có thì vẫn dùng đĩa
+  # máy chủ, để thiếu cấu hình không làm hỏng việc tải tệp lên.
+  # DO_SPACES_MIRROR=1 = giai đoạn chuyển tiếp: đọc từ đĩa, ghi lên cả hai.
+  config.active_storage.service =
+    if ENV["DO_SPACES_KEY"].present? && ENV["DO_SPACES_BUCKET"].present?
+      ENV["DO_SPACES_MIRROR"] == "1" ? :disk_then_spaces : :spaces
+    else
+      :local
+    end
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
