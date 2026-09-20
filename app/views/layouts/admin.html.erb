@@ -27,7 +27,15 @@
             <span class="en">PLATFORM OPS</span>
           </div>
         </header>
-        <div class="l-content"><%= yield %></div>
+        <div class="l-content">
+          <% if AppSetting.show_otp? %>
+            <div class="l-panel" style="background:#F7E0DA; color:#B4402F; border:none; margin-bottom:16px;">
+              ⚠ <strong>Đang bật hiện mã OTP trên màn hình</strong> — chế độ test, ai biết email khách cũng
+              đăng nhập được. <%= link_to "Tắt ngay", admin_settings_path, style: "color:inherit; font-weight:700;" %>
+            </div>
+          <% end %>
+          <%= yield %>
+        </div>
       </main>
     </div>
   </body>

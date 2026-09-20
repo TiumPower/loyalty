@@ -1,0 +1,34 @@
+<% content_for :title, "Thiết lập nền tảng" %>
+<% content_for :title_en, "SETTINGS" %>
+
+<div style="max-width:640px;">
+  <div class="l-panel">
+    <div class="l-eyebrow">Kiểm thử</div>
+    <h3 class="l-display" style="font-size:20px; margin:6px 0 4px;">Hiện mã OTP trên màn hình</h3>
+    <p style="color:var(--ink-2); font-size:13px; margin:0 0 12px;">
+      Khi bật, mã OTP 6 số hiện thẳng trên trang đăng nhập của app khách hàng (và trang đổi email),
+      không cần mở hộp thư. Dùng để test và demo với các email không có thật như
+      <span class="l-mono">khach1@cozycafe.vn</span>. Mã vẫn được gửi qua email như bình thường.
+    </p>
+
+    <% if @show_otp %>
+      <div class="l-panel" style="background:#F7E0DA; color:#B4402F; border:none; margin-bottom:12px;">
+        ⚠ <strong>Đang BẬT.</strong> Bất kỳ ai biết email của một khách hàng đều có thể đăng nhập vào
+        tài khoản đó. Chỉ để bật trên môi trường test — tắt trước khi có khách thật.
+      </div>
+    <% end %>
+
+    <%= form_with url: admin_settings_path, method: :patch do %>
+      <%= hidden_field_tag :show_otp, @show_otp ? "false" : "true" %>
+      <%= submit_tag @show_otp ? "Tắt hiện OTP" : "Bật hiện OTP",
+            class: "l-btn #{@show_otp ? '' : 'l-btn-primary'}" %>
+    <% end %>
+
+    <p style="color:var(--ink-2); font-size:12px; margin:12px 0 0;">
+      Trạng thái hiện tại: <strong><%= @show_otp ? "ĐANG BẬT" : "đang tắt" %></strong>.
+      Công tắc này áp dụng cho toàn hệ thống (mọi shop) và có hiệu lực ngay, không cần deploy lại.
+      Biến môi trường <span class="l-mono">SHOW_OTP=true</span> (nếu có đặt trong .env) cũng bật được,
+      nhưng công tắc này là cách khuyên dùng.
+    </p>
+  </div>
+</div>

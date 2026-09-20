@@ -50,6 +50,8 @@ Rails.application.routes.draw do
     resources :plans, only: [:index, :update]
     get   "account", to: "account#edit",   as: :account
     patch "account", to: "account#update"
+    get   "settings", to: "settings#show",   as: :settings
+    patch "settings", to: "settings#update"
   end
 
   # ---- Merchant self-serve signup (public) -------------------------------

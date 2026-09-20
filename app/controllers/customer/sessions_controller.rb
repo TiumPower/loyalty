@@ -107,7 +107,8 @@ module Customer
     # Show the code on-screen in dev, when explicitly enabled, or until an email
     # delivery provider (SMTP) is configured.
     def show_otp_onscreen?
-      ENV["SHOW_OTP"] == "true" || !Rails.env.production? || !EmailOtp.configured?
+      AppSetting.show_otp? || ENV["SHOW_OTP"] == "true" ||
+        !Rails.env.production? || !EmailOtp.configured?
     end
 
     def latest_dev_code(email)

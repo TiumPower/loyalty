@@ -112,7 +112,8 @@ module Customer
     # Same rule the login screen uses: show the code on-screen where no mail
     # provider is configured, or this flow would be unusable there.
     def show_otp_onscreen?
-      ENV["SHOW_OTP"] == "true" || !Rails.env.production? || !EmailOtp.configured?
+      AppSetting.show_otp? || ENV["SHOW_OTP"] == "true" ||
+        !Rails.env.production? || !EmailOtp.configured?
     end
 
     # :avatar has its own action; leaving it here let the text form attach one

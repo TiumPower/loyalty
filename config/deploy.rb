@@ -52,6 +52,19 @@ namespace :deploy do
     end
   end
 
+  desc "XOÁ toàn bộ workspace rồi dựng lại bộ dữ liệu test (cap production deploy:test_data PASSWORD=...)"
+  task :test_data do
+    pw = ENV["PASSWORD"].to_s
+    raise "Cần PASSWORD='<mật khẩu ≥12 ký tự>'" if pw.length < 12
+    on roles(:db) do
+      within release_path do
+        with rails_env: fetch(:rails_env), password: pw, confirm: "yes" do
+          execute :rake, "loyalty:test_data"
+        end
+      end
+    end
+  end
+
   desc "Chép tệp Active Storage từ đĩa lên DigitalOcean Spaces (cap production deploy:to_spaces)"
   task :to_spaces do
     on roles(:app) do

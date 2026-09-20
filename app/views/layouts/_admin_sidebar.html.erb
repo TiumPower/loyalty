@@ -24,6 +24,9 @@
   <%= link_to admin_plans_path, class: "l-nav-item #{'active' if nav == :plans}" do %>
     <span>◫</span><span>Quản lý gói<span class="en">Plans</span></span>
   <% end %>
+  <%= link_to admin_settings_path, class: "l-nav-item #{'active' if nav == :settings}" do %>
+    <span>⚙</span><span>Thiết lập<span class="en">Settings</span></span>
+  <% end %>
   <%= link_to admin_account_path, class: "l-nav-item #{'active' if nav == :account}" do %>
     <span>◐</span><span>Tài khoản<span class="en">Account</span></span>
   <% end %>
