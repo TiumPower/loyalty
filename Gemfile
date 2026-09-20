@@ -96,6 +96,11 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # net-ssh (Capistrano) cần hai gem này để đọc khoá SSH định dạng OPENSSH mới,
+  # kể cả khoá RSA. Thiếu thì `cap deploy` chết ngay ở rbenv:validate.
+  gem "ed25519", ">= 1.2", "< 2.0"
+  gem "bcrypt_pbkdf", ">= 1.0", "< 2.0"
 end
 
 group :test do
