@@ -130,10 +130,10 @@ GEM
       capistrano (>= 3.9.0)
       capistrano-bundler
       sidekiq (>= 6.0)
-    capistrano3-puma (6.2.0)
+    capistrano3-puma (8.1.0)
       capistrano (~> 3.7)
       capistrano-bundler
-      puma (>= 5.1, < 7.0)
+      puma (>= 6.1, < 9.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -486,7 +486,7 @@ DEPENDENCIES
   capistrano-rails (~> 1.6)
   capistrano-rbenv (~> 2.2)
   capistrano-sidekiq (~> 2.3)
-  capistrano3-puma (~> 6.0)
+  capistrano3-puma (~> 8.1)
   capybara
   chartkick
   connection_pool (~> 2.4)
