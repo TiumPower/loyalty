@@ -24,8 +24,12 @@ class CustomerReviewFlowTest < ActionDispatch::IntegrationTest
     post "#{base}/verify", params: { code: code }
   end
 
+  # The POST must redirect, not render: Turbo silently discards a 200 response to
+  # a form submission, which left the customer looking at the untouched form.
   test "a happy review lands on the thank-you page with the public review CTA" do
     post "#{base}/review", params: { stars: 5, comment: "Cà phê ngon" }
+    assert_response :redirect
+    follow_redirect!
     assert_response :success
     assert_match I18n.t("customer.review_thanks.google_cta"), response.body
     assert_match "https://g.page/r/abc/review", response.body
@@ -35,6 +39,8 @@ class CustomerReviewFlowTest < ActionDispatch::IntegrationTest
     assert_difference -> { ActsAsTenant.with_tenant(@ws) { Voucher.count } }, 1 do
       post "#{base}/review", params: { stars: 2, comment: "Đợi lâu" }
     end
+    assert_response :redirect
+    follow_redirect!
     assert_response :success
     assert_match I18n.t("customer.review_thanks.apology_title"), response.body
     # No public-review nudge for an unhappy customer.

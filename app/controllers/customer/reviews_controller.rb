@@ -31,11 +31,22 @@ module Customer
                            stars: stars_param, comment: comment_param)
       if @rating.save
         MerchantAlerts.new_rating(@rating)
-        @apology = maybe_apologise(@rating)
-        render :thanks
+        apology = maybe_apologise(@rating)
+        # Rendering the thanks screen straight from this POST left the customer
+        # staring at the untouched form: Turbo drops a 200 form response. Redirect.
+        flash[:apology_voucher_id] = apology.id if apology
+        redirect_to member_review_thanks_path(rating: @rating.id)
       else
         render :new, status: :unprocessable_entity
       end
+    end
+
+    # Landing page after a successful review (see #create).
+    def thanks
+      @rating = Rating.where(member: current_member).find_by(id: params[:rating])
+      return redirect_to after_save_path unless @rating
+      id = flash[:apology_voucher_id]
+      @apology = id.present? ? Voucher.where(member: current_member).find_by(id: id) : nil
     end
 
     def edit

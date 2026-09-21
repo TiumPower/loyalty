@@ -204,6 +204,9 @@ Rails.application.routes.draw do
     get   "shop",            to: "reviews#index",  as: :shop_about
     get   "review",          to: "reviews#new",    as: :new_review
     post  "review",          to: "reviews#create", as: :reviews
+    # Own GET page: a Turbo form submission is only rendered when it redirects,
+    # so #create sends the member here instead of rendering the thanks screen.
+    get   "review/thanks",   to: "reviews#thanks", as: :review_thanks
     get   "review/:id/edit", to: "reviews#edit",   as: :edit_review
     patch "review/:id",      to: "reviews#update",  as: :review
   end
