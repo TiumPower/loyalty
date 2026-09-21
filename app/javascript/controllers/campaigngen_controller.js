@@ -1,10 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
-// "Generate with AI" button for campaign content. POSTs the current form's
-// type/audience/reward to the server, fills the title + body fields with the
-// returned suggestion, and dispatches input events so the live preview updates.
+// "Generate with AI" button for campaign content. POSTs everything the merchant
+// has already filled in (campaign name, type, audience, reward) to the server,
+// fills the title + body fields with the returned suggestion, and dispatches
+// input events so the live preview updates. The name matters most: it is the
+// merchant's own words for what the campaign is, so never leave it out.
 export default class extends Controller {
-  static targets = ["title", "body", "type", "audience", "reward", "button"]
+  static targets = ["title", "body", "name", "type", "audience", "reward", "button"]
   static values = { url: String }
 
   async generate() {
@@ -15,6 +17,7 @@ export default class extends Controller {
     try {
       const token = document.querySelector('meta[name="csrf-token"]')?.content
       const params = new URLSearchParams()
+      if (this.hasNameTarget && this.nameTarget.value.trim()) params.set("name", this.nameTarget.value.trim())
       if (this.hasTypeTarget) params.set("campaign_type", this.typeTarget.value)
       if (this.hasAudienceTarget) params.set("audience", this.audienceTarget.value)
       if (this.hasRewardTarget && this.rewardTarget.value) params.set("reward_id", this.rewardTarget.value)

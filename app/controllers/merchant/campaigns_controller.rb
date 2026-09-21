@@ -9,8 +9,10 @@ module Merchant
     end
 
     def new
+      # A fresh campaign is NOT live: the merchant reviews it and presses
+      # "Bắt đầu chạy" on the campaign page when it should go out.
       @campaign = current_workspace.campaigns.new(campaign_type: "promo_voucher", audience: "all",
-                                                  status: "running", starts_at: Time.current)
+                                                  status: "draft", starts_at: Time.current)
       @rewards = current_workspace.rewards.active.ordered.to_a
     end
 
@@ -23,8 +25,11 @@ module Merchant
       end
       @campaign = current_workspace.campaigns.new(campaign_params)
       if @campaign.save
-        maybe_generate_promo!
-        redirect_to merchant_campaign_path(@campaign), notice: "Đã tạo chiến dịch “#{@campaign.name}”."
+        maybe_generate_promo! # first: the banner composites this promo's real QR
+        banner = maybe_generate_banner!
+        notice = t("merchant.campaigns.created_draft", name: @campaign.name)
+        notice += " " + t("merchant.campaigns.created_banner_suffix") if banner
+        redirect_to merchant_campaign_path(@campaign), notice: notice
       else
         @rewards = current_workspace.rewards.active.ordered.to_a
         render :new, status: :unprocessable_entity
@@ -135,10 +140,13 @@ module Merchant
       redirect_to merchant_campaign_path(@campaign), notice: "Đã tạm dừng chiến dịch."
     end
 
+    # Also the "start" action for a draft/scheduled campaign that has never run.
     def resume
+      was_draft = %w[draft scheduled].include?(@campaign.status)
       @campaign.update(status: "running")
       @campaign.promo_codes.update_all(active: true)
-      redirect_to merchant_campaign_path(@campaign), notice: "Đã tiếp tục chiến dịch."
+      redirect_to merchant_campaign_path(@campaign),
+                  notice: was_draft ? "Đã bắt đầu chạy chiến dịch." : "Đã tiếp tục chiến dịch."
     end
 
     # Xoá cả chiến dịch + mã QR/lượt nhận của nó (voucher đã phát cho khách giữ nguyên).
@@ -167,8 +175,12 @@ module Merchant
       audience = params[:audience].to_s.presence_in(Campaign::AUDIENCES) || "all"
       reward   = params[:reward_id].present? ? current_workspace.rewards.find_by(id: params[:reward_id]) : nil
       tone     = current_workspace.branding_value("tone")
+      # The campaign name is the merchant's own description of the campaign, so it
+      # carries more intent than the type/audience dropdowns; feed it to the model.
+      cname    = params[:name].to_s.strip.delete("\n").first(120)
       <<~PROMPT
         Viết nội dung một chiến dịch marketing cho cửa hàng "#{current_workspace.name}".
+        #{cname.present? ? "Tên chiến dịch (chủ đề, phải dựa vào đây): #{cname}." : ''}
         Loại chiến dịch: #{I18n.t("merchant.campaign_types.#{ctype}", default: ctype)}.
         Nhóm khách nhắm tới: #{I18n.t("merchant.campaign_audiences.#{audience}", default: audience)}.
         #{reward ? "Ưu đãi kèm theo: #{reward.title} (#{reward.value_label})." : ''}
@@ -178,12 +190,24 @@ module Merchant
       PROMPT
     end
 
+    # AI banner straight from the create form (the campaign page has its own
+    # button for later). Returns true when a job was queued.
+    def maybe_generate_banner!
+      return false unless params[:generate_banner] == "1" && AiImageService.configured?
+      @campaign.update_columns(banner_status: "generating", banner_requested_at: Time.current,
+                               updated_at: Time.current)
+      GenerateCampaignBannerJob.perform_later(@campaign.id)
+      true
+    end
+
     def maybe_generate_promo!
       return unless params[:generate_qr] == "1" && @campaign.reward_id.present?
       current_workspace.promo_codes.create!(
         campaign: @campaign, reward: @campaign.reward,
         max_claims: params[:max_claims].presence&.to_i,
-        starts_at: @campaign.starts_at, ends_at: @campaign.ends_at, active: true
+        starts_at: @campaign.starts_at, ends_at: @campaign.ends_at,
+        # Draft campaign → the QR stays dead until the merchant starts it.
+        active: @campaign.status == "running"
       )
     end
   end

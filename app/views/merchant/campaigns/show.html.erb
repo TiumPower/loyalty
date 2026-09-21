@@ -20,6 +20,9 @@
     <% if @campaign.status == "running" %>
       <%= button_to "⏸ Tạm dừng", pause_merchant_campaign_path(@campaign), method: :patch,
             class: "l-btn l-btn-soft", style: "border-color:color-mix(in srgb, var(--btn-primary) 32%, transparent);", form: { style: "display:inline;" } %>
+    <% elsif %w[draft scheduled].include?(@campaign.status) %>
+      <%= button_to "▶ Bắt đầu chạy", resume_merchant_campaign_path(@campaign), method: :patch,
+            class: "l-btn l-btn-primary", form: { style: "display:inline;" } %>
     <% elsif @campaign.status == "paused" %>
       <%= button_to "▶ Tiếp tục", resume_merchant_campaign_path(@campaign), method: :patch,
             class: "l-btn l-btn-primary", form: { style: "display:inline;" } %>

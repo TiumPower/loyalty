@@ -31,9 +31,14 @@ class GenerateCampaignBannerJob < ApplicationJob
 
   private
 
-  # Absolute scan URL the composited QR should encode (nil when no active promo).
+  # Absolute scan URL the composited QR should encode (nil when no usable promo).
+  # A campaign that has not started yet still has a dormant QR: its code goes
+  # live the moment the merchant presses start, so composite it now — otherwise
+  # a banner generated from the create form would carry no QR at all.
   def promo_scan_url(campaign)
-    promo = campaign.promo_codes.where(active: true).first or return nil
+    promo = campaign.promo_codes.where(active: true).first
+    promo ||= campaign.promo_codes.first if %w[draft scheduled].include?(campaign.status)
+    return nil if promo.nil?
     ws = campaign.workspace
     host = ws.custom_domain.presence || "#{ws.subdomain}.#{ApplicationController::PLATFORM_HOST}"
     "https://#{host}/scan/resolve?promo=#{promo.token}"

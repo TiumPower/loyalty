@@ -8,7 +8,8 @@
     <div class="l-panel" style="margin-bottom:16px;">
       <h3 class="l-display" style="font-size:18px; margin-bottom:12px;"><%= t("merchant.campaigns.s1") %></h3>
       <label class="l-label"><%= t("merchant.campaigns.name") %></label>
-      <%= f.text_field :name, class: "l-field", placeholder: t("merchant.campaigns.name_ph") %>
+      <%= f.text_field :name, class: "l-field", placeholder: t("merchant.campaigns.name_ph"),
+            data: { campaigngen_target: "name" } %>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
         <div>
           <label class="l-label"><%= t("merchant.campaigns.kind") %></label>
@@ -59,8 +60,16 @@
         </label>
         <label class="l-label" style="margin-top:12px;"><%= t("merchant.campaigns.max_claims") %></label>
         <%= number_field_tag "max_claims", 200, class: "l-field", style: "max-width:180px;" %>
+        <%# The banner used to be reachable only from an existing campaign's page. %>
+        <% if AiImageService.configured? %>
+          <label style="display:flex; align-items:flex-start; gap:8px; font-size:14px; margin-top:14px;">
+            <%= check_box_tag "generate_banner", "1", false %>
+            <span>🎨 <%= t("merchant.campaigns.gen_banner_now") %></span>
+          </label>
+        <% end %>
       </div>
-      <%= f.hidden_field :status, value: "running" %>
+      <%# Created idle on purpose — the merchant starts it from the campaign page. %>
+      <%= f.hidden_field :status, value: "draft" %>
     <% end %>
 
     <%= f.submit(@campaign.persisted? ? t("merchant.campaigns.save") : t("merchant.campaigns.create"), class: "l-btn l-btn-primary") %>
