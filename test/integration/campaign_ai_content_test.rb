@@ -104,4 +104,65 @@ class CampaignAiContentTest < ActionDispatch::IntegrationTest
     assert_match(/value="draft"[^>]*name="campaign\[status\]"/, response.body)
     assert_no_match(/value="running"[^>]*name="campaign\[status\]"/, response.body)
   end
+
+  # Baking the claim QR into the banner is the merchant's choice.
+  test "the banner QR is only baked in when asked for and a QR exists" do
+    reward = ActsAsTenant.with_tenant(@ws) do
+      Reward.create!(workspace: @ws, title: "Trà sữa", kind: "voucher", cost_points: 80,
+                     value_unit: "item", active: true)
+    end
+    last_id = -> { ActsAsTenant.with_tenant(@ws) { Campaign.order(:id).last.id } }
+
+    AiImageService.stub(:configured?, true) do
+      # Asked for, and the campaign does have a claim QR → baked in.
+      post "/merchant/campaigns", params: {
+        campaign: { name: "Có QR", campaign_type: "promo_voucher", audience: "all",
+                    status: "draft", reward_id: reward.id },
+        generate_qr: "1", generate_banner: "1", banner_include_qr: "1"
+      }
+      assert_equal [last_id.call, true], enqueued_jobs.last["arguments"]
+
+      # Not asked for → plain banner.
+      post "/merchant/campaigns", params: {
+        campaign: { name: "Không QR", campaign_type: "promo_voucher", audience: "all",
+                    status: "draft", reward_id: reward.id },
+        generate_qr: "1", generate_banner: "1"
+      }
+      assert_equal [last_id.call, false], enqueued_jobs.last["arguments"]
+
+      # Asked for, but no claim QR was created → nothing to bake in.
+      post "/merchant/campaigns", params: {
+        campaign: { name: "Không mã", campaign_type: "event", audience: "all", status: "draft" },
+        generate_banner: "1", banner_include_qr: "1"
+      }
+      assert_equal [last_id.call, false], enqueued_jobs.last["arguments"]
+    end
+  end
+
+  # The campaign page's banner button carries the same QR choice.
+  test "the campaign page offers the banner QR choice and honours it" do
+    reward = ActsAsTenant.with_tenant(@ws) do
+      Reward.create!(workspace: @ws, title: "Bánh", kind: "voucher", cost_points: 50,
+                     value_unit: "item", active: true)
+    end
+    campaign, promo = ActsAsTenant.with_tenant(@ws) do
+      c = Campaign.create!(workspace: @ws, name: "Cuối tuần", campaign_type: "promo_voucher",
+                           audience: "all", status: "running", reward: reward)
+      [c, PromoCode.create!(workspace: @ws, campaign: c, reward: reward, active: true)]
+    end
+    assert promo.persisted?
+
+    AiImageService.stub(:configured?, true) do
+      get "/merchant/campaigns/#{campaign.id}"
+      assert_response :success
+      assert_match I18n.t("merchant.campaigns.banner_include_qr"), response.body
+
+      patch "/merchant/campaigns/#{campaign.id}/generate_banner", params: { include_qr: "1" }
+      assert_equal [campaign.id, true], enqueued_jobs.last["arguments"]
+      assert_equal "generating", campaign.reload.banner_status
+
+      patch "/merchant/campaigns/#{campaign.id}/generate_banner"
+      assert_equal [campaign.id, false], enqueued_jobs.last["arguments"]
+    end
+  end
 end

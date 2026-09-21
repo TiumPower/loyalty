@@ -66,6 +66,15 @@
             <%= check_box_tag "generate_banner", "1", false %>
             <span>🎨 <%= t("merchant.campaigns.gen_banner_now") %></span>
           </label>
+          <%# Baking in the QR is a choice: a banner meant for Facebook/Zalo is
+              often nicer without one. %>
+          <label style="display:flex; align-items:flex-start; gap:8px; font-size:14px; margin:10px 0 0 26px;">
+            <%= check_box_tag "banner_include_qr", "1", true %>
+            <span>
+              <%= t("merchant.campaigns.banner_include_qr") %>
+              <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.campaigns.banner_include_qr_hint") %></span>
+            </span>
+          </label>
         <% end %>
       </div>
       <%# Created idle on purpose — the merchant starts it from the campaign page. %>

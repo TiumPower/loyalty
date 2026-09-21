@@ -1,7 +1,9 @@
 class GenerateCampaignBannerJob < ApplicationJob
   queue_as :default
 
-  def perform(campaign_id)
+  # with_qr: the merchant asks per banner whether the claim QR should be baked
+  # in (default true for jobs enqueued before the option existed).
+  def perform(campaign_id, with_qr = true)
     campaign = Campaign.find_by(id: campaign_id) or return
     ActsAsTenant.with_tenant(campaign.workspace) do
       result = AiImageService.safe_call(fallback: nil) do
@@ -14,15 +16,15 @@ class GenerateCampaignBannerJob < ApplicationJob
 
       # Composite the real scannable QR onto the banner (keeps the nice look
       # while the code actually works). Falls back to the plain image on error.
-      bytes = result[:bytes]
-      if (scan_url = promo_scan_url(campaign))
-        bytes = BannerComposer.new(ai_bytes: bytes, qr_url: scan_url).call
-      end
+      scan_url = with_qr ? promo_scan_url(campaign) : nil
+      bytes = BannerComposer.new(ai_bytes: result[:bytes], qr_url: scan_url).call
 
       campaign.banner.attach(io: StringIO.new(bytes),
                              filename: "banner-#{campaign.id}.png",
                              content_type: "image/png")
-      campaign.update_columns(banner_status: "ready", updated_at: Time.current)
+      # The public share page shows a standalone QR when the banner has none.
+      campaign.update_columns(banner_status: "ready", banner_has_qr: scan_url.present?,
+                              updated_at: Time.current)
     end
   rescue => e
     Rails.logger.error("[GenerateCampaignBannerJob] #{e.class}: #{e.message}")

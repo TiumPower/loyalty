@@ -79,8 +79,7 @@ module Merchant
       unless AiImageService.configured?
         return redirect_to merchant_campaign_path(@campaign), alert: t("merchant.campaigns.banner_no_key")
       end
-      @campaign.update_columns(banner_status: "generating", banner_requested_at: Time.current, updated_at: Time.current)
-      GenerateCampaignBannerJob.perform_later(@campaign.id)
+      queue_banner!(params[:include_qr] == "1" && @campaign.promo_codes.exists?)
       redirect_to merchant_campaign_path(@campaign), notice: t("merchant.campaigns.banner_generating")
     end
 
@@ -194,10 +193,17 @@ module Merchant
     # button for later). Returns true when a job was queued.
     def maybe_generate_banner!
       return false unless params[:generate_banner] == "1" && AiImageService.configured?
+      # Only promise a QR on the banner when there is actually a code to put
+      # there — the merchant may have skipped the claim QR above.
+      with_qr = params[:banner_include_qr] == "1" && @campaign.promo_codes.exists?
+      queue_banner!(with_qr)
+      true
+    end
+
+    def queue_banner!(with_qr)
       @campaign.update_columns(banner_status: "generating", banner_requested_at: Time.current,
                                updated_at: Time.current)
-      GenerateCampaignBannerJob.perform_later(@campaign.id)
-      true
+      GenerateCampaignBannerJob.perform_later(@campaign.id, with_qr)
     end
 
     def maybe_generate_promo!

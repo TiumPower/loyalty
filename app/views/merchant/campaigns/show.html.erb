@@ -82,9 +82,19 @@
         <% end %>
       </div>
       <% if AiImageService.configured? %>
-        <%= button_to t("merchant.campaigns.gen_banner"), generate_banner_merchant_campaign_path(@campaign), method: :patch,
-              class: "l-btn l-btn-soft", style: "padding:8px 14px; font-size:13px;",
-              form: { style: "display:inline; margin:0;" } %>
+        <%= form_with url: generate_banner_merchant_campaign_path(@campaign), method: :patch,
+              html: { style: "display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0;" } do %>
+          <%# The QR is opt-in per banner: one meant for Facebook/Zalo often
+              looks better without it. %>
+          <% if @promo %>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-2);">
+              <%= check_box_tag "include_qr", "1", true %>
+              <%= t("merchant.campaigns.banner_include_qr") %>
+            </label>
+          <% end %>
+          <%= submit_tag t("merchant.campaigns.gen_banner"), class: "l-btn l-btn-soft",
+                style: "padding:8px 14px; font-size:13px;" %>
+        <% end %>
       <% end %>
     </div>
     <p style="font-size:12px; color:var(--ink-2); margin-top:8px;"><%= t("merchant.campaigns.share_note") %></p>
@@ -94,7 +104,9 @@
 <div style="display:grid; grid-template-columns:<%= @promo ? '1fr 360px' : '1fr' %>; gap:20px; align-items:start;">
   <div class="l-panel">
     <% if @campaign.banner.attached? %>
-      <%= image_tag @campaign.banner.variant(resize_to_limit: [800, 400]),
+      <%# A 800px variant blew up soft on retina; serve the banner at its own
+          16:9 resolution and let the browser scale it down. %>
+      <%= image_tag @campaign.banner.variant(resize_to_limit: [BannerComposer::W, BannerComposer::H]),
             style: "width:100%; border-radius:14px; margin-bottom:14px; display:block;" %>
     <% end %>
     <h2 class="l-display" style="font-size:22px;"><%= @campaign.name %></h2>
