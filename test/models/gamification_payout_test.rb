@@ -107,10 +107,9 @@ class GamificationPayoutTest < ActiveSupport::TestCase
     assert_equal 1, reward.reload.redeemed_count
   end
 
-  test "a card still completes and resets even when the prize ran out" do
-    # Attaching a sold-out reward is refused now, so set the card up while the
-    # prize is still available and let it run out afterwards — which is how this
-    # happens in real life anyway.
+  # Used to complete + reset with no voucher: the customer lost the card AND got
+  # nothing. It is now held full until the prize is back (see StampCardHoldTest).
+  test "a full card is held, not spent, when the prize ran out" do
     reward = limited_reward(stock: 1)
     card = StampCard.create!(workspace: @ws, title: "Mua 2 tặng 1", target_count: 2,
                              reward: reward, active: true)
@@ -120,10 +119,11 @@ class GamificationPayoutTest < ActiveSupport::TestCase
     sm.add_stamp!
     result = sm.add_stamp!
 
-    assert result[:completed]
+    assert_not result[:completed]
+    assert result[:held]
     assert_nil result[:voucher]
-    assert_equal 0, sm.reload.count, "the card did not reset"
-    assert_equal 1, sm.completed_count
+    assert_equal 2, sm.reload.count, "the customer's stamps were taken anyway"
+    assert_equal 0, sm.completed_count
   end
 
   # --- automations (welcome / birthday / win-back) -------------------------

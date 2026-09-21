@@ -35,6 +35,14 @@
 
         <% if card.reward %>
           <p style="font-size:12px; color:var(--ink-2); margin-top:12px;"><%= t("customer.stamps.complete_to_get_html", reward: card.reward.title) %><% if m.completed_count.positive? %><%= t("customer.stamps.redeemed_times", n: m.completed_count) %><% end %></p>
+          <%# Card full but the prize ran out: the stamps are kept, so say so —
+              otherwise a full card that pays out nothing looks broken. %>
+          <% if m.held_for_stock? %>
+            <div style="margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--surface-2); font-size:12.5px; line-height:1.5;">
+              <strong>⏳ <%= t("customer.stamps.held_title") %></strong>
+              <div style="color:var(--ink-2); margin-top:2px;"><%= t("customer.stamps.held_body", reward: card.reward.title) %></div>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>

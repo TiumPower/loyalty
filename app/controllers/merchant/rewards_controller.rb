@@ -44,6 +44,9 @@ module Merchant
 
     def update
       if @reward.update(reward_params)
+        # Restocking is the fix for a stamp card being held full — pay those out
+        # now instead of making the customer buy one more item to trigger it.
+        settle_held_stamp_cards
         redirect_to merchant_rewards_path, notice: "Đã cập nhật ưu đãi."
       else
         render :edit, status: :unprocessable_entity
@@ -59,6 +62,7 @@ module Merchant
                            alert: @reward.errors.full_messages.to_sentence.presence ||
                                   t("merchant.rewards.toggle_failed")
       end
+      settle_held_stamp_cards
       redirect_to merchant_rewards_path(request.query_parameters),
                   notice: @reward.active? ? "Đã bật ưu đãi." : "Đã tắt ưu đãi."
     end
@@ -87,6 +91,11 @@ module Merchant
     private
 
     def nav_key = :rewards
+
+    def settle_held_stamp_cards
+      return unless @reward.active? && @reward.in_stock? && @reward.stamp_cards.exists?
+      SettleHeldStampCardsJob.perform_later(@reward.id)
+    end
 
     def set_reward
       @reward = current_workspace.rewards.find(params[:id])

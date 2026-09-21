@@ -52,6 +52,19 @@ module MerchantAlerts
          dedup_key: "reward_oos:#{reward.id}:#{reward.stock}")
   end
 
+  # A customer filled a stamp card but the prize has run out, so the card is
+  # being held. This is money waiting at the counter — keyed on the stock level
+  # so restocking and running out again alerts afresh, without one per stamp.
+  def stamp_reward_exhausted(card)
+    reward = card&.reward or return
+    push(card.workspace,
+         kind: "reward_stock", level: "danger", icon: "⏳",
+         title: I18n.t("merchant.alerts.stamp_held_title", card: card.title),
+         body: I18n.t("merchant.alerts.stamp_held_body", title: reward.title),
+         link: "/merchant/rewards",
+         dedup_key: "stamp_held:#{card.id}:#{reward.id}:#{reward.stock}")
+  end
+
   # A photo-proof mission is waiting for a human. One alert per pending queue per
   # day is enough to get someone to open it.
   def mission_submission(progress)

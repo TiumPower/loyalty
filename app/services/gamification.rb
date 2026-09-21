@@ -56,8 +56,52 @@ module Gamification
     ws.stamp_cards.active.each do |card|
       next unless card.running?
       result = card.membership_for(member).add_stamp!
-      notify_stamp_reward(member, ws, card, result[:voucher]) if result[:completed] && result[:voucher]
+      if result[:completed] && result[:voucher]
+        notify_stamp_reward(member, ws, card, result[:voucher])
+      elsif result[:newly_held]
+        # Full card, prize ran out. Say so on both sides: the customer would
+        # otherwise watch the card stay full with no explanation, and the
+        # merchant is the only one who can fix it.
+        notify_stamp_held(member, ws, card)
+        MerchantAlerts.stamp_reward_exhausted(card)
+      end
     end
+  end
+
+  # The merchant restocked (or re-enabled) a prize: hand it to everyone whose
+  # card has been sitting full waiting for it. Stops as soon as stock runs out
+  # again, so a 3-suất restock pays the first three cards and holds the rest.
+  def settle_held_cards(reward)
+    return 0 unless reward&.active? && reward.in_stock?
+    ws = reward.workspace
+    settled = 0
+    ActsAsTenant.with_tenant(ws) do
+      ws.stamp_cards.active.where(reward_id: reward.id).each do |card|
+        StampCardMembership.where(stamp_card_id: card.id)
+                           .where("count >= ?", card.target_count)
+                           .order(:updated_at).each do |sm|
+          voucher = sm.settle_held! or next
+          settled += 1
+          notify_stamp_reward(sm.member, ws, card, voucher)
+        end
+      end
+    end
+    settled
+  rescue => e
+    Rails.logger.error("[Gamification] settle_held_cards: #{e.class} #{e.message}")
+    settled.to_i
+  end
+
+  # The card is full and waiting — nothing was taken from the customer.
+  def notify_stamp_held(member, ws, card)
+    title = I18n.t("customer.stamps.held_notice_title")
+    body  = I18n.t("customer.stamps.held_notice_body", card: card.title,
+                                                       reward: card.reward&.title)
+    Notification.create!(workspace: ws, member: member, kind: "system",
+                         title: title, body: body, icon: "⏳", deep_link: "/stamps")
+    PushJob.perform_later(ws.id, [member.id], title, body, "/stamps") if PushSender.configured?
+  rescue => e
+    Rails.logger.error("[Gamification] notify_stamp_held: #{e.class} #{e.message}")
   end
 
   # Let the customer know a stamp card completed and a reward landed in their
