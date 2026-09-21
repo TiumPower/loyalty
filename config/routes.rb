@@ -143,7 +143,9 @@ Rails.application.routes.draw do
       # Pause / run straight from the list, without saving the whole card (JSON).
       patch :toggle, on: :member
     end
-    resources :missions,    only: [:create, :update, :destroy]
+    resources :missions,    only: [:create, :update, :destroy] do
+      patch :toggle, on: :member # pause / run inline (JSON), same as stamp cards
+    end
     resources :mission_submissions, only: [:index] do
       member do
         patch :approve

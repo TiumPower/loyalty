@@ -374,7 +374,12 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-stamp-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:14px; }
 .l-stamp-dot { aspect-ratio:1; border-radius:50%; border:2px dashed var(--line); display:grid; place-items:center;
   color:var(--ink-2); font-weight:700; font-size:14px; }
-.l-stamp-dot.filled { background:var(--primary); border-style:solid; border-color:var(--primary); color:#fff;
+/* A collected stamp is history — keep it quiet so the eye lands on the empty
+   slots, i.e. what the customer still has to do. Solid primary on every filled
+   dot made a nearly-full card read as a wall of colour. */
+.l-stamp-dot.filled { background:color-mix(in srgb, var(--primary) 13%, var(--surface));
+  border-style:solid; border-color:color-mix(in srgb, var(--primary) 30%, transparent);
+  color:color-mix(in srgb, var(--primary) 70%, var(--ink-2));
   animation:stampPop .3s ease-out; }
 .l-stamp-dot.reward { border-color:var(--primary-2); color:var(--primary-2); }
 @keyframes stampPop { 0%{ transform:scale(0.4); } 70%{ transform:scale(1.15); } 100%{ transform:scale(1); } }

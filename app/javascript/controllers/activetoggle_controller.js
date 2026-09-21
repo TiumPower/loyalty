@@ -1,13 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Pause / run a stamp card straight from the list. The checkbox it replaces was
-// only applied when the whole card was saved, so a merchant who ticked it and
-// walked away left the card running. This writes immediately over fetch and
-// repaints the button + the "paused" chip in place — no page reload, so an open
-// editor keeps whatever the merchant was typing.
+// Pause / run a stamp card or a mission straight from the list. The checkbox it
+// replaces was only applied when the whole row was saved, so a merchant who
+// ticked it and walked away left the thing running. This writes immediately over
+// fetch and repaints the button + the "paused" chip in place — no page reload,
+// so an open editor keeps whatever the merchant was typing.
 export default class extends Controller {
   static targets = ["button", "chip"]
-  static values = { url: String, active: Boolean, run: String, pause: String, working: String }
+  static values = { url: String, active: Boolean, run: String, pause: String, working: String, error: String }
 
   async toggle(event) {
     // The button lives inside <summary>, whose default click opens/closes the
@@ -32,7 +32,7 @@ export default class extends Controller {
       this.render()
     } catch (e) {
       btn.textContent = previous
-      alert("Không đổi được trạng thái thẻ tem. Vui lòng thử lại.")
+      alert(this.errorValue)
     } finally {
       btn.disabled = false
     }

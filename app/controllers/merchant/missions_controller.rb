@@ -28,6 +28,19 @@ module Merchant
       end
     end
 
+    # Pause / resume without saving the rest of the mission. JSON for the inline
+    # button, HTML redirect for a client without JS.
+    def toggle
+      mission = current_workspace.missions.find(params[:id])
+      mission.update_columns(active: !mission.active?, updated_at: Time.current)
+      notice = mission.active? ? t("merchant.gami.mission_resumed", title: mission.title)
+                               : t("merchant.gami.mission_suspended", title: mission.title)
+      respond_to do |format|
+        format.json { render json: { ok: true, active: mission.active?, notice: notice } }
+        format.html { redirect_to merchant_gamification_path, notice: notice }
+      end
+    end
+
     def destroy
       current_workspace.missions.find(params[:id]).destroy
       redirect_to merchant_gamification_path, notice: "Đã xoá nhiệm vụ."

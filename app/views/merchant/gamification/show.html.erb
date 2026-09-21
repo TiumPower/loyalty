@@ -48,23 +48,24 @@
       .sc-new{border-top:1px dashed var(--line); margin-top:16px; padding-top:14px;}
     </style>
     <% @stamp_cards.each do |c| %>
-      <details class="stampcard" data-controller="stamptoggle"
-               data-stamptoggle-url-value="<%= toggle_merchant_stamp_card_path(c) %>"
-               data-stamptoggle-active-value="<%= c.active? %>"
-               data-stamptoggle-run-value="<%= t("merchant.gami.stamp_run") %>"
-               data-stamptoggle-pause-value="<%= t("merchant.gami.stamp_pause") %>"
-               data-stamptoggle-working-value="<%= t("merchant.gami.stamp_toggling") %>">
+      <details class="stampcard" data-controller="activetoggle"
+               data-activetoggle-url-value="<%= toggle_merchant_stamp_card_path(c) %>"
+               data-activetoggle-active-value="<%= c.active? %>"
+               data-activetoggle-run-value="<%= t("merchant.gami.stamp_run") %>"
+               data-activetoggle-pause-value="<%= t("merchant.gami.stamp_pause") %>"
+               data-activetoggle-working-value="<%= t("merchant.gami.stamp_toggling") %>"
+               data-activetoggle-error-value="<%= t("merchant.gami.toggle_failed") %>">
         <summary>
           <span style="font-size:20px;"><%= c.display_icon %></span>
           <div style="flex:1;">
             <strong><%= c.title %></strong>
-            <span class="l-chip" data-stamptoggle-target="chip" <%= "hidden" if c.active? %>
+            <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if c.active? %>
                   style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
             <div style="font-size:12px; color:var(--ink-2);"><%= t("merchant.gami.stamp_desc", n: c.target_count, reward: c.reward&.title || "—") %></div>
           </div>
           <%# Pause/run is one click and saves on its own — it used to be a
               checkbox that only took effect when the whole card was saved. %>
-          <button type="button" data-stamptoggle-target="button" data-action="stamptoggle#toggle"
+          <button type="button" data-activetoggle-target="button" data-action="activetoggle#toggle"
                   class="l-btn <%= c.active? ? "l-btn-soft" : "l-btn-primary" %>"
                   style="padding:5px 12px; font-size:12px; white-space:nowrap;">
             <%= c.active? ? t("merchant.gami.stamp_pause") : t("merchant.gami.stamp_run") %>
@@ -117,14 +118,26 @@
       <% end %>
     </div>
     <% @missions.each do |m| %>
-      <details class="taskcard">
+      <details class="taskcard" data-controller="activetoggle"
+               data-activetoggle-url-value="<%= toggle_merchant_mission_path(m) %>"
+               data-activetoggle-active-value="<%= m.active? %>"
+               data-activetoggle-run-value="<%= t("merchant.gami.stamp_run") %>"
+               data-activetoggle-pause-value="<%= t("merchant.gami.stamp_pause") %>"
+               data-activetoggle-working-value="<%= t("merchant.gami.stamp_toggling") %>"
+               data-activetoggle-error-value="<%= t("merchant.gami.toggle_failed") %>">
         <summary>
           <span style="font-size:20px;"><%= mission_icon(m, size: 22) %></span>
           <div style="flex:1;">
             <strong><%= m.title %></strong>
-            <% unless m.active? %><span class="l-chip" style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span><% end %>
+            <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if m.active? %>
+                  style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
             <div style="font-size:12px; color:var(--ink-2);"><%= t("merchant.gami.period_#{m.period}", default: m.period) %> · <%= t("merchant.gami.points_plus", n: m.reward_points) %></div>
           </div>
+          <button type="button" data-activetoggle-target="button" data-action="activetoggle#toggle"
+                  class="l-btn <%= m.active? ? "l-btn-soft" : "l-btn-primary" %>"
+                  style="padding:5px 12px; font-size:12px; white-space:nowrap;">
+            <%= m.active? ? t("merchant.gami.stamp_pause") : t("merchant.gami.stamp_run") %>
+          </button>
           <span class="l-chip" style="font-size:11px;"><%= t("merchant.gami.edit_chip") %></span>
           <%= button_to "🗑", merchant_mission_path(m), method: :delete, class: "sc-del",
                 title: t("merchant.gami.delete_mission"),
@@ -172,9 +185,7 @@
               </div>
             </div>
 
-            <label style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:13px; color:var(--ink-2); cursor:pointer;">
-              <%= f.check_box :active %> <%= t("merchant.gami.stamp_active") %>
-            </label>
+            <%# Tạm dừng / Chạy đã có nút riêng ở hàng tiêu đề (lưu ngay). %>
             <div style="display:flex; gap:8px; margin:12px 0 4px;">
               <%= f.submit t("merchant.gami.save"), class: "l-btn l-btn-primary" %>
               <button type="button" class="l-btn l-btn-ghost" onclick="this.closest('details').open=false"><%= t("merchant.gami.collapse") %></button>

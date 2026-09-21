@@ -52,4 +52,20 @@ class StampCardToggleTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     assert @card.reload.active?
   end
+
+  # Missions got the same treatment as stamp cards.
+  test "a mission toggles inline too" do
+    mission = ActsAsTenant.with_tenant(@ws) do
+      Mission.create!(workspace: @ws, title: "Check-in mỗi ngày", mission_type: "checkin",
+                      period: "daily", reward_points: 20, goal: 1, active: true)
+    end
+    patch "/merchant/missions/#{mission.id}/toggle", as: :json
+    assert_response :success
+    assert_equal false, JSON.parse(response.body)["active"]
+    assert_not mission.reload.active?
+
+    get "/merchant/gamification"
+    assert_match toggle_merchant_mission_path(mission), response.body
+    assert_no_match(/type="checkbox"[^>]*name="mission\[active\]"/, response.body)
+  end
 end
