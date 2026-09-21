@@ -13,7 +13,7 @@ module Merchant
       # "Bắt đầu chạy" on the campaign page when it should go out.
       @campaign = current_workspace.campaigns.new(campaign_type: "promo_voucher", audience: "all",
                                                   status: "draft", starts_at: Time.current)
-      @rewards = current_workspace.rewards.active.ordered.to_a
+      @rewards = reward_options
     end
 
     def create
@@ -31,7 +31,7 @@ module Merchant
         notice += " " + t("merchant.campaigns.created_banner_suffix") if banner
         redirect_to merchant_campaign_path(@campaign), notice: notice
       else
-        @rewards = current_workspace.rewards.active.ordered.to_a
+        @rewards = reward_options
         render :new, status: :unprocessable_entity
       end
     end
@@ -47,14 +47,14 @@ module Merchant
     end
 
     def edit
-      @rewards = current_workspace.rewards.active.ordered.to_a
+      @rewards = reward_options
     end
 
     def update
       if @campaign.update(campaign_params)
         redirect_to merchant_campaign_path(@campaign), notice: "Đã cập nhật chiến dịch."
       else
-        @rewards = current_workspace.rewards.active.ordered.to_a
+        @rewards = reward_options
         render :edit, status: :unprocessable_entity
       end
     end
@@ -157,6 +157,16 @@ module Merchant
     private
 
     def nav_key = :campaigns
+
+    # Rewards the merchant may attach: a sold-out one would send customers to a
+    # QR that always refuses, so it is off the list. The campaign's own reward
+    # stays selectable even after it runs out, so editing doesn't drop it.
+    def reward_options
+      rewards = current_workspace.rewards.active.in_stock.ordered.to_a
+      current = @campaign&.reward
+      rewards << current if current && rewards.none? { |r| r.id == current.id }
+      rewards
+    end
 
     def set_campaign
       @campaign = current_workspace.campaigns.find(params[:id])

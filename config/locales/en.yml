@@ -750,6 +750,8 @@ en:
       s3: "3 · Reward & schedule"
       reward: "Attached reward (voucher)"
       reward_none: "— None —"
+      reward_sold_out: "Reward “%{title}” is sold out — raise its stock under Rewards, or pick another reward."
+      reward_opt_sold_out: " · sold out"
       starts: "Starts"
       ends: "Ends"
       s4: "4 · Claim QR & banner"

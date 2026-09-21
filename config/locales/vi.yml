@@ -753,6 +753,8 @@ vi:
       s3: "3 · Ưu đãi & thời gian"
       reward: "Ưu đãi tặng kèm (voucher)"
       reward_none: "— Không —"
+      reward_sold_out: "Ưu đãi “%{title}” đã hết suất — hãy tăng số suất trong trang Ưu đãi, hoặc chọn ưu đãi khác."
+      reward_opt_sold_out: " · hết suất"
       starts: "Bắt đầu"
       ends: "Kết thúc"
       s4: "4 · Mã QR phát hành & banner"

@@ -14,6 +14,10 @@ class Campaign < ApplicationRecord
   validates :name, presence: true
   validates :campaign_type, inclusion: { in: TYPES }
   validates :status, inclusion: { in: STATUSES }
+  # A sold-out reward can't be handed out, so a campaign built on one would send
+  # customers to a QR that always refuses. Only checked when the reward is being
+  # attached or swapped — an existing campaign whose prize ran out stays saveable.
+  validate :reward_has_stock_left, if: -> { reward_id_changed? && reward.present? }
 
   before_create :ensure_share_slug
 
@@ -51,4 +55,13 @@ class Campaign < ApplicationRecord
   end
 
   def status_label = I18n.t("merchant.campaign_statuses.#{status}", default: status)
+
+  private
+
+  def reward_has_stock_left
+    return if reward.in_stock?
+    # :base — the form prints full_messages, and an attribute prefix here would
+    # read as "Reward ..." in front of an already complete sentence.
+    errors.add(:base, I18n.t("merchant.campaigns.reward_sold_out", title: reward.title))
+  end
 end

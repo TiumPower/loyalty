@@ -43,7 +43,9 @@
     <div class="l-panel" style="margin-bottom:16px;">
       <h3 class="l-display" style="font-size:18px; margin-bottom:12px;"><%= t("merchant.campaigns.s3") %></h3>
       <label class="l-label"><%= t("merchant.campaigns.reward") %></label>
-      <%= f.select :reward_id, @rewards.map { |r| ["#{r.display_icon} #{r.title}", r.id] },
+      <%# A sold-out reward is not offered at all (see #reward_options); the only
+          one that can show up here is this campaign's own, flagged as such. %>
+      <%= f.select :reward_id, @rewards.map { |r| ["#{r.display_icon} #{r.title}#{r.in_stock? ? '' : t('merchant.campaigns.reward_opt_sold_out')}", r.id] },
             { include_blank: t("merchant.campaigns.reward_none") }, class: "l-field",
             data: { campaign_preview_target: "reward", campaigngen_target: "reward", action: "change->campaign-preview#update" } %>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">

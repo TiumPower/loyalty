@@ -57,6 +57,8 @@ class Reward < ApplicationRecord
   def archived? = archived_at.present?
   # Rewards a member can redeem with points right now.
   scope :redeemable, -> { active.where.not(cost_points: nil) }
+  # Mirrors #in_stock? in SQL, for pickers that must not offer a sold-out prize.
+  scope :in_stock, -> { where("stock IS NULL OR redeemed_count < stock") }
 
   def in_stock?  = stock.nil? || stock > redeemed_count
 
