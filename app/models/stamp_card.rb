@@ -1,5 +1,7 @@
 class StampCard < ApplicationRecord
   acts_as_tenant(:workspace)
+  # Refuses a reward that is off / sold out / ended (see the concern).
+  include AssignableReward
 
   belongs_to :workspace
   belongs_to :reward, optional: true

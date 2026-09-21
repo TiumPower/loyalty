@@ -32,6 +32,7 @@
   <%# ---- Stamp cards ---- %>
   <div class="l-panel" data-tabs-target="panel" data-tab="stamps">
     <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.stamps") %></h3>
+    <%= render "merchant/gamification/reward_source", context: :stamp %>
     <style>
       /* Shared "saved item" card look for stamp cards & missions (created rows vs the new-item form) */
       .stampcard,.taskcard{border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:10px;
@@ -47,14 +48,27 @@
       .sc-new{border-top:1px dashed var(--line); margin-top:16px; padding-top:14px;}
     </style>
     <% @stamp_cards.each do |c| %>
-      <details class="stampcard">
+      <details class="stampcard" data-controller="stamptoggle"
+               data-stamptoggle-url-value="<%= toggle_merchant_stamp_card_path(c) %>"
+               data-stamptoggle-active-value="<%= c.active? %>"
+               data-stamptoggle-run-value="<%= t("merchant.gami.stamp_run") %>"
+               data-stamptoggle-pause-value="<%= t("merchant.gami.stamp_pause") %>"
+               data-stamptoggle-working-value="<%= t("merchant.gami.stamp_toggling") %>">
         <summary>
           <span style="font-size:20px;"><%= c.display_icon %></span>
           <div style="flex:1;">
             <strong><%= c.title %></strong>
-            <% unless c.active? %><span class="l-chip" style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span><% end %>
+            <span class="l-chip" data-stamptoggle-target="chip" <%= "hidden" if c.active? %>
+                  style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
             <div style="font-size:12px; color:var(--ink-2);"><%= t("merchant.gami.stamp_desc", n: c.target_count, reward: c.reward&.title || "—") %></div>
           </div>
+          <%# Pause/run is one click and saves on its own — it used to be a
+              checkbox that only took effect when the whole card was saved. %>
+          <button type="button" data-stamptoggle-target="button" data-action="stamptoggle#toggle"
+                  class="l-btn <%= c.active? ? "l-btn-soft" : "l-btn-primary" %>"
+                  style="padding:5px 12px; font-size:12px; white-space:nowrap;">
+            <%= c.active? ? t("merchant.gami.stamp_pause") : t("merchant.gami.stamp_run") %>
+          </button>
           <span class="l-chip" style="font-size:11px;"><%= t("merchant.gami.edit_chip") %></span>
           <%= button_to "🗑", merchant_stamp_card_path(c), method: :delete, class: "sc-del",
                 title: t("merchant.gami.delete_stamp"),
@@ -65,12 +79,10 @@
             <%= f.text_field :title, class: "l-field", style: "margin:4px 0 8px;" %>
             <div style="display:grid; grid-template-columns:80px 1fr; gap:8px;">
               <%= f.number_field :target_count, class: "l-field" %>
-              <%= f.select :reward_id, @rewards.map { |r| [t("merchant.gami.reward_opt", title: r.title), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
+              <%= f.select :reward_id, @rewards.map { |r| [reward_option_label(r), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
             </div>
             <div style="margin-top:8px;"><%= render "merchant/shared/icon_field", name: "stamp_card[icon]", value: c.icon, placeholder: "🧋" %></div>
-            <label style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:13px; color:var(--ink-2); cursor:pointer;">
-              <%= f.check_box :active %> <%= t("merchant.gami.stamp_active") %>
-            </label>
+            <%# Tạm dừng / Chạy đã có nút riêng ở hàng tiêu đề (lưu ngay). %>
             <div style="display:flex; gap:8px; margin:12px 0 4px;">
               <%= f.submit t("merchant.gami.save"), class: "l-btn l-btn-primary" %>
               <button type="button" class="l-btn l-btn-ghost" onclick="this.closest('details').open=false"><%= t("merchant.gami.collapse") %></button>
@@ -86,7 +98,7 @@
         <input type="text" name="stamp_card[title]" class="l-field" placeholder="<%= t("merchant.gami.stamp_title_ph") %>">
         <div style="display:grid; grid-template-columns:80px 1fr; gap:8px; margin-top:8px;">
           <%= f.number_field :target_count, value: 9, class: "l-field", placeholder: t("merchant.gami.num") %>
-          <%= f.select :reward_id, @rewards.map { |r| [t("merchant.gami.reward_opt", title: r.title), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
+          <%= f.select :reward_id, @rewards.map { |r| [reward_option_label(r), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
         </div>
         <div style="margin-top:8px;"><%= render "merchant/shared/icon_field", name: "stamp_card[icon]", placeholder: "🧋" %></div>
         <%= f.hidden_field :active, value: true %>
@@ -224,6 +236,7 @@
   <% crit = { "first_purchase" => t("merchant.gami.crit_first"), "purchases_count" => t("merchant.gami.crit_count"), "points_total" => t("merchant.gami.crit_points"), "night_owl" => t("merchant.gami.crit_night") } %>
   <div class="l-panel" data-tabs-target="panel" data-tab="badges" hidden>
     <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.badges") %></h3>
+    <%= render "merchant/gamification/reward_source", context: :badge %>
     <% @badges.each do |b| %>
       <details class="l-editrow">
         <summary style="display:flex; align-items:center; gap:10px; padding:8px 0; cursor:pointer; list-style:none;">
@@ -256,7 +269,7 @@
             </div>
           </div>
           <label class="l-label" style="margin-top:10px; display:block;"><%= t("merchant.gami.badge_reward_label") %></label>
-          <%= f.select :reward_id, @rewards.map { |r| [t("merchant.gami.reward_opt", title: r.title), r.id] }, { include_blank: t("merchant.gami.badge_reward_blank") }, class: "l-field" %>
+          <%= f.select :reward_id, @rewards.map { |r| [reward_option_label(r), r.id] }, { include_blank: t("merchant.gami.badge_reward_blank") }, class: "l-field" %>
           <p style="font-size:11.5px; color:var(--ink-2); margin:4px 0 0;"><%= t("merchant.gami.badge_reward_hint") %></p>
           <label class="l-label" style="margin-top:10px; display:block;"><%= t("merchant.gami.badge_desc_label") %></label>
           <%= f.text_area :description, rows: 2, class: "l-field", style: "margin-top:4px; resize:vertical;", placeholder: t("merchant.gami.badge_desc_ph") %>
@@ -289,7 +302,7 @@
         </div>
       </div>
       <label class="l-label" style="margin-top:10px; display:block;"><%= t("merchant.gami.badge_reward_label") %></label>
-      <%= select_tag "badge[reward_id]", options_for_select(@rewards.map { |r| [t("merchant.gami.reward_opt", title: r.title), r.id] }), include_blank: t("merchant.gami.badge_reward_blank"), class: "l-field" %>
+      <%= select_tag "badge[reward_id]", options_for_select(@rewards.map { |r| [reward_option_label(r), r.id] }), include_blank: t("merchant.gami.badge_reward_blank"), class: "l-field" %>
       <label class="l-label" style="margin-top:10px; display:block;"><%= t("merchant.gami.badge_desc_label") %></label>
       <textarea name="badge[description]" rows="2" class="l-field" style="margin-top:4px; resize:vertical;" placeholder="<%= t("merchant.gami.badge_desc_ph") %>"></textarea>
       <p style="font-size:11.5px; color:var(--ink-2); margin:4px 0 0;"><%= t("merchant.gami.badge_desc_hint") %></p>

@@ -60,6 +60,34 @@ class Reward < ApplicationRecord
   # Mirrors #in_stock? in SQL, for pickers that must not offer a sold-out prize.
   scope :in_stock, -> { where("stock IS NULL OR redeemed_count < stock") }
 
+  # Rewards a merchant may attach to something NEW (campaign, stamp card, badge,
+  # wheel segment, automation). A prize that is off, archived, sold out or past
+  # its end date can never reach the customer, so offering it only produces
+  # configuration that silently pays out nothing. Mirrors #assignable? in SQL —
+  # keep the two in step.
+  scope :assignable, -> {
+    now = Time.current
+    active.in_stock.where(archived_at: nil)
+          .where("expires_at IS NULL OR expires_at >= ?", now)
+          .where("ends_at IS NULL OR ends_at >= ?", now)
+  }
+
+  # States that make a reward impossible to hand out (see #redeem_state).
+  # :upcoming and :closed are fine — those come back on their own schedule.
+  UNASSIGNABLE_STATES = %i[inactive ended out_of_stock].freeze
+
+  def assignable?(now = Time.current)
+    archived_at.nil? && UNASSIGNABLE_STATES.exclude?(redeem_state(now))
+  end
+
+  # Short localized reason it cannot be attached (nil when it can).
+  def unassignable_reason(now = Time.current)
+    return I18n.t("merchant.rewards.unassignable.archived") if archived_at.present?
+    state = redeem_state(now)
+    return nil if UNASSIGNABLE_STATES.exclude?(state)
+    I18n.t("merchant.rewards.unassignable.#{state}")
+  end
+
   def in_stock?  = stock.nil? || stock > redeemed_count
 
   # Claim one unit, atomically. Returns true only for the caller that got it —

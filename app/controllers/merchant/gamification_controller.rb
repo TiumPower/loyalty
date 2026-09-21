@@ -9,7 +9,9 @@ module Merchant
       @missions    = current_workspace.missions.ordered.to_a
       @badges      = current_workspace.badges.ordered.to_a
       @wheel       = current_workspace.spin_wheel || current_workspace.build_spin_wheel
-      @rewards     = current_workspace.rewards.active.ordered.to_a
+      # Everything already wired up stays pickable; nothing new that is unusable.
+      @rewards     = assignable_rewards(@stamp_cards.map(&:reward_id), @badges.map(&:reward_id),
+                                        @wheel.segments.to_a.map { |sg| sg["reward_id"] })
       @new_stamp_card = StampCard.new(target_count: 9)
       @new_mission    = Mission.new(period: "daily", reward_points: 20, goal: 1)
     end
@@ -17,7 +19,10 @@ module Merchant
     def update_wheel
       wheel = current_workspace.spin_wheel || current_workspace.build_spin_wheel
       rows = (params[:segments] || {}).values
-      valid_reward_ids = current_workspace.rewards.pluck(:id).to_set
+      # A prize the customer can't actually receive must not be spun for: only
+      # assignable rewards, plus whatever this wheel already points at.
+      wheel_ids = wheel.segments.to_a.map { |sg| sg["reward_id"] }
+      valid_reward_ids = assignable_rewards(wheel_ids).map(&:id).to_set
       segs = rows.filter_map do |r|
         label = r[:label].to_s.strip
         next if label.blank?

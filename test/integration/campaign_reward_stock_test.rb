@@ -32,7 +32,8 @@ class CampaignRewardStockTest < ActionDispatch::IntegrationTest
       }
     end
     assert_response :unprocessable_entity
-    assert_match I18n.t("merchant.campaigns.reward_sold_out", title: "Hết suất"), response.body
+    assert_match I18n.t("merchant.rewards.reward_unavailable", title: "Hết suất",
+                        reason: I18n.t("merchant.rewards.unassignable.out_of_stock")), response.body
   end
 
   test "an unlimited reward (no stock set) is always offered" do

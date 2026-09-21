@@ -12,4 +12,13 @@ module MerchantHelper
              "border:1px solid var(--line); border-radius:999px; white-space:nowrap; background:#fff;")
     nil
   end
+
+  # Label for a reward inside a picker ("Thưởng: Cà phê"), flagged when the prize
+  # has run out — a merchant attaching a sold-out reward to a stamp card would
+  # otherwise only find out when customers complete the card and get nothing.
+  def reward_option_label(reward)
+    label = t("merchant.gami.reward_opt", title: reward.title)
+    label += t("merchant.campaigns.reward_opt_sold_out") unless reward.in_stock?
+    label
+  end
 end

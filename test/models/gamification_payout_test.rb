@@ -108,9 +108,13 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   end
 
   test "a card still completes and resets even when the prize ran out" do
-    reward = limited_reward(stock: 0)
+    # Attaching a sold-out reward is refused now, so set the card up while the
+    # prize is still available and let it run out afterwards — which is how this
+    # happens in real life anyway.
+    reward = limited_reward(stock: 1)
     card = StampCard.create!(workspace: @ws, title: "Mua 2 tặng 1", target_count: 2,
                              reward: reward, active: true)
+    reward.update_columns(stock: 0)
     sm = card.membership_for(@member)
 
     sm.add_stamp!

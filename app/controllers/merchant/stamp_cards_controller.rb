@@ -20,6 +20,19 @@ module Merchant
       end
     end
 
+    # Pause / resume without touching the rest of the card. Answers JSON for the
+    # inline button; a non-JS client still gets the page back with a notice.
+    def toggle
+      card = current_workspace.stamp_cards.find(params[:id])
+      card.update_columns(active: !card.active?, updated_at: Time.current)
+      notice = card.active? ? t("merchant.gami.stamp_resumed", title: card.title)
+                            : t("merchant.gami.stamp_suspended", title: card.title)
+      respond_to do |format|
+        format.json { render json: { ok: true, active: card.active?, notice: notice } }
+        format.html { redirect_to merchant_gamification_path, notice: notice }
+      end
+    end
+
     # Deleting a stamp card cascades to its memberships (dependent: :destroy),
     # which would wipe every customer's in-progress stamps. To avoid silently
     # erasing customer progress, only hard-delete a card nobody is collecting;

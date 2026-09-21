@@ -3,8 +3,8 @@ module Merchant
     before_action :require_manager!
 
     def show
-      @rewards = current_workspace.rewards.ordered.to_a
       @cfg     = current_workspace.settings.fetch("automations", {})
+      @rewards = assignable_rewards(@cfg.values.map { |c| c.is_a?(Hash) ? c["reward_id"] : nil })
     end
 
     def update
@@ -14,6 +14,12 @@ module Merchant
         "winback"  => { "enabled" => flag("winback", "enabled"), "reward_id" => field("winback", "reward_id").presence,
                         "days" => field("winback", "days").to_i, "message" => field("winback", "message").to_s.strip.presence },
       }
+      # An automation pointing at an unusable reward fires and gives nothing.
+      current_ids = current_workspace.settings.fetch("automations", {}).values
+                                     .map { |c| c.is_a?(Hash) ? c["reward_id"] : nil }
+      if (bad = first_unassignable(autos.values.map { |c| c["reward_id"] }, keep: current_ids))
+        return redirect_to merchant_automations_path, alert: reward_unavailable_message(bad)
+      end
       current_workspace.update!(settings: current_workspace.settings.merge("automations" => autos))
       redirect_to merchant_automations_path, notice: "Đã lưu cấu hình tự động hoá."
     end

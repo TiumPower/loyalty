@@ -14,6 +14,29 @@ module Merchant
                   :scoped_outlet, :branch_scoped?, :feature_locked?,
                   :unread_alerts_count
 
+    # Rewards to offer in any "pick a reward" list. Unusable ones (off, sold out,
+    # ended) are left out — attaching one produces config that pays out nothing.
+    # Whatever is already configured stays in the list under its own id, so
+    # saving an existing row never silently detaches its reward.
+    def assignable_rewards(*keep_ids)
+      list = current_workspace.rewards.assignable.ordered.to_a
+      ids  = keep_ids.flatten.compact.map(&:to_i).uniq - list.map(&:id)
+      list + current_workspace.rewards.where(id: ids).ordered.to_a
+    end
+
+    # First reward among `ids` that cannot be handed out — but only counting ones
+    # that are NOT already configured, so a stale setting can still be re-saved.
+    def first_unassignable(*ids, keep: [])
+      wanted = ids.flatten.compact.map(&:to_i).select(&:positive?).uniq - keep.flatten.compact.map(&:to_i)
+      return nil if wanted.empty?
+      current_workspace.rewards.where(id: wanted).find { |r| !r.assignable? }
+    end
+
+    def reward_unavailable_message(reward)
+      t("merchant.rewards.reward_unavailable",
+        title: reward.title, reason: reward.unassignable_reason)
+    end
+
     # Badge on the topbar bell. Cheap (single indexed COUNT) and only meaningful
     # for owners/managers — counter staff have nothing to act on.
     def unread_alerts_count

@@ -1,5 +1,7 @@
 class Badge < ApplicationRecord
   acts_as_tenant(:workspace)
+  # Refuses a reward that is off / sold out / ended (see the concern).
+  include AssignableReward
 
   CRITERIA = %w[first_purchase purchases_count points_total night_owl].freeze
 

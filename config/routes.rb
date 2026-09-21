@@ -139,7 +139,10 @@ Rails.application.routes.draw do
     # Gamification management
     get   "gamification",      to: "gamification#show"
     patch "gamification/wheel", to: "gamification#update_wheel", as: :wheel_config
-    resources :stamp_cards, only: [:create, :update, :destroy]
+    resources :stamp_cards, only: [:create, :update, :destroy] do
+      # Pause / run straight from the list, without saving the whole card (JSON).
+      patch :toggle, on: :member
+    end
     resources :missions,    only: [:create, :update, :destroy]
     resources :mission_submissions, only: [:index] do
       member do

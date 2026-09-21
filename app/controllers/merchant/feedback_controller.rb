@@ -14,7 +14,7 @@ module Merchant
       @count_filtered = scope.count
       @ratings = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
       @has_more = @count_filtered > @page * PER_PAGE
-      @rewards = current_workspace.rewards.active.ordered.to_a
+      @rewards = assignable_rewards(current_workspace.automation(:low_rating)["reward_id"])
     end
 
     def update
@@ -26,6 +26,11 @@ module Merchant
         "google_review_url" => normalized_review_url
       )
       # "Xin lỗi tự động": khách chấm thấp → tặng ngay một ưu đãi để giữ họ lại.
+      # Một ưu đãi không dùng được sẽ khiến lời xin lỗi thành tay không.
+      if (bad = first_unassignable(params[:low_rating_reward_id],
+                                   keep: [current_workspace.automation(:low_rating)["reward_id"]]))
+        return redirect_to merchant_feedback_path, alert: reward_unavailable_message(bad)
+      end
       settings["automations"] = (settings["automations"] || {}).merge(
         "low_rating" => {
           "enabled"   => params[:low_rating_enabled] == "1",

@@ -158,15 +158,7 @@ module Merchant
 
     def nav_key = :campaigns
 
-    # Rewards the merchant may attach: a sold-out one would send customers to a
-    # QR that always refuses, so it is off the list. The campaign's own reward
-    # stays selectable even after it runs out, so editing doesn't drop it.
-    def reward_options
-      rewards = current_workspace.rewards.active.in_stock.ordered.to_a
-      current = @campaign&.reward
-      rewards << current if current && rewards.none? { |r| r.id == current.id }
-      rewards
-    end
+    def reward_options = assignable_rewards(@campaign&.reward_id)
 
     def set_campaign
       @campaign = current_workspace.campaigns.find(params[:id])
