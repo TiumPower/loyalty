@@ -376,11 +376,17 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
   color:var(--ink-2); font-weight:700; font-size:14px; }
 /* A collected stamp is history — keep it quiet so the eye lands on the empty
    slots, i.e. what the customer still has to do. Solid primary on every filled
-   dot made a nearly-full card read as a wall of colour. */
-.l-stamp-dot.filled { background:color-mix(in srgb, var(--primary) 13%, var(--surface));
-  border-style:solid; border-color:color-mix(in srgb, var(--primary) 30%, transparent);
-  color:color-mix(in srgb, var(--primary) 70%, var(--ink-2));
-  animation:stampPop .3s ease-out; }
+   dot made a nearly-full card read as a wall of colour.
+   The soft look needs color-mix; behind @supports so a browser without it keeps
+   the old solid dot (its auto-fallback would put a primary ✓ on a primary fill,
+   i.e. an invisible tick) . */
+.l-stamp-dot.filled { background:var(--primary); border-style:solid; border-color:var(--primary);
+  color:var(--on-primary, #fff); animation:stampPop .3s ease-out; }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .l-stamp-dot.filled { background:color-mix(in srgb, var(--primary) 13%, var(--surface));
+    border-color:color-mix(in srgb, var(--primary) 30%, transparent);
+    color:color-mix(in srgb, var(--primary) 70%, var(--ink-2)); }
+}
 .l-stamp-dot.reward { border-color:var(--primary-2); color:var(--primary-2); }
 @keyframes stampPop { 0%{ transform:scale(0.4); } 70%{ transform:scale(1.15); } 100%{ transform:scale(1); } }
 
