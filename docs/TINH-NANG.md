@@ -15,7 +15,7 @@ Hệ thống gồm **ba ứng dụng** chạy chung một codebase, phân tách 
 
 | Ứng dụng | Người dùng | Đường dẫn | Đăng nhập |
 |---|---|---|---|
-| **Customer PWA** | Khách hàng cuối | `shop.loyalty.czin.net` (hoặc `/w/:slug` khi dev) | Email + mã OTP |
+| **Customer PWA** | Khách hàng cuối | `shop.loyalty.tiumpower.com` (hoặc `/w/:slug` khi dev) | Email + mã OTP |
 | **Merchant Dashboard** | Chủ shop, quản lý, thu ngân | `/merchant` | Email + mật khẩu (Devise) |
 | **Super Admin** | Vận hành nền tảng | `/admin` | Tài khoản admin riêng (Devise) |
 

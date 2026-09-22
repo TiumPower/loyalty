@@ -11,5 +11,5 @@ class AdminMailer < ApplicationMailer
 
   private
 
-  def platform_from = %(Dynamic Loyalty <#{ENV.fetch("MAIL_FROM", "no-reply@loyalty.czin.net")}>)
+  def platform_from = %(Dynamic Loyalty <#{ENV.fetch("MAIL_FROM", "no-reply@loyalty.tiumpower.com")}>)
 end

@@ -12,7 +12,7 @@ module PushSender
   def public_key = ENV["VAPID_PUBLIC_KEY"].to_s
 
   def vapid
-    { subject:     ENV.fetch("VAPID_SUBJECT", "mailto:admin@loyalty.czin.net"),
+    { subject:     ENV.fetch("VAPID_SUBJECT", "mailto:admin@loyalty.tiumpower.com"),
       public_key:  ENV["VAPID_PUBLIC_KEY"],
       private_key: ENV["VAPID_PRIVATE_KEY"] }
   end

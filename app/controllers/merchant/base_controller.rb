@@ -98,7 +98,7 @@ module Merchant
     def set_current_workspace
       return unless current_user
       # The shop subdomain (or custom domain) is authoritative when the owner
-      # can access that workspace — so cozycafe.loyalty.czin.net/merchant always
+      # can access that workspace — so cozycafe.loyalty.tiumpower.com/merchant always
       # manages Cozy Cafe, regardless of any stale session selection.
       host_ws = workspace_from_host
       if host_ws && accessible_workspaces.any? { |w| w.id == host_ws.id }

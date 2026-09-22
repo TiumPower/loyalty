@@ -113,7 +113,7 @@
     <div class="l-panel" style="text-align:center;" data-controller="pointburst">
       <div style="font-size:56px;">🎉</div>
       <h2 class="l-display" style="font-size:24px; margin-top:8px;"><%= t("merchant.onboarding.s4_title") %></h2>
-      <p style="color:var(--ink-2); margin:8px 0 20px;"><%= t("merchant.onboarding.done_html", name: @workspace.name, host: "#{@workspace.subdomain}.loyalty.czin.net").html_safe %></p>
+      <p style="color:var(--ink-2); margin:8px 0 20px;"><%= t("merchant.onboarding.done_html", name: @workspace.name, host: "#{@workspace.subdomain}.loyalty.tiumpower.com").html_safe %></p>
       <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px;">
         <span class="l-chip"><%= t("merchant.onboarding.chip_brand") %></span>
         <span class="l-chip">✓ <%= [@program.points_enabled && "Điểm", @program.tiers_enabled && "Hạng", @program.stamps_enabled && "Tem", @program.gamification_enabled && "Game"].select(&:itself).join(" · ") %></span>

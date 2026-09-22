@@ -50,8 +50,8 @@ class Workspace < ApplicationRecord
   before_validation :default_subdomain, on: :create
   before_validation :normalize_custom_domain
 
-  # The platform host itself, e.g. "loyalty.czin.net".
-  def self.platform_host = ENV.fetch("PLATFORM_HOST", "loyalty.czin.net").downcase
+  # The platform host itself, e.g. "loyalty.tiumpower.com".
+  def self.platform_host = ENV.fetch("PLATFORM_HOST", "loyalty.tiumpower.com").downcase
 
   # -- Program helpers -----------------------------------------------------
   def program

@@ -108,7 +108,7 @@ Rails.application.configure do
   config.active_job.queue_adapter = :sidekiq
 
   # Mailer URLs
-  config.action_mailer.default_url_options = { host: "loyalty.czin.net", protocol: "https" }
+  config.action_mailer.default_url_options = { host: "loyalty.tiumpower.com", protocol: "https" }
 
   # Email delivery for OTP. Prefer Brevo's HTTP API (works over 443 where SMTP
   # ports are blocked, e.g. DigitalOcean); fall back to SMTP if configured.
@@ -125,13 +125,16 @@ Rails.application.configure do
       port:                 ENV.fetch("SMTP_PORT", 587).to_i,
       user_name:            ENV["SMTP_USERNAME"],
       password:             ENV["SMTP_PASSWORD"],
-      domain:               ENV.fetch("SMTP_DOMAIN", "loyalty.czin.net"),
+      domain:               ENV.fetch("SMTP_DOMAIN", "loyalty.tiumpower.com"),
       authentication:       :login,
       enable_starttls_auto: true
     }
   end
 
   # Host authorization — apex + every shop subdomain (white-label PWA).
+  config.hosts << "loyalty.tiumpower.com"
+  config.hosts << /.*\.loyalty\.tiumpower\.com/
+  # Tên miền cũ (czin.net) — nginx đã 301 sang domain mới, giữ lại cho chắc.
   config.hosts << "loyalty.czin.net"
   config.hosts << /.*\.loyalty\.czin\.net/
   # Skip DNS rebinding protection for the default health check endpoint.

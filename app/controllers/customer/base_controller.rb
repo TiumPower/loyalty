@@ -48,7 +48,7 @@ module Customer
 
     # In production, keep the customer app on the shop's own subdomain so camera
     # permission + PWA/localStorage state aren't split between the main-domain
-    # path form (loyalty.czin.net/w/:slug) and the subdomain. Redirects the
+    # path form (loyalty.tiumpower.com/w/:slug) and the subdomain. Redirects the
     # former to the latter; leaves custom domains and dev untouched.
     def canonical_customer_host
       return unless Rails.env.production? && request.get?
