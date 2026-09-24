@@ -1,12 +1,39 @@
-# See https://www.robotstxt.org/robotstxt.html
-
-# The marketing site is the only part meant for search results. Everything
-# below is a signed-in app or an operator console; this file is served on the
-# apex host and on every shop subdomain, so the rules cover both.
-User-agent: *
-Disallow: /merchant/
-Disallow: /admin/
-Disallow: /w/
-Disallow: /scan
-Disallow: /set_locale/
+# Sản phẩm CHƯA mở công khai (2026-09-24). Việc chặn lập chỉ mục do header
+# `X-Robots-Tag: noindex` trong vhost nginx đảm nhiệm, KHÔNG phải file này.
+#
+# CỐ Ý vẫn cho Googlebot/Bingbot tải trang: nếu chặn chúng ở đây thì chúng
+# không bao giờ đọc được `noindex`, và URL nào đã lọt vào index sẽ nằm lại
+# vĩnh viễn (Google vẫn hiện URL trần, chỉ không có mô tả). Cho tải → đọc
+# được noindex → gỡ khỏi kết quả tìm kiếm.
+User-agent: Googlebot
 Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Bot thu thập dữ liệu huấn luyện AI và bot cào nội dung: chặn tải hẳn.
+# Chúng không có "index" để gỡ nên chặn ở đây là đủ và đúng chỗ.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: CCBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: Amazonbot
+User-agent: meta-externalagent
+User-agent: FacebookBot
+Disallow: /
+
+# Mọi bot còn lại: chặn tải. Hiện không công cụ tìm kiếm nào khác đang giữ
+# URL của site trong index nên không sợ mắc kẹt như trường hợp Google.
+User-agent: *
+Disallow: /
+
+# KHI MỞ CÔNG KHAI: xoá file này (hoặc trả về bản cũ) VÀ xoá dòng
+# `add_header X-Robots-Tag ...` trong /etc/nginx/sites-available/<app>.tiumpower.com.
+# Thiếu bước thứ hai thì site vẫn không bao giờ lên Google.
