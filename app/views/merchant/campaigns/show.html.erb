@@ -96,6 +96,20 @@
                 style: "padding:8px 14px; font-size:13px;" %>
         <% end %>
       <% end %>
+      <%# Own artwork — always available, including when there is no AI key. %>
+      <%= form_with url: upload_banner_merchant_campaign_path(@campaign), method: :patch,
+            data: { controller: "upload" },
+            html: { multipart: true, style: "display:inline-flex; margin:0;" } do %>
+        <button type="button" class="l-btn l-btn-soft" style="padding:8px 14px; font-size:13px;"
+                data-action="upload#pick">
+          🖼 <%= t("merchant.campaigns.upload_banner") %>
+        </button>
+        <%# Submits as soon as a file is chosen — one click less than a separate
+            "upload" button, and there is nothing else on this form to fill in. %>
+        <input type="file" name="banner" accept="image/png,image/jpeg,image/webp,image/gif"
+               data-upload-target="input" data-action="upload#changed" hidden
+               onchange="this.form.requestSubmit()">
+      <% end %>
     </div>
     <p style="font-size:12px; color:var(--ink-2); margin-top:8px;"><%= t("merchant.campaigns.share_note") %></p>
   </div>
@@ -105,9 +119,40 @@
   <div class="l-panel">
     <% if @campaign.banner.attached? %>
       <%# A 800px variant blew up soft on retina; serve the banner at its own
-          16:9 resolution and let the browser scale it down. %>
+          16:9 resolution and let the browser scale it down.
+          Cropped to 16:9 the same way the public share page crops it, so an
+          uploaded image that is square or portrait is previewed here exactly as
+          customers will see it instead of stretching down the page. %>
       <%= image_tag @campaign.banner.variant(resize_to_limit: [BannerComposer::W, BannerComposer::H]),
-            style: "width:100%; border-radius:14px; margin-bottom:14px; display:block;" %>
+            style: "width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; margin-bottom:14px; display:block;" %>
+    <% end %>
+
+    <%# ---- Banner library: every banner this campaign has had, so an earlier
+            one can be put back without uploading or generating it again. ---- %>
+    <% if @banner_library.many? || (@banner_library.any? && !@campaign.banner.attached?) %>
+      <div style="margin-bottom:16px;">
+        <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.campaigns.banner_library") %></div>
+        <div class="l-bannerlib">
+          <% @banner_library.each do |att| %>
+            <% current = att.blob_id == @current_banner_blob_id %>
+            <div class="l-bannerlib-item <%= 'active' if current %>">
+              <%= image_tag att.blob.variant(resize_to_limit: [320, 180]), alt: "" %>
+              <% if current %>
+                <span class="tag"><%= t("merchant.campaigns.banner_current") %></span>
+              <% elsif current_membership&.can_manage? %>
+                <%= button_to t("merchant.campaigns.banner_use"),
+                      select_banner_merchant_campaign_path(@campaign, attachment_id: att.id),
+                      method: :patch, class: "pick", form: { style: "margin:0;" } %>
+              <% end %>
+              <% if current_membership&.can_manage? %>
+                <%= button_to "✕", remove_banner_merchant_campaign_path(@campaign, attachment_id: att.id),
+                      method: :delete, class: "del", title: t("merchant.campaigns.banner_remove"),
+                      form: { style: "margin:0;", data: { turbo_confirm: t("merchant.campaigns.banner_remove_confirm") } } %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
     <% end %>
     <h2 class="l-display" style="font-size:22px;"><%= @campaign.name %></h2>
     <% if @campaign.content_value("title").present? %>

@@ -1,7 +1,8 @@
 module Merchant
   class CampaignsController < BaseController
     before_action :require_manager!, except: [:index, :show, :banner_jobs]
-    before_action :set_campaign, only: [:show, :edit, :update, :qr, :pause, :resume, :destroy, :generate_banner, :push]
+    before_action :set_campaign, only: [:show, :edit, :update, :qr, :pause, :resume, :destroy,
+                                        :generate_banner, :upload_banner, :select_banner, :remove_banner, :push]
 
     def index
       return render_locked_feature(:campaigns) if feature_locked?(:campaigns)
@@ -26,9 +27,13 @@ module Merchant
       @campaign = current_workspace.campaigns.new(campaign_params)
       if @campaign.save
         maybe_generate_promo! # first: the banner composites this promo's real QR
-        banner = maybe_generate_banner!
+        uploaded = maybe_attach_banner!
+        # An uploaded image IS the banner the merchant wants, so don't spend an
+        # AI call overwriting it a minute later.
+        banner = maybe_generate_banner! unless uploaded
         notice = t("merchant.campaigns.created_draft", name: @campaign.name)
         notice += " " + t("merchant.campaigns.created_banner_suffix") if banner
+        notice += " " + t("merchant.campaigns.created_upload_suffix") if uploaded
         redirect_to merchant_campaign_path(@campaign), notice: notice
       else
         @rewards = reward_options
@@ -44,6 +49,8 @@ module Merchant
       # Nothing on this page showed that the campaign had already been pushed,
       # so a manager could notify every customer a second time without knowing.
       @sends = @campaign.broadcasts.where.not(sent_at: nil).order(sent_at: :desc).limit(5).to_a
+      @banner_library = @campaign.banner_library_items
+      @current_banner_blob_id = @campaign.current_banner_blob_id
     end
 
     def edit
@@ -81,6 +88,47 @@ module Merchant
       end
       queue_banner!(params[:include_qr] == "1" && @campaign.promo_codes.exists?)
       redirect_to merchant_campaign_path(@campaign), notice: t("merchant.campaigns.banner_generating")
+    end
+
+    # Merchant uploads their own artwork. It replaces whatever banner is showing,
+    # but the previous one stays in the library and can be picked again.
+    def upload_banner
+      upload = params[:banner]
+      if (problem = Campaign.banner_upload_problem(upload))
+        return redirect_to merchant_campaign_path(@campaign),
+                           alert: t("merchant.campaigns.banner_upload_bad_#{problem}")
+      end
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: upload.tempfile, filename: upload.original_filename, content_type: upload.content_type
+      )
+      # Nothing composites a QR onto the merchant's own image, so the public
+      # share page has to keep showing its standalone one.
+      @campaign.set_banner!(blob, has_qr: false)
+      redirect_to merchant_campaign_path(@campaign), notice: t("merchant.campaigns.banner_uploaded")
+    end
+
+    # Bring back an earlier banner of this campaign — no upload, no AI call.
+    def select_banner
+      att = @campaign.banner_library_attachments.find_by(id: params[:attachment_id])
+      return redirect_to merchant_campaign_path(@campaign), alert: t("merchant.campaigns.banner_missing") if att.nil?
+
+      @campaign.set_banner!(att.blob)
+      redirect_to merchant_campaign_path(@campaign), notice: t("merchant.campaigns.banner_selected")
+    end
+
+    # Drop one image from the library for good.
+    def remove_banner
+      att = @campaign.banner_library_attachments.find_by(id: params[:attachment_id])
+      return redirect_to merchant_campaign_path(@campaign), alert: t("merchant.campaigns.banner_missing") if att.nil?
+
+      # Removing the image on display leaves the campaign with no banner at all
+      # rather than a broken one pointing at a purged file.
+      if att.blob_id == @campaign.current_banner_blob_id
+        @campaign.banner.detach
+        @campaign.update_columns(banner_status: nil, banner_has_qr: false, updated_at: Time.current)
+      end
+      att.purge_later
+      redirect_to merchant_campaign_path(@campaign), notice: t("merchant.campaigns.banner_removed")
     end
 
     # JSON poll for the global progress bar: banner jobs started recently.
@@ -189,6 +237,17 @@ module Merchant
         Bắt buộc: title tối đa 60 ký tự; body tối đa 180 ký tự, 1-2 câu. Không dùng markdown.
         Chỉ trả về đúng một object JSON: {"title": "...", "body": "..."}.
       PROMPT
+    end
+
+    # Banner image picked in the create form. Returns true when one was attached.
+    def maybe_attach_banner!
+      upload = params[:banner]
+      return false if Campaign.banner_upload_problem(upload)
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: upload.tempfile, filename: upload.original_filename, content_type: upload.content_type
+      )
+      @campaign.set_banner!(blob, has_qr: false)
+      true
     end
 
     # AI banner straight from the create form (the campaign page has its own

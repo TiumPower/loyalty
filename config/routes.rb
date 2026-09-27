@@ -119,6 +119,9 @@ Rails.application.routes.draw do
         patch :pause   # running → paused (disables its promo QR)
         patch :resume  # paused → running
         patch :generate_banner # AI banner image (OpenAI) — async
+        patch :upload_banner   # merchant uploads their own banner image
+        patch :select_banner   # re-use a banner from the campaign's library
+        delete :remove_banner  # drop one banner from the library
         post  :push    # push the campaign to its audience
       end
     end

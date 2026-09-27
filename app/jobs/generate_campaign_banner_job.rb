@@ -19,12 +19,14 @@ class GenerateCampaignBannerJob < ApplicationJob
       scan_url = with_qr ? promo_scan_url(campaign) : nil
       bytes = BannerComposer.new(ai_bytes: result[:bytes], qr_url: scan_url).call
 
-      campaign.banner.attach(io: StringIO.new(bytes),
-                             filename: "banner-#{campaign.id}.png",
-                             content_type: "image/png")
+      # Through set_banner! so the image also lands in the campaign's banner
+      # library and can be picked again after a later banner replaces it.
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new(bytes), filename: "banner-#{campaign.id}-#{Time.current.to_i}.png",
+        content_type: "image/png"
+      )
       # The public share page shows a standalone QR when the banner has none.
-      campaign.update_columns(banner_status: "ready", banner_has_qr: scan_url.present?,
-                              updated_at: Time.current)
+      campaign.set_banner!(blob, has_qr: scan_url.present?)
     end
   rescue => e
     Rails.logger.error("[GenerateCampaignBannerJob] #{e.class}: #{e.message}")

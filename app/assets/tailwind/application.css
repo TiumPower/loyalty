@@ -351,6 +351,23 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-preset .sw { display:flex; gap:6px; margin-bottom:8px; }
 .l-preset .sw span { width:22px; height:22px; border-radius:7px; }
 
+/* ---- campaign banner library (merchant) ---- */
+.l-bannerlib { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+.l-bannerlib-item { position:relative; flex:0 0 164px; border-radius:12px; overflow:hidden;
+  border:2px solid var(--line); background:var(--surface-2); line-height:0; }
+.l-bannerlib-item.active { border-color:var(--primary); }
+.l-bannerlib-item img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
+.l-bannerlib-item .tag { position:absolute; left:6px; bottom:6px; padding:3px 9px; border-radius:999px;
+  background:var(--primary); color:var(--on-primary); font-size:10.5px; font-weight:700; line-height:1.5; }
+.l-bannerlib-item .pick { position:absolute; left:6px; bottom:6px; border:none; cursor:pointer;
+  padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.94); color:var(--ink);
+  font-size:11.5px; font-weight:700; line-height:1.4; box-shadow:0 1px 4px rgba(0,0,0,.22); }
+.l-bannerlib-item .pick:hover { background:#fff; color:var(--primary); }
+.l-bannerlib-item .del { position:absolute; top:6px; right:6px; border:none; cursor:pointer;
+  width:22px; height:22px; padding:0; border-radius:50%; line-height:1;
+  background:rgba(0,0,0,.5); color:#fff; font-size:12px; }
+.l-bannerlib-item .del:hover { background:var(--warn); }
+
 /* ---- wallet tabs ---- */
 .l-wtabs { display:flex; gap:6px; background:var(--surface-2); padding:5px; border-radius:14px; margin-bottom:16px; }
 .l-wtabs button { flex:1; border:none; background:transparent; padding:9px 8px; border-radius:10px; font-size:13px; font-weight:600; color:var(--ink-2); cursor:pointer; }

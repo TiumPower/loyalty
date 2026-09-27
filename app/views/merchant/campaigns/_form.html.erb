@@ -1,7 +1,8 @@
 <div data-controller="campaign-preview campaigngen"
      data-campaigngen-url-value="<%= generate_content_merchant_campaigns_path %>"
      class="l-work wide">
-  <%= form_with model: [:merchant, @campaign] do |f| %>
+  <%# multipart: the create form can carry a banner image. %>
+  <%= form_with model: [:merchant, @campaign], html: { multipart: true } do |f| %>
     <% if @campaign.errors.any? %>
       <div class="l-chip" style="background:#F3DDD7; color:#B4402F; margin-bottom:12px;"><%= @campaign.errors.full_messages.to_sentence %></div>
     <% end %>
@@ -78,6 +79,17 @@
             </span>
           </label>
         <% end %>
+        <%# Own artwork, offered whether or not the AI key is configured. %>
+        <div style="margin-top:14px;" data-controller="upload">
+          <label class="l-label"><%= t("merchant.campaigns.upload_banner_now") %></label>
+          <button type="button" class="l-upload" data-action="upload#pick">
+            <%= ui_icon(:launch, size: 18) %>
+            <span data-upload-target="name"><%= t("merchant.campaigns.upload_banner") %></span>
+          </button>
+          <%= file_field_tag "banner", accept: "image/png,image/jpeg,image/webp,image/gif",
+                data: { upload_target: "input", action: "upload#changed" }, hidden: true %>
+          <p style="color:var(--ink-2); font-size:12.5px; margin-top:6px;"><%= t("merchant.campaigns.upload_banner_hint") %></p>
+        </div>
       </div>
       <%# Created idle on purpose — the merchant starts it from the campaign page. %>
       <%= f.hidden_field :status, value: "draft" %>
