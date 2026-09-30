@@ -1,7 +1,7 @@
 <%# Shared outcome screen for every scan that did not earn anything: same shape
     as the success screens so a failure does not look like a different app. %>
 <% tone = local_assigns.fetch(:tone, "warn") %>
-<div class="l-screen no-tabs" style="display:flex; flex-direction:column; justify-content:center; min-height:88vh;">
+<div class="l-screen" style="display:flex; flex-direction:column; justify-content:center; min-height:88vh;">
   <div class="l-result">
     <div class="halo <%= tone %>"><%= icon.is_a?(Symbol) ? ui_icon(icon, size: 38) : icon %></div>
     <h1><%= title %></h1>

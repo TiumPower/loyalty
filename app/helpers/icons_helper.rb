@@ -27,6 +27,10 @@ module IconsHelper
     tier_star:    %(<path d="M12.00 2.20 14.47 8.60 21.32 8.97 15.99 13.30 17.76 19.93 12.00 16.20 6.24 19.93 8.01 13.30 2.68 8.97 9.53 8.60Z"/>),
     tier_burst:   %(<path d="M12.00 2.20 13.91 7.38 18.93 5.07 16.62 10.09 21.80 12.00 16.62 13.91 18.93 18.93 13.91 16.62 12.00 21.80 10.09 16.62 5.07 18.93 7.38 13.91 2.20 12.00 7.38 10.09 5.07 5.07 10.09 7.38Z"/>),
     tier_diamond: %(<path d="M12 2.4 21.6 12 12 21.6 2.4 12Z"/>),
+    # A party popper: the cone, the burst it throws, and the confetti. For the
+    # moment something is unlocked — a gift box is what is *in* the wallet, not
+    # what just happened.
+    party:   %(<path d="M3.4 20.6 8.8 8.2l7 7-12.4 5.4Z" stroke-linejoin="round"/><path d="m10.6 10 3.4 3.4"/><path d="M14.6 7.4c.9-1.6 2.6-2 3.7-1.1"/><path d="M17 10.8c1.5-1 3.3-.7 4 .5"/><path d="M13.4 4.2c.2-.8.8-1.4 1.6-1.6"/><circle cx="19.4" cy="4.4" r=".9" fill="currentColor" stroke="none"/><circle cx="21.2" cy="9" r=".8" fill="currentColor" stroke="none"/><circle cx="15.4" cy="1.9" r=".7" fill="currentColor" stroke="none"/>),
     check:   %(<path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-linecap="round"/>),
     launch:  %(<path d="M14 4h6v6" stroke-linecap="round"/><path d="M20 4 10 14" stroke-linecap="round"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5" stroke-linecap="round"/>),
     trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>),

@@ -1,9 +1,9 @@
 <% content_for :title, t("customer.claim_success.title") %>
 <% content_for :tab, "" %>
-<div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
+<div class="l-screen" data-controller="pointburst sfx" style="padding-top:24px;">
   <div class="l-result">
-    <div class="halo brand"><%= ui_icon(:gift, size: 36) %></div>
-    <span class="l-pill brand" style="margin-top:2px;"><%= t("customer.claim_success.qr_exclusive") %></span>
+    <div class="halo solid"><%= ui_icon(:party, size: 34, stroke: 1.9) %></div>
+    <span class="l-pill brand"><%= t("customer.claim_success.qr_exclusive") %></span>
     <h1><%= t("customer.claim_success.heading") %></h1>
     <p><%= t("customer.claim_success.subtitle", shop: current_workspace.name) %></p>
   </div>

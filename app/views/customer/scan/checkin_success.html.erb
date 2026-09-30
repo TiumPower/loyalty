@@ -1,6 +1,6 @@
 <% content_for :title, t("customer.checkin.success_title") %>
 <% content_for :tab, "" %>
-<div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
+<div class="l-screen" data-controller="pointburst sfx" style="padding-top:24px;">
   <div class="l-result">
     <div class="halo"><%= ui_icon(:sparkles, size: 34) %></div>
     <% if @points.to_i.positive? %>

@@ -45,10 +45,14 @@
       <%= t("customer.my_code.show_to_staff", term: current_workspace.branding_value("customer_term")) %>
     </p>
 
-    <%= link_to member_scan_path, style: "display:inline-flex; align-items:center; gap:7px; margin-top:18px;
-          font-size:14px; font-weight:700; color:var(--primary); text-decoration:underline;" do %>
-      <%= ui_icon(:scan, size: 16) %><%= t("customer.my_code.scan_shop_qr") %>
+    <%# The camera does two jobs — check in at the counter, and claim a gift from
+        a campaign QR on a poster. It used to say only the first, in small
+        underlined text. %>
+    <%= link_to member_scan_path, class: "l-btn l-btn-outline",
+          style: "margin-top:20px; padding:13px 22px; font-size:15px; gap:10px;" do %>
+      <%= ui_icon(:scan, size: 22, stroke: 2) %><%= t("customer.my_code.scan_shop_qr") %>
     <% end %>
+    <div style="font-size:12px; color:var(--ink-2); margin-top:7px;"><%= t("customer.my_code.scan_shop_qr_sub") %></div>
 
     <%# +X points reveal, shown in place when the counter picks up an earn. %>
     <div data-mycode-target="burst" style="display:none; position:absolute; inset:0; z-index:4;

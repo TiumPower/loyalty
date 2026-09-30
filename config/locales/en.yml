@@ -2002,7 +2002,7 @@ en:
     my_code:
       subtitle: "Show at the counter to earn"
       refresh_post: "until auto-refresh"
-      scan_shop_qr: "Scan shop QR for daily check-in"
+      scan_shop_qr: "Scan a QR code"
       title: "My code"
       history: "History"
       refresh_pre: "Code refreshes in"
@@ -2010,9 +2010,10 @@ en:
       got_it: "Got it"
       balance_pre: "Balance:"
       show_to_staff: "Show this code to staff to earn points on your bill."
+      scan_shop_qr_sub: "Check in at the shop, or claim a campaign gift"
     scan:
       recognised: "Recognised outlet"
-      checkin_title: "Check in to earn"
+      checkin_title: "Check in & claim"
       prompt_title: "Scan the shop QR"
       daily_checkin: "Daily check-in"
       checkin_ready: "Ready to check in"
@@ -2038,6 +2039,9 @@ en:
       pos_expired_msg: "The counter QR has expired. Please ask staff to generate a new one."
       pos_used_title: "Transaction code already used"
       pos_used_msg: "This QR has already been used to earn points. Please ask staff for a new one."
+      campaign_gift: "Campaign gift"
+      campaign_ready: "Scan a code on a poster, table or screen"
+      campaign_explainer: "A shop can post its own QR for a campaign. Scanning it drops the reward straight into your wallet, and costs no points."
     pwa:
       notifications: "Push notifications"
       push_on: "On — you'll get offers & reminders"

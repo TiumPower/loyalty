@@ -2043,7 +2043,7 @@ vi:
     my_code:
       subtitle: "Đưa cho nhân viên để tích điểm"
       refresh_post: "nữa mã sẽ tự đổi"
-      scan_shop_qr: "Quét mã của quán để check-in"
+      scan_shop_qr: "Quét mã QR"
       title: "Mã của tôi"
       history: "Lịch sử"
       refresh_pre: "Mã tự làm mới sau"
@@ -2051,9 +2051,10 @@ vi:
       got_it: "Xong"
       balance_pre: "Số dư:"
       show_to_staff: "Đưa mã này cho nhân viên quét để tích điểm vào hoá đơn của %{term}."
+      scan_shop_qr_sub: "Check-in tại quán hoặc nhận quà từ chiến dịch"
     scan:
       recognised: "Đã nhận mã của quán"
-      checkin_title: "Check-in nhận điểm"
+      checkin_title: "Check-in & nhận quà"
       prompt_title: "Quét mã QR của quán"
       daily_checkin: "Check-in hằng ngày"
       checkin_ready: "Sẵn sàng check-in"
@@ -2079,6 +2080,9 @@ vi:
       pos_expired_msg: "Mã QR tại quầy đã hết hiệu lực. Nhờ nhân viên tạo lại mã mới giúp bạn."
       pos_used_title: "Mã giao dịch đã được dùng"
       pos_used_msg: "Mã QR này đã được tích điểm trước đó. Vui lòng nhờ nhân viên tạo mã mới."
+      campaign_gift: "Quà từ chiến dịch"
+      campaign_ready: "Quét mã trên poster, bàn hoặc màn hình"
+      campaign_explainer: "Quán có thể treo mã QR riêng cho một chiến dịch. Quét mã đó là ưu đãi vào ví bạn ngay, không trừ điểm."
     pwa:
       notifications: "Thông báo đẩy"
       push_on: "Đang bật — bạn sẽ nhận ưu đãi & nhắc nhở"
