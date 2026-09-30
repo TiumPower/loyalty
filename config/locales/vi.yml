@@ -1710,6 +1710,11 @@ vi:
       submit: "Gửi đánh giá"
       update: "Cập nhật đánh giá"
       stars_n: "%{n} sao"
+      photos_title: "Thêm ảnh chuyến ghé"
+      photos_sub: "Không bắt buộc · tối đa %{n} ảnh"
+      photos_too_many: "Chỉ chọn tối đa %{n} ảnh."
+      photos_current: "Ảnh đã đăng"
+      photos_remove: "Xoá hết ảnh đã đăng"
     shop:
       n_outlets: "%{n} chi nhánh"
       contact: "Liên hệ & chỉ đường"

@@ -152,6 +152,17 @@
           <p style="font-size:14px; color:var(--ink-2); margin-top:16px;"><%= t("merchant.feedback.no_comment") %></p>
         <% end %>
 
+        <%# What the customer photographed. The same shots the shop page shows. %>
+        <% if r.photos.attached? %>
+          <div class="l-reviewshots">
+            <% r.photo_list.each do |att| %>
+              <%= link_to url_for(att), target: "_blank", rel: "noopener" do %>
+                <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+
         <%# A low score answered in public is worth more than one answered fast. %>
         <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
           <h3 style="font-size:15px; font-weight:700;">

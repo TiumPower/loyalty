@@ -29,11 +29,13 @@
     </div>
   <% else %>
     <%# The tabs jump to a group rather than hiding the others — the design
-        lists every group on one page and explains that above. %>
-    <div class="l-seg boxed">
+        lists every group on one page and explains that above. Because nothing
+        is being filtered, none of them was ever marked current and the two read
+        as identical; scrollspy lights the one you are looking at. %>
+    <div class="l-seg boxed" data-controller="scrollspy">
       <% groups.each do |period, label| %>
         <% next if open_missions.none? { |m| m.period == period } %>
-        <a href="#g-<%= period %>"><%= label %></a>
+        <a href="#g-<%= period %>" data-scrollspy-target="link"><%= label %></a>
       <% end %>
     </div>
 

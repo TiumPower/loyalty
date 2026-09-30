@@ -39,6 +39,7 @@ module Customer
     def create
       @rating = Rating.new(workspace: current_workspace, member: current_member,
                            stars: stars_param, comment: comment_param, tags: tags_param)
+      attach_photos(@rating)
       if @rating.save
         MerchantAlerts.new_rating(@rating)
         apology = maybe_apologise(@rating)
@@ -65,6 +66,8 @@ module Customer
 
     def update
       @rating = own_rating or return redirect_to(after_save_path, alert: t("customer.review_reply.not_found"))
+      @rating.photos.purge_later if params[:remove_photos] == "1" && @rating.photos.attached?
+      attach_photos(@rating)
       if @rating.update(stars: stars_param, comment: comment_param, tags: tags_param)
         redirect_to after_save_path, notice: t("customer.review_reply.updated")
       else
@@ -83,6 +86,15 @@ module Customer
       n.between?(1, 5) ? n : nil
     end
     def comment_param = params[:comment].to_s.strip.presence
+
+    # Photos of the visit. Attaching runs before save so the model validation
+    # sees them; anything past the cap is dropped here rather than failing the
+    # whole review, which would lose the words the customer just typed.
+    def attach_photos(rating)
+      files = Array(params[:photos]).reject(&:blank?).first(Rating::MAX_PHOTOS)
+      return if files.empty?
+      rating.photos.attach(files)
+    end
     # The chips post whatever is in the DOM, so keep only keys we know.
     def tags_param = Array(params[:tags]).map(&:to_s) & Rating::TAGS
     def after_save_path = current_workspace.feedback_public? ? member_shop_about_path : member_profile_path

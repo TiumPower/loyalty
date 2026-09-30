@@ -1447,3 +1447,23 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-step:not(.done):not(.now) .nm { color: var(--ink-2); }
 .m-step .st { font-size:11px; color: var(--ink-2); margin-top:1px; }
 @media (max-width:820px){ .l-onboard-cols { grid-template-columns:1fr !important; } }
+
+/* ---------- review photos ---------- */
+/* "Add visit photos", as in the design: a camera tile, the copy, and a plus. */
+.l-photopick { display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+  background:none; border:none; padding:0; cursor:pointer; color:inherit; font:inherit; }
+.l-photopick .ic { width:52px; height:52px; border-radius:14px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); }
+.l-photopick .bd { flex:1; min-width:0; }
+.l-photopick .tt { font-weight:700; font-size:15px; }
+.l-photopick .ds { font-size:12.5px; color: var(--ink-2); margin-top:2px; }
+.l-photopick .plus { flex:none; color: var(--primary); font-size:22px; line-height:1; }
+.l-photogrid { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.l-photo { width:64px; height:64px; border-radius:12px; overflow:hidden; flex:none;
+  background: var(--surface-2); display:block; }
+.l-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+/* Photos attached to a posted review, on the shop page. */
+.l-reviewshots { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.l-reviewshots a { width:76px; height:76px; border-radius:12px; overflow:hidden; flex:none; display:block;
+  background: var(--surface-2); }
+.l-reviewshots img { width:100%; height:100%; object-fit:cover; display:block; }

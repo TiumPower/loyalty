@@ -13,6 +13,16 @@ class Rating < ApplicationRecord
   # Only ever store keys we know about — the chips post arbitrary strings.
   def tag_list = Array(tags).map(&:to_s) & TAGS
 
+  # Photos of the visit, as in the design ("Add visit photos · up to 4").
+  # They go on the public shop page, so the limits are enforced here rather than
+  # trusted from the form.
+  PHOTO_TYPES     = %w[image/png image/jpeg image/webp image/heic image/heif].freeze
+  PHOTO_MAX_BYTES = 8.megabytes
+  MAX_PHOTOS      = 4
+
+  has_many_attached :photos
+  validate :photos_are_reasonable
+
   validates :stars, inclusion: { in: 1..5 }
 
   scope :recent,     -> { order(created_at: :desc) }
@@ -21,4 +31,21 @@ class Rating < ApplicationRecord
 
   def replied? = replied_at.present?
   def low?     = stars <= 3
+
+  # Newest attachment order, capped — a caller that somehow got past the
+  # validation still cannot flood the shop page.
+  def photo_list = photos.attachments.first(MAX_PHOTOS)
+
+  private
+
+  def photos_are_reasonable
+    return unless photos.attached?
+    errors.add(:photos, :too_many, count: MAX_PHOTOS) if photos.attachments.size > MAX_PHOTOS
+    photos.each do |att|
+      blob = att.blob
+      next if blob.nil?
+      errors.add(:photos, :invalid) unless PHOTO_TYPES.include?(blob.content_type)
+      errors.add(:photos, :too_large, count: PHOTO_MAX_BYTES / 1.megabyte) if blob.byte_size.to_i > PHOTO_MAX_BYTES
+    end
+  end
 end

@@ -122,6 +122,17 @@
             <% if r.comment.present? %>
               <div style="font-size:13.5px; margin-top:9px; line-height:1.55;"><%= r.comment %></div>
             <% end %>
+            <%# Photos of the visit. They open full size, because a thumbnail of
+                a coffee is not why the customer took the picture. %>
+            <% if r.photos.attached? %>
+              <div class="l-reviewshots">
+                <% r.photo_list.each do |att| %>
+                  <%= link_to url_for(att), target: "_blank", rel: "noopener" do %>
+                    <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
+                  <% end %>
+                <% end %>
+              </div>
+            <% end %>
             <% if r.replied? %>
               <div style="margin-top:10px; padding:11px 13px; border-radius:12px; background:var(--surface-2); border-left:3px solid var(--primary);">
                 <div style="font-size:12px; font-weight:700; color:var(--primary);">

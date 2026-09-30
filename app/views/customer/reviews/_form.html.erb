@@ -19,7 +19,7 @@
   </div>
 </div>
 
-<%= form_with url: url, method: method, data: { controller: "rating" } do %>
+<%= form_with url: url, method: method, multipart: true, data: { controller: "rating" } do %>
   <% if rating.errors.any? %>
     <div class="l-note warn" style="margin-bottom:12px;">
       <%= ui_icon(:shield, size: 15) %><span><%= t("customer.review.pick_stars_error") %></span>
@@ -69,6 +69,40 @@
         </label>
       <% end %>
     </div>
+  </div>
+
+  <%# ---- photos of the visit ---- %>
+  <div class="l-tile" style="margin-top:12px;"
+       data-controller="photopick" data-photopick-max-value="<%= Rating::MAX_PHOTOS %>"
+       data-photopick-too-many-value="<%= t("customer.review.photos_too_many", n: Rating::MAX_PHOTOS) %>">
+    <button type="button" class="l-photopick" data-action="photopick#pick">
+      <span class="ic"><%= ui_icon(:camera, size: 22) %></span>
+      <span class="bd">
+        <span class="tt" style="display:block;"><%= t("customer.review.photos_title") %></span>
+        <span class="ds" style="display:block;"><%= t("customer.review.photos_sub", n: Rating::MAX_PHOTOS) %></span>
+      </span>
+      <span class="plus" data-photopick-target="count"></span>
+      <span class="plus">＋</span>
+    </button>
+    <%# `capture` lets a phone offer the camera as well as the library. %>
+    <%= file_field_tag "photos[]", multiple: true, accept: Rating::PHOTO_TYPES.join(","),
+          hidden: true, data: { photopick_target: "input", action: "photopick#changed" } %>
+    <div class="l-photogrid" data-photopick-target="grid" hidden></div>
+
+    <% if rating.photos.attached? %>
+      <div style="margin-top:12px;">
+        <div class="l-eyebrow" style="margin-bottom:7px;"><%= t("customer.review.photos_current") %></div>
+        <div class="l-photogrid">
+          <% rating.photo_list.each do |att| %>
+            <span class="l-photo"><%= image_tag att.variant(resize_to_fill: [160, 160]), alt: "" %></span>
+          <% end %>
+        </div>
+        <label style="display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-size:13px; color:var(--ink-2);">
+          <input type="checkbox" name="remove_photos" value="1" style="margin:0;">
+          <%= t("customer.review.photos_remove") %>
+        </label>
+      </div>
+    <% end %>
   </div>
 
   <div class="l-note" style="margin-top:12px;">

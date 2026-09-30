@@ -1669,6 +1669,11 @@ en:
       submit: "Submit review"
       update: "Update review"
       stars_n: "%{n} stars"
+      photos_title: "Add visit photos"
+      photos_sub: "Optional · up to %{n} images"
+      photos_too_many: "Pick at most %{n} photos."
+      photos_current: "Photos you posted"
+      photos_remove: "Remove all posted photos"
     shop:
       n_outlets: "%{n} outlets"
       contact: "Contact & directions"
