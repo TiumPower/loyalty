@@ -1140,6 +1140,7 @@ en:
       geo_failed: "The lookup did not answer. Try again in a few minutes."
       geo_exact: "Street matched"
       geo_approx: "Approximate (district/city level)"
+      geo_create_hint: "Leave blank if you like — we look these up from the address right after saving."
     campaigns:
       col_campaign: "Campaign"
       col_status: "Status"

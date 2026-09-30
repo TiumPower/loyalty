@@ -44,6 +44,9 @@ module Merchant
           alert: "Gói #{current_workspace.plan_record.name} chỉ cho phép #{current_workspace.outlet_limit} chi nhánh. Nâng cấp gói để thêm."
       end
       @outlet = current_workspace.outlets.new(outlet_params)
+      # Same rule as on the edit form: the button's answer is the automatic one,
+      # a typed coordinate is the merchant's own and freezes the branch.
+      apply_coordinate_source!
       if @outlet.save
         redirect_to merchant_outlets_path, notice: "Đã thêm chi nhánh “#{@outlet.name}”."
       else
@@ -85,14 +88,8 @@ module Merchant
       # automatic one again" hands it back.
       if params[:reset_geocode] == "1"
         @outlet.assign_attributes(geocode_manual: false, latitude: nil, longitude: nil)
-      elsif params[:coords_source] == "lookup"
-        # Filled by the "tự lấy toạ độ" button: it is the automatic answer, just
-        # asked for by hand. Marking it manual would freeze the branch against
-        # every future address edit, which is the opposite of what the button is
-        # for.
-        @outlet.assign_attributes(geocode_manual: false, geocoded_at: Time.current)
-      elsif coordinates_typed?
-        @outlet.geocode_manual = true
+      else
+        apply_coordinate_source!
       end
       if @outlet.update(outlet_params)
         redirect_to merchant_outlets_path, notice: "Đã cập nhật chi nhánh."
@@ -132,11 +129,29 @@ module Merchant
       @today_total = @today_by_outlet.values.sum
     end
 
+    # Where the coordinates in this request came from.
+    #
+    # "lookup" is the "tự lấy toạ độ" button: the automatic answer, just asked
+    # for by hand, so the branch stays automatic and keeps following its address.
+    # Anything else that arrives changed is the keyboard, which is a correction —
+    # and a correction has to survive every future address edit.
+    def apply_coordinate_source!
+      if params[:coords_source] == "lookup"
+        @outlet.assign_attributes(geocode_manual: false, geocoded_at: Time.current)
+      elsif coordinates_typed?
+        @outlet.geocode_manual = true
+      end
+    end
+
     # Did this request actually change a coordinate, as opposed to posting back
     # the one the lookup already found?
     def coordinates_typed?
       p = params[:outlet] || {}
       return false if p[:latitude].blank? && p[:longitude].blank?
+      # A brand new branch has nothing to compare against — and the params are
+      # already assigned to it by the time this runs, so comparing would always
+      # say "unchanged" and quietly lose the merchant's correction.
+      return true if @outlet.new_record?
       p[:latitude].to_s != @outlet.latitude.to_s || p[:longitude].to_s != @outlet.longitude.to_s
     end
 

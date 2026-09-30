@@ -134,7 +134,12 @@
           <h3 class="l-display" style="font-size:19px; margin:0;"><%= o.(:add) %></h3>
           <button type="button" class="l-modal-x" data-action="modal#close" aria-label="<%= t("merchant.campaigns.ed_cancel") %>">✕</button>
         </div>
-        <%= form_with model: @outlet, url: merchant_outlets_path, method: :post do |f| %>
+        <%= form_with model: @outlet, url: merchant_outlets_path, method: :post,
+              data: { controller: "geopick",
+                      geopick_url_value: geocode_merchant_outlets_path,
+                      geopick_working_value: o.(:geo_working),
+                      geopick_empty_value: o.(:geo_no_address),
+                      geopick_failed: o.(:geo_failed) } do |f| %>
           <% if @outlet.errors.any? %>
             <div class="l-note warn" style="margin-bottom:12px;">
               <%= ui_icon(:shield, size: 16) %><span><%= @outlet.errors.full_messages.to_sentence %></span>
@@ -147,13 +152,33 @@
             <div><label class="l-label"><%= o.(:phone) %></label><%= f.telephone_field :phone, class: "l-field" %></div>
           </div>
           <label class="l-label" style="margin-top:12px;"><%= o.(:address) %></label>
-          <%= f.text_field :address, class: "l-field" %>
+          <%= f.text_field :address, class: "l-field", data: { geopick_target: "address" } %>
           <label class="l-label" style="margin-top:12px;"><%= o.(:hours) %></label>
           <div style="display:flex; align-items:center; gap:10px;">
             <input type="time" name="outlet[open_hours][open]" class="l-field" style="max-width:150px;">
             <span style="color:var(--ink-2); font-size:13px;"><%= o.(:hours_to) %></span>
             <input type="time" name="outlet[open_hours][close]" class="l-field" style="max-width:150px;">
           </div>
+
+          <%# Coordinates are filled in for you a moment after saving, so the
+              fields stay optional here — but a merchant who wants to see the
+              answer before committing to it should not have to save first. %>
+          <div style="display:flex; align-items:flex-end; gap:10px; margin-top:12px;">
+            <label class="l-label" style="flex:1; min-width:0; margin:0;"><%= o.(:coords) %></label>
+            <button type="button" class="m-minibtn" style="flex:none;"
+                    data-geopick-target="button" data-action="geopick#fetchCoords">
+              <%= ui_icon(:navigate, size: 14) %><%= o.(:geo_cta) %>
+            </button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px;">
+            <%= f.text_field :latitude,  class: "l-field", placeholder: "10.8012", inputmode: "decimal",
+                  data: { geopick_target: "lat", action: "input->geopick#typed" } %>
+            <%= f.text_field :longitude, class: "l-field", placeholder: "106.7360", inputmode: "decimal",
+                  data: { geopick_target: "lon", action: "input->geopick#typed" } %>
+          </div>
+          <%= hidden_field_tag :coords_source, "", data: { geopick_target: "source" } %>
+          <p class="m-geostatus" data-geopick-target="status" hidden></p>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= o.(:geo_create_hint) %></p>
           <%= f.hidden_field :active, value: true %>
           <div style="display:flex; gap:10px; margin-top:18px;">
             <%= f.submit o.(:add), class: "l-btn l-btn-primary" %>

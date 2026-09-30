@@ -1143,6 +1143,7 @@ vi:
       geo_failed: "Không tra được lúc này, thử lại sau ít phút."
       geo_exact: "Đúng tên đường"
       geo_approx: "Vị trí tương đối (cấp quận/thành phố)"
+      geo_create_hint: "Bỏ trống cũng được — hệ thống sẽ tự tra từ địa chỉ ngay sau khi lưu."
     campaigns:
       col_campaign: "Chiến dịch"
       col_status: "Trạng thái"

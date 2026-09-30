@@ -67,6 +67,10 @@ class Outlet < ApplicationRecord
   def should_geocode?
     return false if geocode_manual?
     return false if address.blank?
+    # The "tự lấy toạ độ" button already did this lookup, for this address, a
+    # second ago — the controller stamps geocoded_at to say so. Queuing the job
+    # anyway would spend a Nominatim request to arrive at the same answer.
+    return false if saved_change_to_geocoded_at? && located?
     # Re-run when the address moved, or when we have never looked.
     saved_change_to_address? || latitude.blank?
   end

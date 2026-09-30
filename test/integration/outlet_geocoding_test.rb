@@ -132,6 +132,59 @@ class OutletGeocodingTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # The add-branch form carries the same button, and the same rule about where
+  # a coordinate came from. (The starter plan allows one branch and setup has
+  # already used it, so these add a second.)
+  def allow_more_branches!
+    @ws.plan_record.update!(max_outlets: 10)
+  end
+
+  test "a new branch keeps coordinates the button found, and stays automatic" do
+    allow_more_branches!
+    assert_no_enqueued_jobs(only: GeocodeOutletJob) do
+      post "/merchant/outlets",
+           params: { outlet: { name: "Hải Châu", address: "10 Ngô Gia Tự, Hải Châu, Đà Nẵng",
+                               latitude: "16.0689577", longitude: "108.2174048", active: "1" },
+                     coords_source: "lookup" }
+    end
+    outlet = ActsAsTenant.with_tenant(@ws) { Outlet.find_by(name: "Hải Châu") }
+    assert outlet, "the branch should be created"
+    assert_equal 16.0689577, outlet.latitude.to_f
+    assert_not outlet.geocode_manual?, "the button is not the keyboard"
+    assert outlet.geocoded_at.present?, "the lookup is on the record"
+  end
+
+  # Same address, same answer, one second later: queuing the job would spend a
+  # Nominatim request to arrive where we already are.
+  test "the button's answer is not looked up a second time on save" do
+    @outlet.update_columns(latitude: nil, longitude: nil, geocoded_at: nil)
+    assert_no_enqueued_jobs(only: GeocodeOutletJob) do
+      patch "/merchant/outlets/#{@outlet.id}",
+            params: { outlet: { name: @outlet.name, address: @outlet.address,
+                                latitude: "16.0689577", longitude: "108.2174048" },
+                      coords_source: "lookup" }
+    end
+    assert_equal 16.0689577, @outlet.reload.latitude.to_f
+  end
+
+  test "a coordinate typed into the add form is the merchant's own" do
+    allow_more_branches!
+    post "/merchant/outlets",
+         params: { outlet: { name: "Gõ tay", address: "1 Đâu Đó, Quận 1, Hồ Chí Minh",
+                             latitude: "10.8012", longitude: "106.7360", active: "1" },
+                   coords_source: "manual" }
+    outlet = ActsAsTenant.with_tenant(@ws) { Outlet.find_by(name: "Gõ tay") }
+    assert outlet.geocode_manual?, "typing a coordinate claims it, on create as on edit"
+  end
+
+  test "adding a branch without coordinates still queues the lookup" do
+    allow_more_branches!
+    assert_enqueued_with(job: GeocodeOutletJob) do
+      post "/merchant/outlets",
+           params: { outlet: { name: "Để trống", address: "2 Đâu Đó, Quận 3, Hồ Chí Minh", active: "1" } }
+    end
+  end
+
   # Only a manager may spend the shop's Nominatim budget.
   test "a cashier cannot use the lookup" do
     sign_out @user
