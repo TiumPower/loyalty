@@ -99,15 +99,46 @@
         <div class="m-section">
           <div class="hd">
             <div class="t"><%= ap.(:sec_offer) %></div>
-            <div class="s"><%= ap.(:sec_offer_sub) %></div>
+            <div class="s">
+              <%= ap.(:sec_offer_sub) %>
+              <%= link_to ap.(:hours_live_in_outlets), merchant_outlets_path,
+                    style: "color:var(--primary); font-weight:600; text-decoration:none;" %>
+            </div>
           </div>
 
-          <label class="l-label"><%= ap.(:menu_highlights) %></label>
-          <%= text_area_tag :menu_highlights, ws.menu_highlights.join(", "), class: "l-field", rows: 2,
-                placeholder: ap.(:menu_highlights_ph) %>
-          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;">
-            <%= ap.(:menu_highlights_hint, n: Workspace::MAX_HIGHLIGHTS) %>
-          </p>
+          <%# One name at a time, as chips. The textarea this replaced asked the
+              merchant to remember a comma rule and showed no sign of keeping
+              it. %>
+          <%# The controller wraps the label row too: the count is one of its
+              targets, and a target outside the controller element is invisible
+              to it. %>
+          <div data-controller="chipinput"
+               data-chipinput-name-value="menu_highlights[]"
+               data-chipinput-max-value="<%= Workspace::MAX_HIGHLIGHTS %>"
+               data-chipinput-max-length-value="<%= Workspace::MAX_HIGHLIGHT_LEN %>"
+               data-chipinput-full-value="<%= ap.(:menu_highlights_full, n: Workspace::MAX_HIGHLIGHTS) %>"
+               data-chipinput-duplicate-value="<%= ap.(:menu_highlights_dupe) %>">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+              <label class="l-label" style="margin:0;"><%= ap.(:menu_highlights) %></label>
+              <span style="font-size:11.5px; color:var(--ink-2); font-variant-numeric:tabular-nums;"
+                    data-chipinput-target="count"></span>
+            </div>
+            <div class="l-chipfield">
+            <%# Removing the last chip must post an empty list, not nothing. %>
+            <input type="hidden" name="menu_highlights[]" value="">
+            <span data-chipinput-target="list" style="display:contents;">
+              <% ws.menu_highlights.each do |item| %>
+                <span class="l-chipedit" data-value="<%= item %>"><span><%= item %></span></span>
+              <% end %>
+            </span>
+            <input type="text" data-chipinput-target="input"
+                   data-action="keydown->chipinput#keydown paste->chipinput#paste blur->chipinput#blur"
+                   data-placeholder="<%= ap.(:menu_highlights_ph) %>"
+                   placeholder="<%= ap.(:menu_highlights_ph) %>">
+            </div>
+            <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"
+               data-chipinput-target="hint"><%= ap.(:menu_highlights_hint) %></p>
+          </div>
 
           <label class="l-label" style="margin-top:16px;"><%= ap.(:amenities) %></label>
           <%# Unticking every chip must post an empty list, not nothing at all,

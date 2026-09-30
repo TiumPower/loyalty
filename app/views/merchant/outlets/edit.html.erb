@@ -1,7 +1,9 @@
 <% content_for :title, t("merchant.outlets.edit_title") %>
 <% content_for :title_en, "EDIT OUTLET" %>
 <% merchant_back merchant_outlet_path(@outlet) %>
-<div class="l-panel" style="max-width:480px;">
+<%# Full width in two columns, like every other editor. %>
+<div class="m-editor">
+ <div class="l-panel">
   <%= form_with model: @outlet, url: merchant_outlet_path(@outlet), method: :patch do |f| %>
     <% if @outlet.errors.any? %>
       <div class="l-note warn" style="margin-bottom:12px;">
@@ -54,9 +56,26 @@
     <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px;">
       <%= f.check_box :active %> <%= t("merchant.outlets.active") %>
     </label>
-    <div style="display:flex; gap:10px; margin-top:16px;">
+    <div style="display:flex; gap:10px; margin-top:18px;">
       <%= link_to t("merchant.outlets.cancel"), merchant_outlets_path, class: "l-btn l-btn-ghost" %>
       <%= f.submit t("merchant.outlets.save"), class: "l-btn l-btn-primary", style: "flex:1;" %>
     </div>
   <% end %>
+ </div>
+
+ <%# Where each of these fields ends up. Opening hours in particular are set
+     here, per branch, and nowhere else — worth saying on the screen rather than
+     leaving a merchant hunting under Brand. %>
+ <div class="m-section">
+   <div class="hd">
+     <div class="t"><%= t("merchant.outlets.where_shown") %></div>
+     <div class="s"><%= t("merchant.outlets.where_shown_sub") %></div>
+   </div>
+   <% [[:pin, :ws_address], [:clock, :ws_hours], [:navigate, :ws_distance], [:qrcode, :ws_qr]].each do |icon, key| %>
+     <div style="display:flex; gap:10px; align-items:flex-start; padding:9px 0; font-size:13px; color:var(--ink-2);">
+       <span style="flex:none; color:var(--primary); margin-top:1px;"><%= ui_icon(icon, size: 15) %></span>
+       <span><%= t("merchant.outlets.#{key}") %></span>
+     </div>
+   <% end %>
+ </div>
 </div>

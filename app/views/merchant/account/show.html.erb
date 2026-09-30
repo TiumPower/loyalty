@@ -1,14 +1,19 @@
 <% content_for :title, t("merchant.nav.account") %>
 <% content_for :title_en, "ACCOUNT" %>
 
-<div style="max-width:560px;">
+<%# Two columns, like the other settings screens: the forms on the left, the
+    phone-login QR and sign-out on the right. It used to sit in a 560px column
+    on its own while everything beside it ran the full width. %>
+<div>
   <% if @user.errors.any? %>
     <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:16px;">
       <%= @user.errors.full_messages.to_sentence %>
     </div>
   <% end %>
 
-  <div class="l-panel" style="margin-bottom:16px;">
+  <div class="m-editor">
+   <div>
+    <div class="l-panel" style="margin-bottom:16px;">
     <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.account.info") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:16px;"><%= t("merchant.account.email_role", email: @user.email, role: current_membership&.label) %></p>
     <%# The email is the login identifier and is not editable here; saying so
@@ -41,8 +46,11 @@
     <% end %>
   </div>
 
+   </div>
+
+   <div>
   <%# ---- Quick login on phone (self-login QR → mobile scanner) ---- %>
-  <div class="l-panel" style="margin-top:16px; text-align:center;"
+  <div class="l-panel" style="text-align:center;"
        data-controller="qrrefresh" data-qrrefresh-url-value="<%= merchant_quick_login_qr_path %>">
     <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.quick_login.title") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px; max-width:360px; margin-left:auto; margin-right:auto;"><%= t("merchant.quick_login.note") %></p>
@@ -58,5 +66,7 @@
     <%= button_to t("merchant.nav.logout", default: "Đăng xuất"), destroy_user_session_path, method: :delete,
           class: "l-btn l-btn-ghost l-btn-block", style: "color:#B4402F;",
           form: { data: { turbo: false, turbo_confirm: t("merchant.nav.logout_confirm") } } %>
+  </div>
+   </div>
   </div>
 </div>

@@ -28,10 +28,16 @@
     <input type="hidden" name="member_id" value="<%= @member.id %>">
     <input type="hidden" name="earn_key" value="<%= @earn_key %>">
     <label class="l-label" style="margin-top:16px;"><%= t("merchant.scan.bill_amount") %></label>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <input name="amount" inputmode="numeric" autofocus autocomplete="off"
+    <%# Grouped as it is typed. The visible field has no name — the hidden one
+        posts plain digits, so nothing downstream has to unpick separators. %>
+    <div style="display:flex; align-items:center; gap:8px;"
+         data-controller="moneyinput" data-moneyinput-locale-value="<%= I18n.locale == :vi ? "vi-VN" : "en-US" %>">
+      <input type="text" inputmode="numeric" autofocus autocomplete="off"
              class="l-field" style="font-size:26px; font-family:var(--font-display); text-align:right;"
-             placeholder="0" data-earn-calc-target="amount" data-action="input->earn-calc#preview">
+             placeholder="0"
+             data-moneyinput-target="visible" data-earn-calc-target="amount"
+             data-action="input->moneyinput#format input->earn-calc#preview">
+      <input type="hidden" name="amount" data-moneyinput-target="raw">
       <span style="color:var(--ink-2); font-weight:600;"><%= current_program.currency %></span>
     </div>
 
