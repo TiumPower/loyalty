@@ -92,6 +92,34 @@
       <% end %>
     </div>
 
+    <%# Your own reviews, first.
+        The redesign folded the old "Của bạn" tab into one list and flagged your
+        rows inline — but the list shows three by default and caps at a hundred,
+        so a member whose review had scrolled out of that window had no way back
+        to it to edit it. The band below is the way back; the public list stays
+        exactly as the design draws it. %>
+    <% if @mine.present? %>
+      <div class="l-tile" style="margin-top:14px; background:var(--primary-soft); border-color:transparent;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="flex:1; min-width:0; font-weight:700; font-size:14px; color:var(--primary-ink);">
+            <%= t("customer.shop.your_reviews", n: @my_count) %>
+          </span>
+        </div>
+        <% @mine.each do |r| %>
+          <%= link_to member_edit_review_path(r), class: "l-row", style: "background:transparent; border:none; padding:10px 0;" do %>
+            <span class="l-pill amber" style="flex:none;"><%= r.stars %> ★</span>
+            <span class="bd">
+              <span class="tt" style="display:block; font-weight:600;">
+                <%= r.comment.presence || t("customer.shop.no_comment_short") %>
+              </span>
+              <span class="mt" style="display:block;"><%= l(r.created_at.to_date, format: :short) %></span>
+            </span>
+            <span class="tr" style="color:var(--primary);"><%= ui_icon(:edit, size: 15) %></span>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
     <%# One list, newest first, as the design shows. A review of the member's own
         is flagged inline and editable rather than hidden behind a second tab. %>
     <div style="margin-top:14px;">

@@ -1730,11 +1730,12 @@ vi:
       reviews: "Đánh giá"
       n_reviews: "%{n} đánh giá"
       all_reviews: "Tất cả"
-      your_reviews: "Của bạn"
+      your_reviews: "Đánh giá của bạn · %{n}"
       no_reviews: "Chưa có đánh giá nào — hãy là người đầu tiên!"
       no_own_reviews: "Bạn chưa viết đánh giá nào."
       you: "bạn"
       edit_review: "Sửa đánh giá"
+      no_comment_short: "(không có nhận xét)"
     void_notice:
       title: "Điều chỉnh điểm"
       body: "Một hoá đơn ghi nhầm vừa được quán hoàn tác — %{n} điểm đã được trừ lại. Xem lịch sử để biết chi tiết."

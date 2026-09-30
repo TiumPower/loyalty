@@ -1689,11 +1689,12 @@ en:
       reviews: "Reviews"
       n_reviews: "%{n} reviews"
       all_reviews: "All"
-      your_reviews: "Yours"
+      your_reviews: "Your reviews · %{n}"
       no_reviews: "No reviews yet — be the first."
       no_own_reviews: "You haven't written a review yet."
       you: "you"
       edit_review: "Edit review"
+      no_comment_short: "(no comment)"
     void_notice:
       title: "Points adjusted"
       body: "A bill entered by mistake was reversed by the shop — %{n} points were taken back. See your history for details."
