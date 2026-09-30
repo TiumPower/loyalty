@@ -798,10 +798,21 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 
 /* ---------- tier ---------- */
 /* Hexagonal tier crest — the design's one decorative shape. */
-.l-crest { width:104px; height:114px; margin:0 auto; display:grid; place-items:center; color:#fff;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: linear-gradient(160deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 62%, #000)); }
-.l-crest .nm { font-size:13px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+/* The tier crest, as the design draws it: a FLAT-TOP hexagon (horizontal edges
+   top and bottom, points left and right) in the tier's gradient, running
+   vertically. A regular one is 2:√3, so the height follows the width. */
+/* Flex, not a two-row grid: the grid gave each of the star and the name half
+   the hexagon and centred them in their own half, so they drifted apart. They
+   belong together as one emblem. */
+.l-crest { width:112px; height:97px; margin:0 auto; color:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: linear-gradient(180deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 62%, #000)); }
+/* The star is white and outlined; the name under it takes the readable ink.
+   Two colours, not one — the design letters GOLD in near-black under a white
+   star, and painting both the same turns the emblem into a smudge. */
+.l-crest .em { color:#fff; }
+.l-crest .nm { font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
 /* A rung of the ladder the member has not reached: still its own colour, but
    visibly out of reach. */
 .l-tierdot.locked { filter:grayscale(.85); opacity:.5; }
@@ -1241,8 +1252,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-stamps .s.goal { border-style:dashed; border-color: var(--primary); color: var(--primary);
   background: var(--card); transform:scale(1.08); }
 
-/* ---------- tier crest (design draws it at 140) ---------- */
-.l-crest.lg { width:140px; height:140px; }
+/* ---------- tier crest (the design draws it about 190 wide) ---------- */
+.l-crest.lg { width:176px; height:152px; }
+.l-crest.lg .nm { font-size:22px; margin-top:2px; }
 
 /* ---------- benefit rows with a trailing value ---------- */
 .l-benefit .ic { width:36px; height:32px; }

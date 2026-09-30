@@ -11,8 +11,12 @@
 
 <div class="l-screen" style="text-align:center;">
   <%# ---- the crest ---- %>
-  <div class="l-crest lg" style="background: <%= @current&.gradient_css || 'linear-gradient(160deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
-    <%= ui_icon(tier_icon(@current), size: 26, fill: true) %>
+  <%# The crest is drawn with a white outlined star whatever the tier: the tier
+      is already said by the colour of the hexagon and by the name inside it.
+      The per-tier glyphs live on the badge pills, which is where the design
+      draws them. %>
+  <div class="l-crest lg" style="background: <%= @current&.crest_gradient || 'linear-gradient(180deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
+    <span class="em"><%= ui_icon(:star, size: 48, stroke: 2.2) %></span>
     <div class="nm"><%= @current&.name %></div>
   </div>
   <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>

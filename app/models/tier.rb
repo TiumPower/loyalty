@@ -33,9 +33,18 @@ class Tier < ApplicationRecord
   scope :ordered, -> { order(:position) }
 
   def gradient_css
-    from = self.class.hex?(gradient_from) ? gradient_from : "#B08D57"
-    to   = self.class.hex?(gradient_to)   ? gradient_to   : "#7A5C3A"
-    "linear-gradient(135deg, #{from} 0%, #{to} 100%)"
+    "linear-gradient(135deg, #{gradient_stops.join(' 0%, ')} 100%)"
+  end
+
+  # The crest runs top to bottom, as the design draws it — light at the flat top
+  # edge, deep at the bottom.
+  def crest_gradient
+    "linear-gradient(180deg, #{gradient_stops.join(' 0%, ')} 100%)"
+  end
+
+  def gradient_stops
+    [self.class.hex?(gradient_from) ? gradient_from : "#B08D57",
+     self.class.hex?(gradient_to)   ? gradient_to   : "#7A5C3A"]
   end
 
   # Belt and braces for rows written before the validation existed.
