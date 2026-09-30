@@ -2,15 +2,31 @@
 <% steps = { 1 => t("merchant.onboarding.st_brand"), 2 => t("merchant.onboarding.st_mech"), 3 => t("merchant.onboarding.st_staff"), 4 => t("merchant.onboarding.st_done") } %>
 
 <div>
-  <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-    <% steps.each do |n, label| %>
-      <div style="flex:1; height:6px; border-radius:999px; background:<%= n <= @step ? 'var(--primary)' : 'var(--surface-2)' %>;"></div>
-    <% end %>
+  <div class="m-sec">
+    <div>
+      <div class="l-eyebrow"><%= t("merchant.onboarding.eyebrow") %></div>
+      <h3 style="margin-top:5px;"><%= t("merchant.onboarding.setup_title") %></h3>
+      <div class="sub"><%= t("merchant.onboarding.setup_sub") %></div>
+    </div>
+    <%= button_to t("merchant.onboarding.skip_setup"), merchant_skip_onboarding_path, method: :post,
+          class: "l-btn l-btn-ghost", style: "padding:9px 16px; font-size:13.5px;" %>
   </div>
-  <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-    <div class="l-eyebrow"><%= t("merchant.onboarding.step_label", n: @step, label: steps[@step]) %></div>
-    <%= button_to t("merchant.onboarding.skip_setup"), merchant_skip_onboarding_path, method: :post, class: "l-mono",
-          style: "background:none; border:none; color:var(--ink-2); font-size:12px; cursor:pointer;" %>
+
+  <%# Which step you are on, what each one is, and which are already behind you. %>
+  <div class="m-steps">
+    <% steps.each do |n, label| %>
+      <% state = n < @step ? "done" : (n == @step ? "now" : "") %>
+      <div class="m-step <%= state %>">
+        <div class="track"></div>
+        <div class="row">
+          <span class="n"><%= n < @step ? "✓" : n %></span>
+          <div style="min-width:0;">
+            <div class="nm"><%= label %></div>
+            <div class="st"><%= t("merchant.onboarding.state_#{n < @step ? 'done' : (n == @step ? 'now' : 'todo')}") %></div>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <% case @step %>
@@ -44,29 +60,12 @@
         <% end %>
       </div>
 
-      <%# ---- Live customer-app demo — recolors with the chosen palette ---- %>
-      <div>
-        <div class="l-eyebrow" style="margin-bottom:8px; text-align:center;"><%= t("merchant.onboarding.preview_label") %></div>
-        <div data-onboardpreview-target="demo" class="l-appdemo">
-          <div class="l-appdemo-card">
-            <div class="l-appdemo-card-top">
-              <span><%= @workspace.name.presence || "Cửa hàng của bạn" %></span>
-              <span class="l-appdemo-tier">Vàng</span>
-            </div>
-            <div class="l-appdemo-pts">1.250 <small><%= t("merchant.onboarding.demo_points") %></small></div>
-            <div class="l-appdemo-tagline" data-onboardpreview-target="taglineOut"><%= @workspace.branding_value("tagline").presence || t("merchant.onboarding.demo_tagline") %></div>
-          </div>
-          <div class="l-appdemo-row">
-            <span class="l-appdemo-chip">🎁 <%= t("merchant.onboarding.demo_reward") %></span>
-            <span class="l-appdemo-chip">⭐ 4.9</span>
-          </div>
-          <button type="button" class="l-appdemo-btn"><%= t("merchant.onboarding.demo_cta") %></button>
-        </div>
-      </div>
+      <%= render "merchant/onboarding/demo", live: true %>
     </div>
 
   <% when 2 %>
-    <div class="l-panel">
+    <div style="display:grid; grid-template-columns:1.2fr .8fr; gap:20px; align-items:start;" class="l-onboard-cols">
+      <div class="l-panel">
       <h2 class="l-display" style="font-size:22px;"><%= t("merchant.onboarding.s2_title") %></h2>
       <p style="color:var(--ink-2); font-size:14px; margin-bottom:16px;"><%= t("merchant.onboarding.s2_note") %></p>
       <%= form_with model: @program, url: merchant_onboarding_path, method: :patch do |f| %>
@@ -85,10 +84,13 @@
         </div>
         <%= f.submit t("merchant.onboarding.continue"), class: "l-btn l-btn-primary", style: "margin-top:18px;" %>
       <% end %>
+      </div>
+      <%= render "merchant/onboarding/demo", live: false %>
     </div>
 
   <% when 3 %>
-    <div class="l-panel">
+    <div style="display:grid; grid-template-columns:1.2fr .8fr; gap:20px; align-items:start;" class="l-onboard-cols">
+      <div class="l-panel">
       <h2 class="l-display" style="font-size:22px;"><%= t("merchant.onboarding.s3_title") %></h2>
       <p style="color:var(--ink-2); font-size:14px; margin-bottom:16px;"><%= t("merchant.onboarding.s3_note") %></p>
       <%= form_with url: merchant_onboarding_path, method: :patch do %>
@@ -107,6 +109,8 @@
       <p style="color:var(--ink-2); font-size:12.5px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
         💡 <%= t("merchant.onboarding.staff_later") %>
       </p>
+      </div>
+      <%= render "merchant/onboarding/demo", live: false %>
     </div>
 
   <% when 4 %>

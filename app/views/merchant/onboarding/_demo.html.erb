@@ -1,0 +1,26 @@
+<%# The customer app as it stands right now. On step 1 it is live — the Stimulus
+    controller recolours it as the merchant picks a palette; on the later steps
+    it is a still, so the merchant can see what they are configuring FOR. %>
+<% prog = @program %>
+<div>
+  <div class="l-eyebrow" style="margin-bottom:8px; text-align:center;"><%= t("merchant.onboarding.preview_label") %></div>
+  <div <%= "data-onboardpreview-target=demo".html_safe if live %> class="l-appdemo">
+    <div class="l-appdemo-card">
+      <div class="l-appdemo-card-top">
+        <span><%= @workspace.name.presence || t("merchant.onboarding.demo_shop") %></span>
+        <% if prog&.tiers_enabled %><span class="l-appdemo-tier">Vàng</span><% end %>
+      </div>
+      <div class="l-appdemo-pts">1.250 <small><%= t("merchant.onboarding.demo_points") %></small></div>
+      <div class="l-appdemo-tagline" <%= "data-onboardpreview-target=taglineOut".html_safe if live %>><%= @workspace.branding_value("tagline").presence || t("merchant.onboarding.demo_tagline") %></div>
+    </div>
+    <div class="l-appdemo-row">
+      <span class="l-appdemo-chip">🎁 <%= t("merchant.onboarding.demo_reward") %></span>
+      <% if prog&.stamps_enabled %><span class="l-appdemo-chip">🎟️ 4/8</span><% end %>
+      <% if prog&.gamification_enabled %><span class="l-appdemo-chip">🎡 <%= t("merchant.onboarding.m_gami") %></span><% end %>
+    </div>
+    <button type="button" class="l-appdemo-btn"><%= t("merchant.onboarding.demo_cta") %></button>
+  </div>
+  <p style="font-size:12px; color:var(--ink-2); margin-top:10px; text-align:center; line-height:1.5;">
+    <%= t("merchant.onboarding.demo_note") %>
+  </p>
+</div>

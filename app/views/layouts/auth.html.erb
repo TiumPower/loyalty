@@ -11,11 +11,17 @@
       .l-auth-card h1 { font-family:var(--font-display); font-size:26px; margin-bottom:4px; }
       .l-auth-card p.sub { color:var(--ink-2); font-size:14px; margin-bottom:22px; }
       .l-auth-card .field { margin-bottom:14px; }
+      /* Wide variant: screens that are a page rather than a form — the shop
+         chooser lays out a grid of cards and does not fit a 400px column. */
+      .l-auth.wide { place-items:start center; padding:28px 22px 48px; }
+      .l-auth.wide > div { max-width:1000px; }
+      .l-auth.wide .l-auth-card { max-width:none; padding:26px 24px; }
     </style>
   </head>
   <body>
-    <div class="l-auth">
-      <div style="width:100%; max-width:400px;">
+    <% wide = content_for?(:auth_wide) %>
+    <div class="l-auth <%= "wide" if wide %>">
+      <div style="width:100%; <%= "max-width:400px;" unless wide %>">
       <a href="/" style="display:block; width:fit-content; margin:0 auto 22px;"><%= image_tag "quenly-lockup.png", alt: "Quenly", width: 449, height: 160, style: "height:44px; width:auto;" %></a>
       <div class="l-auth-card">
         <% if flash[:notice] || flash[:alert] %>

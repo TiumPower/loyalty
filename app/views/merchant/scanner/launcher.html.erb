@@ -1,10 +1,11 @@
 <%= render "layouts/merchant_theme_vars" %>
 <% content_for :title, current_workspace.name %>
+<% sc = ->(k, **a) { t("merchant.scan.#{k}", **a) } %>
+<% ws = current_workspace %>
 
-<div style="min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center;
-            padding:28px 22px; background:var(--surface); color:var(--ink); text-align:center; gap:8px; position:relative;">
+<div class="k-wrap" style="position:relative;">
   <%# ---- Language toggle (this minimal screen has no header, so add it here) ---- %>
-  <span style="position:absolute; top:16px; right:16px; display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden;">
+  <span style="position:absolute; top:16px; right:16px; display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--card);">
     <% [["VI", :vi], ["EN", :en]].each do |lbl, loc| %>
       <% on = I18n.locale == loc %>
       <%= link_to lbl, set_locale_path(loc), data: { turbo: false },
@@ -12,44 +13,121 @@
     <% end %>
   </span>
 
-  <%# ---- Merchant identity ---- %>
-  <div style="width:96px; height:96px; border-radius:26px; overflow:hidden; display:grid; place-items:center;
-              background:var(--primary); color:var(--on-primary); box-shadow:0 10px 30px rgba(0,0,0,.14);">
-    <% if current_workspace.logo.attached? %>
-      <%= image_tag url_for(current_workspace.logo), style: "width:100%; height:100%; object-fit:cover;" %>
-    <% else %>
-      <span style="font-family:var(--font-display); font-size:34px; font-weight:800;"><%= current_workspace.logo_initials %></span>
-    <% end %>
-  </div>
-  <h1 class="l-display" style="font-size:24px; margin:14px 0 0;"><%= current_workspace.name %></h1>
-  <div style="font-size:13px; color:var(--ink-2);">
-    <%= current_user&.name %><% if current_outlet %> · <%= current_outlet.name %><% end %>
+  <div class="k-head" style="padding-right:76px;">
+    <span class="mk">
+      <% if ws.logo.attached? %>
+        <%= image_tag url_for(ws.logo) %>
+      <% else %><%= ws.logo_initials %><% end %>
+    </span>
+    <div style="min-width:0;">
+      <div class="nm"><%= ws.name %></div>
+      <div class="sub"><%= current_outlet&.name || sc.(:no_outlet) %></div>
+    </div>
   </div>
 
-  <%# ---- Home actions: open the scanner + (if allowed) show the branch check-in
-        QR. Peers, both reachable straight from this screen. ---- %>
-  <%= link_to merchant_scanner_path(kiosk: 1), data: { turbo: false },
-        style: "margin-top:28px; width:100%; max-width:360px; padding:22px; border-radius:22px; background:var(--primary);
-                color:var(--on-primary); text-decoration:none; font-weight:800; font-size:19px; display:flex;
-                align-items:center; justify-content:center; gap:12px; box-shadow:0 12px 34px rgba(0,0,0,.16);" do %>
-    <%= ui_icon(:scan, size: 26) %> <%= t("merchant.scan.open_scanner") %>
+  <div class="k-greet"><%= sc.(:greet, name: current_user&.name.to_s.split.last) %></div>
+  <div class="k-greet-sub"><%= sc.(:launcher_hint) %></div>
+
+  <%# ---- The one thing this screen exists for ---- %>
+  <%= link_to merchant_scanner_path(kiosk: 1), data: { turbo: false }, class: "k-action", style: "margin-top:18px;" do %>
+    <span class="ic"><%= ui_icon(:scan, size: 24) %></span>
+    <span style="flex:1; min-width:0;">
+      <span class="tt" style="display:block;"><%= sc.(:open_scanner) %></span>
+      <span class="ds" style="display:block;"><%= sc.(:open_scanner_sub) %></span>
+    </span>
+    <span style="flex:none; opacity:.8;"><%= ui_icon(:chevron_right, size: 20) %></span>
   <% end %>
+
+  <%# ---- The other two counter jobs, one tap away each ---- %>
+  <div class="k-sub" style="margin-top:12px;">
+    <%= link_to merchant_scanner_path(kiosk: 1, tab: "redeem"), data: { turbo: false } do %>
+      <%= ui_icon(:ticket, size: 20) %>
+      <div class="tt"><%= sc.(:card_redeem) %></div>
+      <div class="ds"><%= sc.(:redeem_sub) %></div>
+    <% end %>
+    <% if current_program.scan_member? %>
+      <%= link_to merchant_scanner_path(kiosk: 1, tab: "pos"), data: { turbo: false } do %>
+        <%= ui_icon(:user, size: 20) %>
+        <div class="tt"><%= sc.(:card_pos) %></div>
+        <div class="ds"><%= sc.(:pos_sub) %></div>
+      <% end %>
+    <% else %>
+      <%= link_to merchant_transactions_path, data: { turbo: false } do %>
+        <%= ui_icon(:history, size: 20) %>
+        <div class="tt"><%= t("merchant.nav.transactions") %></div>
+        <div class="ds"><%= sc.(:history_sub) %></div>
+      <% end %>
+    <% end %>
+  </div>
 
   <% if @has_checkin_qr %>
-    <%= link_to merchant_scanner_checkin_qr_path, data: { turbo: false },
-          style: "margin-top:12px; width:100%; max-width:360px; padding:20px; border-radius:22px; background:var(--surface);
-                  color:var(--primary); border:1.5px solid var(--primary); text-decoration:none; font-weight:800; font-size:18px;
-                  display:flex; align-items:center; justify-content:center; gap:12px;" do %>
-      🏬 <%= t("merchant.scan.checkin_home") %>
-    <% end %>
+    <div class="l-eyebrow" style="margin:20px 0 8px;"><%= sc.(:tools) %></div>
+    <div class="k-tools">
+      <%= link_to merchant_scanner_checkin_qr_path, data: { turbo: false } do %>
+        <%= ui_icon(:qrcode, size: 20) %><span><%= sc.(:checkin_home) %></span>
+      <% end %>
+    </div>
   <% end %>
 
-  <p style="font-size:12.5px; color:var(--ink-2); max-width:320px; margin-top:12px;"><%= t("merchant.scan.launcher_hint") %></p>
+  <%# ---- This shift, at this counter ---- %>
+  <div class="k-card" style="margin-top:20px;">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+      <strong style="font-size:14px;"><%= sc.(:today_title) %></strong>
+      <span style="font-size:11.5px; color:var(--ink-2);"><%= l(Time.zone.today, format: :short) %></span>
+    </div>
+    <div style="display:flex; gap:18px; margin-top:12px;">
+      <div>
+        <div class="l-eyebrow"><%= t("merchant.transactions.earned") %></div>
+        <div style="font-size:18px; font-weight:700; color:var(--good); font-variant-numeric:tabular-nums;">+<%= number_with_delimiter(@today_earned.to_i) %></div>
+      </div>
+      <div>
+        <div class="l-eyebrow"><%= t("merchant.transactions.spent") %></div>
+        <div style="font-size:18px; font-weight:700; font-variant-numeric:tabular-nums;"><%= @today_spent.to_i.zero? ? "0" : "−#{number_with_delimiter(@today_spent)}" %></div>
+      </div>
+      <div>
+        <div class="l-eyebrow"><%= t("merchant.transactions.total") %></div>
+        <div style="font-size:18px; font-weight:700; font-variant-numeric:tabular-nums;"><%= number_with_delimiter(@today_count.to_i) %></div>
+      </div>
+    </div>
+
+    <% if @today_recent.present? %>
+      <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--line-soft);">
+        <% @today_recent.each do |tr| %>
+          <div class="k-row">
+            <span class="dot" style="background:<%= tr.credit? ? 'var(--good)' : 'var(--warn)' %>;"></span>
+            <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= tr.member&.display_name %></span>
+            <span style="flex:none; font-weight:600; font-variant-numeric:tabular-nums; color:<%= tr.credit? ? 'var(--good)' : 'var(--warn)' %>;">
+              <%= tr.credit? ? "+" : "−" %><%= number_with_delimiter(tr.amount.abs) %>
+            </span>
+            <span style="flex:none; color:var(--ink-2); font-size:11.5px;"><%= tr.created_at.strftime("%H:%M") %></span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="margin-top:12px; font-size:12.5px; color:var(--ink-2);"><%= sc.(:today_empty) %></div>
+    <% end %>
+  </div>
+
+  <%# ---- Which branch this phone is ringing up for. Getting it wrong here is
+          wrong in every report afterwards, so it stays on the home screen. ---- %>
+  <% if selectable_outlets.size > 1 %>
+    <%= form_with url: merchant_scan_home_path, method: :get, data: { turbo: false }, style: "margin-top:16px;" do %>
+      <label class="l-label"><%= sc.(:selling_branch) %></label>
+      <select name="outlet" class="l-field" onchange="this.form.requestSubmit()">
+        <% selectable_outlets.each do |o| %>
+          <option value="<%= o.id %>" <%= "selected" if current_outlet&.id == o.id %>><%= o.name %></option>
+        <% end %>
+      </select>
+    <% end %>
+  <% end %>
 
   <%# ---- Add-to-home-screen (PWA) guidance ---- %>
   <%= render "merchant/scanner/pwa_hint" %>
 
-  <%= button_to t("merchant.scan.logout"), destroy_user_session_path, method: :delete,
-        form: { data: { turbo: false } },
-        style: "margin-top:20px; background:none; border:none; color:var(--ink-2); font-size:13px; text-decoration:underline; cursor:pointer;" %>
+  <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin-top:22px;">
+    <%= button_to sc.(:logout), destroy_user_session_path, method: :delete,
+          form: { data: { turbo: false } },
+          style: "background:none; border:none; color:var(--ink-2); font-size:13px; text-decoration:underline; cursor:pointer;" %>
+  </div>
+  <p style="text-align:center; font-size:11.5px; color:var(--ink-2); margin-top:10px; line-height:1.5;"><%= sc.(:safeguard_home) %></p>
 </div>

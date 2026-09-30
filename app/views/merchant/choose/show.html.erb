@@ -1,33 +1,89 @@
 <% content_for :title, t("merchant.choose.title") %>
-<h1><%= t("merchant.choose.title") %></h1>
-<p class="sub"><%= t("merchant.choose.sub") %></p>
+<% content_for :auth_wide, true %>
+<% ch = ->(k, **a) { t("merchant.choose.#{k}", **a) } %>
+
+<div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+  <div style="flex:1; min-width:220px;">
+    <div class="l-eyebrow"><%= ch.(:eyebrow) %></div>
+    <h1 style="margin-top:6px;"><%= ch.(:title) %></h1>
+    <p class="sub" style="margin-bottom:0;"><%= ch.(:sub) %></p>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px; flex:none;">
+    <span style="width:36px; height:36px; border-radius:11px; background:var(--surface-2); display:grid; place-items:center; font-weight:700; font-size:13px;"><%= current_user&.initials %></span>
+    <div style="min-width:0;">
+      <div style="font-size:13px; font-weight:600;"><%= current_user&.name %></div>
+      <div style="font-size:11.5px; color:var(--ink-2);"><%= current_user&.email %></div>
+    </div>
+  </div>
+</div>
 
 <% if @workspaces.empty? %>
-  <div style="text-align:center; padding:14px 0;">
-    <p style="color:var(--ink-2); font-size:14px;"><%= t("merchant.choose.no_shops") %></p>
-    <%= link_to t("merchant.choose.create_shop"), merchant_signup_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:12px;" %>
+  <div style="text-align:center; padding:28px 0;">
+    <p style="color:var(--ink-2); font-size:14px;"><%= ch.(:no_shops) %></p>
+    <%= link_to ch.(:create_shop), merchant_signup_path, class: "l-btn l-btn-primary", style: "margin-top:12px;" %>
   </div>
 <% else %>
-  <div style="display:flex; flex-direction:column; gap:10px;">
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;">
     <% @workspaces.each do |ws| %>
-      <%= link_to merchant_url_for(ws, merchant_home_path), data: { turbo: false },
-            style: "display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:14px; text-decoration:none; color:var(--ink); background:#fff;" do %>
-        <span style="width:40px; height:40px; border-radius:11px; flex:none; overflow:hidden; display:grid; place-items:center; color:#fff; font-weight:700; background:<%= ws.theme_value(:primary) %>;">
-          <% if ws.logo.attached? %><%= image_tag url_for(ws.logo), style: "width:100%;height:100%;object-fit:cover;" %><% else %><%= ws.logo_initials %><% end %>
-        </span>
-        <span style="flex:1; min-width:0;">
-          <span style="display:block; font-weight:600;"><%= ws.name %></span>
-          <span class="l-mono" style="display:block; font-size:12px; color:var(--ink-2);"><%= workspace_host(ws) %></span>
-        </span>
-        <% if ws.access_blocked? %>
-          <span class="l-chip" style="background:#F3DDD7; color:#B4402F; font-size:11px;"><%= t("merchant.choose.suspended") %></span>
-        <% end %>
-        <span style="color:var(--ink-2); font-size:18px;">›</span>
-      <% end %>
+      <% blocked = ws.access_blocked? %>
+      <div style="border:1px solid var(--line); border-radius:18px; padding:16px; background:#fff; display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; align-items:flex-start; gap:11px;">
+          <span style="width:42px; height:42px; border-radius:13px; flex:none; overflow:hidden; display:grid; place-items:center; color:#fff; font-weight:700; background:<%= ws.theme_value(:primary) %>;">
+            <% if ws.logo.attached? %><%= image_tag url_for(ws.logo), style: "width:100%;height:100%;object-fit:cover;" %><% else %><%= ws.logo_initials %><% end %>
+          </span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= ws.name %></div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:5px;">
+              <% if (role = @roles[ws.id]) %>
+                <span class="m-badge"><%= role.label %></span>
+              <% end %>
+              <% if blocked %>
+                <span class="m-badge down"><%= ch.(:suspended) %></span>
+              <% else %>
+                <span class="m-badge up"><%= ws.status_label %></span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <%# Enough to tell two shops apart at a glance. %>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center;">
+          <% [[@members[ws.id].to_i, ch.(:st_members)], [@outlets[ws.id].to_i, ch.(:st_outlets)], [@staff[ws.id].to_i, ch.(:st_staff)]].each do |v, label| %>
+            <div style="background:var(--surface-2); border-radius:12px; padding:9px 6px;">
+              <div style="font-size:17px; font-weight:700; font-variant-numeric:tabular-nums;"><%= number_with_delimiter(v) %></div>
+              <div style="font-size:11px; color:var(--ink-2); margin-top:1px;"><%= label %></div>
+            </div>
+          <% end %>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; margin-top:auto;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:11px; color:var(--ink-2);"><%= ch.(:last_activity) %></div>
+            <div style="font-size:12.5px; font-weight:600;">
+              <%= @last_seen[ws.id] ? ch.(:ago, when: time_ago_in_words(@last_seen[ws.id])) : ch.(:no_activity) %>
+            </div>
+          </div>
+          <%= link_to merchant_url_for(ws, merchant_home_path), data: { turbo: false },
+                class: "l-btn #{blocked ? 'l-btn-soft' : 'l-btn-primary'}",
+                style: "flex:none; padding:9px 15px; font-size:13.5px;" do %>
+            <%= ch.(:enter) %> <%= ui_icon(:arrow_right, size: 15) %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:18px; padding:16px; border:1px dashed var(--line); border-radius:16px;">
+    <div style="flex:1; min-width:220px;">
+      <div style="font-weight:700; font-size:14px;"><%= ch.(:add_title) %></div>
+      <div style="font-size:12.5px; color:var(--ink-2); margin-top:3px;"><%= ch.(:add_sub) %></div>
+    </div>
+    <%= link_to merchant_signup_path, class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" do %>
+      <%= ui_icon(:store, size: 15) %> <%= ch.(:create_shop) %>
     <% end %>
   </div>
 <% end %>
 
-<%= button_to t("merchant.choose.logout"), destroy_user_session_path, method: :delete,
+<%= button_to ch.(:logout), destroy_user_session_path, method: :delete,
       form: { data: { turbo: false } },
-      class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:16px;" %>
+      class: "l-btn l-btn-ghost", style: "margin-top:18px;" %>

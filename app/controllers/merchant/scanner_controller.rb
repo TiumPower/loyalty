@@ -5,6 +5,16 @@ module Merchant
     def launcher
       # Show the "Shop QR" home button only when the user has a branch to display.
       @has_checkin_qr = checkin_qr_outlets.any?
+      # Owner/manager can set which branch this phone rings up for, same as the
+      # desk view — an unset branch misattributes every bill taken here.
+      if params[:outlet].present? && selectable_outlets.any? { |o| o.id.to_s == params[:outlet].to_s }
+        session[:active_outlet_id] = params[:outlet]
+        # current_outlet memoises, and selectable_outlets above may have warmed it.
+        remove_instance_variable(:@current_outlet) if instance_variable_defined?(:@current_outlet)
+      end
+      # The same counter figures the desk view shows, so a cashier can see their
+      # own shift without opening the scanner first.
+      load_counter_activity
       render layout: "launcher"
     end
 
