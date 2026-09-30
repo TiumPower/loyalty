@@ -1,10 +1,9 @@
-<% content_for :title, current_workspace&.name || "Tạm ngưng" %>
+<% content_for :title, current_workspace&.name || t("customer.unavailable.title") %>
 <% content_for :no_tabbar, true %>
-<div class="l-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:88vh; text-align:center;">
-  <div style="width:80px; height:80px; border-radius:24px; background:var(--surface-2); display:grid; place-items:center; font-size:40px;">🚧</div>
-  <h1 class="l-display" style="font-size:24px; margin-top:16px;">Chương trình đang tạm ngưng</h1>
-  <p style="color:var(--ink-2); font-size:14px; margin-top:8px; max-width:300px;">
-    Chương trình tri ân của <strong><%= current_workspace&.name %></strong> hiện đang tạm ngưng.
-    Vui lòng quay lại sau nhé!
-  </p>
+<div class="l-screen no-tabs" style="display:flex; flex-direction:column; justify-content:center; min-height:88vh;">
+  <div class="l-result">
+    <div class="halo warn"><%= ui_icon(:clock, size: 38) %></div>
+    <h1><%= t("customer.unavailable.title") %></h1>
+    <p><%= t("customer.unavailable.body_html", shop: tag.strong(current_workspace&.name)).html_safe %></p>
+  </div>
 </div>

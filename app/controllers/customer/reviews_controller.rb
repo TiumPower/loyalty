@@ -14,7 +14,17 @@ module Customer
       @outlets  = current_workspace.outlets.order(:id).to_a
       @count    = Rating.count
       @avg      = Rating.average(:stars)&.round(1) || 0
+      # Star breakdown for the summary bars — one grouped count over the whole
+      # table, not a tally of the hundred rows the list happens to show.
+      counts    = Rating.group(:stars).count
+      @dist     = (1..5).index_with { |n| counts[n].to_i }
       @ratings  = Rating.recent.includes(:member, :replied_by).limit(100).to_a
+      # The design shows three reviews and a way to see the rest.
+      @shown    = params[:all].present? ? @ratings.size : 3
+      # "Review highlights": the tags customers picked most often, top three.
+      counts    = Hash.new(0)
+      Rating.where.not(tags: nil).pluck(:tags).each { |list| Array(list).each { |k| counts[k] += 1 if Rating::TAGS.include?(k) } }
+      @highlights = counts.sort_by { |_, n| -n }.first(3).map { |k, _| t("customer.review.tag_#{k}") }
       @mine     = Rating.where(member: current_member).recent.to_a
       @my_count = @mine.size
     end
@@ -28,7 +38,7 @@ module Customer
 
     def create
       @rating = Rating.new(workspace: current_workspace, member: current_member,
-                           stars: stars_param, comment: comment_param)
+                           stars: stars_param, comment: comment_param, tags: tags_param)
       if @rating.save
         MerchantAlerts.new_rating(@rating)
         apology = maybe_apologise(@rating)
@@ -55,7 +65,7 @@ module Customer
 
     def update
       @rating = own_rating or return redirect_to(after_save_path, alert: t("customer.review_reply.not_found"))
-      if @rating.update(stars: stars_param, comment: comment_param)
+      if @rating.update(stars: stars_param, comment: comment_param, tags: tags_param)
         redirect_to after_save_path, notice: t("customer.review_reply.updated")
       else
         render :edit, status: :unprocessable_entity
@@ -73,6 +83,8 @@ module Customer
       n.between?(1, 5) ? n : nil
     end
     def comment_param = params[:comment].to_s.strip.presence
+    # The chips post whatever is in the DOM, so keep only keys we know.
+    def tags_param = Array(params[:tags]).map(&:to_s) & Rating::TAGS
     def after_save_path = current_workspace.feedback_public? ? member_shop_about_path : member_profile_path
 
     def ensure_public!

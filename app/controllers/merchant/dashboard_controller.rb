@@ -47,6 +47,15 @@ module Merchant
         # Check-in QR is per-branch only (see Outlets); the merchant no longer has
         # a workspace-level QR.
         @sub_warning     = subscription_warning(current_workspace)
+        # ---- Operational overview (the design's bottom row) ----
+        # The five most recent point movements, with the customer and branch
+        # behind each one, so the owner can see the programme running live.
+        @recent_tx    = PointTransaction.recent.includes(:member, :outlet).limit(5).to_a
+        @open_alerts  = MerchantAlert.unread.recent.limit(3).to_a
+        @alert_count  = MerchantAlert.unread.count
+        # New members in range, for the "new customers" metric card.
+        @new_members  = in_range(Member.all).count
+        @vouchers_used_count = in_range(Voucher.where(state: "used")).count
       else
         @points_issued = @points_redeemed = @purchases_count = @redemption_rate = @active_members = 0
         @earning_members = 0

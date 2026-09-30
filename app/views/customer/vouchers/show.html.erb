@@ -3,68 +3,129 @@
 <% ink = current_workspace.theme_value(:ink).to_s.delete("#") %>
 <% in_use = @voucher.usable? && @voucher.redeem_token.present? && @voucher.redeem_token_expires_at&.future? %>
 
-<header class="l-appbar">
-  <%= link_to "←", member_wallet_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:20px;"><%= t("customer.voucher.title") %></div>
+<header class="l-subhead">
+  <%= link_to member_vouchers_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.voucher.title") %></div></div>
+  <div class="sp"><span style="color:var(--good); display:grid; place-items:center;"><%= ui_icon(:shield, size: 20) %></span></div>
 </header>
 
 <div class="l-screen">
   <% if @voucher.state == "used" %>
-    <%# ---- Used confirmation ---- %>
-    <div class="l-tile" style="text-align:center; padding:34px 20px;">
-      <div style="width:76px; height:76px; margin:0 auto 14px; border-radius:50%; background:var(--good); color:#fff; display:grid; place-items:center; font-size:38px;">✓</div>
-      <h3 class="l-display" style="font-size:22px;"><%= t("customer.voucher.used_title") %></h3>
-      <p style="font-weight:600; margin-top:4px;"><%= @voucher.reward.title %></p>
-      <p style="color:var(--ink-2); font-size:13px; margin-top:8px;">
-        <%= t("customer.voucher.used_time", time: @voucher.used_at&.strftime("%H:%M · %d/%m/%Y")) %>
-        <%= t("customer.voucher.used_at_outlet", outlet: @voucher.used_outlet.name) if @voucher.used_outlet %>
-      </p>
+    <%# ---- Redeemed: a receipt of what it was worth. ---- %>
+    <div class="l-result">
+      <div class="halo"><%= ui_icon(:check, size: 40, stroke: 2.4) %></div>
+      <h1><%= t("customer.voucher.used_title") %></h1>
+      <p><%= @voucher.reward.title %></p>
     </div>
+    <div class="l-tile" style="margin-top:22px;">
+      <div class="l-kv"><span class="k"><%= t("customer.voucher.k_reward") %></span><span class="v"><%= @voucher.reward.title %></span></div>
+      <div class="l-kv"><span class="k"><%= t("customer.voucher.k_value") %></span><span class="v"><%= @voucher.reward.value_label %></span></div>
+      <% if @voucher.used_outlet %>
+        <div class="l-kv"><span class="k"><%= t("customer.voucher.k_outlet") %></span><span class="v"><%= @voucher.used_outlet.name %></span></div>
+      <% end %>
+      <div class="l-kv"><span class="k"><%= t("customer.voucher.k_when") %></span><span class="v"><%= @voucher.used_at&.strftime("%H:%M · %d/%m/%Y") %></span></div>
+      <div class="l-kv"><span class="k"><%= t("customer.common.code_label") %></span><span class="v l-mono"><%= @voucher.code %></span></div>
+    </div>
+    <%= link_to t("customer.voucher.back_to_wallet"), member_vouchers_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:18px;" %>
 
   <% elsif @voucher.expired? %>
-    <div class="l-tile" style="text-align:center; padding:34px 20px;">
-      <div style="font-size:42px;">⌛</div>
-      <h3 class="l-display" style="font-size:20px; margin-top:8px;"><%= t("customer.voucher.expired_title") %></h3>
-      <p style="color:var(--ink-2); font-size:13px;"><%= t("customer.common.code_label") %> <%= @voucher.code %></p>
+    <div class="l-result">
+      <div class="halo warn"><%= ui_icon(:clock, size: 38) %></div>
+      <h1><%= t("customer.voucher.expired_title") %></h1>
+      <p><%= @voucher.reward.title %> · <span class="l-mono"><%= @voucher.code %></span></p>
     </div>
+    <%= link_to t("customer.voucher.back_to_wallet"), member_vouchers_path, class: "l-btn l-btn-outline l-btn-block", style: "margin-top:22px;" %>
 
   <% elsif in_use %>
-    <%# ---- Point-of-use one-time code (§6.4) ---- %>
+    <%# ---- The one-time code, live at the counter. ---- %>
     <div data-controller="usecode"
          data-usecode-status-url-value="<%= member_voucher_status_path(@voucher) %>"
          data-usecode-seconds-value="<%= @voucher.use_token_seconds_left %>"
          data-usecode-return-url-value="<%= member_voucher_path(@voucher) %>">
-      <div class="l-tile" style="text-align:center; padding:24px;">
-        <p style="font-weight:700;"><%= @voucher.reward.display_icon %> <%= @voucher.reward.title %></p>
-        <p style="color:var(--warn); font-weight:700; margin:10px 0;">
-          <%= t("customer.voucher.use_expires_pre") %> <span data-usecode-target="count" class="l-mono"><%= @voucher.use_token_seconds_left %></span>s
-        </p>
-        <div style="display:inline-block; padding:14px; background:#fff; border:1px solid var(--line); border-radius:16px;">
-          <%= qr_svg(@voucher.redeem_token, color: ink, size: 200) %>
-        </div>
-        <div style="margin-top:16px;">
-          <div class="l-eyebrow"><%= t("customer.voucher.fallback_label") %></div>
-          <div class="l-mono" style="font-size:26px; letter-spacing:.16em; font-weight:700; margin-top:4px;"><%= @voucher.formatted_use_token %></div>
+      <div class="l-vrow" style="pointer-events:none;">
+        <div class="thumb"><%= reward_art(@voucher.reward, size: 160, emoji_size: 24) %></div>
+        <div class="bd">
+          <div style="font-size:11.5px; font-weight:600; color:var(--primary);"><%= current_workspace.name %></div>
+          <div class="tt" style="margin-top:3px;"><%= @voucher.reward.title %></div>
         </div>
       </div>
-      <p style="text-align:center; color:var(--ink-2); font-size:13px; margin-top:14px;"><%= t("customer.voucher.hand_to_staff") %></p>
-      <%= link_to t("customer.voucher.cancel_later"), member_wallet_path, class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:8px;" %>
+
+      <div class="l-qrpanel" style="margin-top:14px;">
+        <span class="notch l"></span><span class="notch r"></span>
+        <div style="display:flex; align-items:center; gap:10px; text-align:left;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:15px;"><%= t("customer.voucher.show_to_staff_title") %></div>
+            <div style="font-size:12px; color:var(--ink-2); margin-top:2px;"><%= t("customer.voucher.use_hint", min: (Voucher::USE_TTL / 60)) %></div>
+          </div>
+          <span class="l-pill warn" style="flex:none;">
+            <%= ui_icon(:clock, size: 12) %><span data-usecode-target="count" class="l-mono"><%= @voucher.use_token_seconds_left %></span>s
+          </span>
+        </div>
+        <div class="frame" style="margin-top:16px;"><%= qr_svg(@voucher.redeem_token, color: ink, size: 200) %></div>
+        <div style="margin-top:16px;">
+          <div class="l-eyebrow"><%= t("customer.voucher.fallback_label") %></div>
+          <div class="staffcode l-mono"><%= @voucher.formatted_use_token %></div>
+          <div style="font-size:12px; color:var(--ink-2); margin-top:4px;"><%= t("customer.voucher.staff_code_hint") %></div>
+        </div>
+      </div>
+
+      <div class="l-note amber" style="margin-top:12px;">
+        <%= ui_icon(:shield, size: 16) %>
+        <span><%= t("customer.voucher.single_use_warning", shop: current_workspace.name) %></span>
+      </div>
+      <div class="l-note" style="margin-top:10px;">
+        <%= ui_icon(:refresh, size: 16) %>
+        <span><strong><%= t("customer.voucher.waiting_title") %></strong><br><%= t("customer.voucher.waiting_body") %></span>
+      </div>
+      <%= link_to t("customer.voucher.cancel_later"), member_vouchers_path, class: "l-btn l-btn-outline l-btn-block", style: "margin-top:14px;" %>
     </div>
 
   <% else %>
-    <%# ---- Active voucher detail — start using ---- %>
-    <div class="l-ticket" style="margin-bottom:16px;">
-      <div class="stub"><div class="v"><%= @voucher.reward.value_label %></div><div class="u"><%= @voucher.reward.kind_label %></div></div>
-      <div class="perf"></div>
-      <div class="body">
-        <div style="font-weight:700; font-size:17px;"><%= @voucher.reward.display_icon %> <%= @voucher.reward.title %></div>
-        <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("customer.common.code_label") %> <span class="l-mono"><%= @voucher.code %></span><% if @voucher.expires_at %> · <%= t("customer.common.exp_short", date: l(@voucher.expires_at.to_date, format: :short)) %><% end %></div>
+    <%# ---- Held, not yet being used. ---- %>
+    <div class="l-tile pad-0">
+      <div class="l-hero <%= 'no-art' unless @voucher.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@voucher.reward, size: 720, emoji_size: 48) %></div>
+      <div style="padding:14px 16px 16px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11.5px; font-weight:700; color:var(--primary); flex:1; min-width:0;"><%= current_workspace.name %></span>
+          <span class="l-pill dark"><%= @voucher.reward.kind_label %></span>
+        </div>
+        <div style="font-weight:700; font-size:17px; letter-spacing:-.018em; margin-top:6px;"><%= @voucher.reward.title %></div>
+        <% if @voucher.reward.description.present? %>
+          <div style="font-size:13px; color:var(--ink-2); margin-top:6px; line-height:1.5;"><%= @voucher.reward.description %></div>
+        <% end %>
       </div>
     </div>
-    <% if @voucher.reward.description.present? %>
-      <div class="l-tile" style="margin-bottom:16px; font-size:13px; color:var(--ink-2);"><%= @voucher.reward.description %></div>
+
+    <div class="l-rows" style="margin-top:12px;">
+      <% if @voucher.expires_at %>
+        <div>
+          <span class="ic"><%= ui_icon(:clock, size: 18) %></span>
+          <span><%= t("customer.common.valid_until_label") %></span>
+          <span class="tr" style="color:var(--ink); font-weight:700;"><%= l(@voucher.expires_at.to_date, format: :short) %></span>
+        </div>
+      <% end %>
+      <div>
+        <span class="ic"><%= ui_icon(:ticket, size: 18) %></span>
+        <span><%= t("customer.common.code_label") %></span>
+        <span class="tr l-mono" style="color:var(--ink); font-weight:700;"><%= @voucher.code %></span>
+      </div>
+    </div>
+
+    <% if @voucher.reward.terms.present? %>
+      <div class="l-note" style="margin-top:12px;">
+        <%= ui_icon(:shield, size: 16) %>
+        <div><%= simple_format @voucher.reward.terms, {}, sanitize: true, wrapper_tag: "span" %></div>
+      </div>
     <% end %>
-    <%= button_to t("customer.voucher.use_now"), member_use_voucher_path(@voucher), method: :post, class: "l-btn l-btn-primary l-btn-block" %>
-    <p style="text-align:center; color:var(--ink-2); font-size:12px; margin-top:10px;"><%= t("customer.voucher.use_hint", min: (Voucher::USE_TTL / 60)) %></p>
+
+    <%= button_to member_use_voucher_path(@voucher), method: :post, class: "l-btn l-btn-primary l-btn-block",
+          form: { style: "margin-top:18px;" } do %>
+      <%= ui_icon(:qrcode, size: 17) %><%= t("customer.voucher.use_now") %>
+    <% end %>
+    <p style="text-align:center; color:var(--ink-2); font-size:12px; line-height:1.5; margin-top:10px;">
+      <%= t("customer.voucher.use_hint", min: (Voucher::USE_TTL / 60)) %>
+    </p>
   <% end %>
 </div>

@@ -1,35 +1,83 @@
-<div class="l-tile" data-controller="rating">
-  <div style="font-weight:700; margin-bottom:6px;"><%= current_workspace.name %></div>
-  <p style="color:var(--ink-2); font-size:13px; margin-bottom:16px;">Chia sẻ trải nghiệm của bạn — đánh giá sẽ hiển thị công khai để giúp khách khác.</p>
+<%
+  chosen  = rating.new_record? ? nil : rating.stars
+  picked  = rating.tag_list
+  outlet  = current_workspace.outlets.first
+  labels  = { 1 => t("customer.review.r1"), 2 => t("customer.review.r2"), 3 => t("customer.review.r3"),
+              4 => t("customer.review.r4"), 5 => t("customer.review.r5") }
+%>
+<%# ---- who the review is about ---- %>
+<div class="l-tile" style="margin-bottom:12px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:64px; height:64px; border-radius:14px; flex:none; overflow:hidden; background:var(--surface-2); display:grid; place-items:center;">
+      <%= shop_cover(current_workspace, size: 200) %>
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-weight:700; font-size:16px; letter-spacing:-.015em;"><%= current_workspace.name %></div>
+      <% if outlet %><div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= outlet.name %></div><% end %>
+      <span class="l-pill brand" style="margin-top:7px;"><%= t("customer.review.public_chip") %></span>
+    </div>
+  </div>
+</div>
 
+<%= form_with url: url, method: method, data: { controller: "rating" } do %>
   <% if rating.errors.any? %>
-    <div style="background:#FBE6E2; color:#B4402F; border-radius:12px; padding:10px 13px; margin-bottom:14px; font-size:13px;">
-      Vui lòng chọn số sao trước khi gửi.
+    <div class="l-note warn" style="margin-bottom:12px;">
+      <%= ui_icon(:shield, size: 15) %><span><%= t("customer.review.pick_stars_error") %></span>
     </div>
   <% end %>
 
-  <%= form_with url: url, method: method do %>
-    <%# The stars column defaults to 5 in the database, so a new Rating object
-        arrives pre-rated. Start an unsaved review blank and make the customer
-        choose. %>
-    <% chosen = rating.new_record? ? nil : rating.stars %>
+  <%# ---- stars ---- %>
+  <div class="l-tile" style="text-align:center;">
+    <div style="font-size:14px; font-weight:600;"><%= t("customer.review.prompt", shop: current_workspace.name) %></div>
+    <%# The stars column defaults to 5 in the database, so a new Rating arrives
+        pre-rated. Start blank and make the customer choose. %>
     <input type="hidden" name="stars" value="<%= chosen %>" data-rating-target="input">
-    <div style="display:flex; gap:8px; justify-content:center; font-size:40px; margin:6px 0 8px; cursor:pointer;">
+    <div style="display:flex; gap:12px; justify-content:center; font-size:34px; margin:14px 0 8px; cursor:pointer;">
       <% (1..5).each do |i| %>
         <span data-rating-target="star" data-value="<%= i %>"
               data-action="click->rating#set keydown.enter->rating#set"
-              role="radio" tabindex="0" aria-label="<%= t("customer.review.stars_n", n: i, default: "%{n} sao") %>"
-              style="user-select:none; color:var(--primary-2,#E08A3C);">★</span>
+              role="radio" tabindex="0" aria-label="<%= t("customer.review.stars_n", n: i) %>"
+              style="user-select:none; color:var(--primary-2); line-height:1;">★</span>
       <% end %>
     </div>
-    <p data-rating-target="hint" style="text-align:center; font-size:12.5px; color:var(--ink-2); margin:0 0 16px;">
-      Chạm vào sao để chấm điểm
-    </p>
+    <div data-rating-target="hint" style="font-size:12.5px; color:var(--ink-2);"><%= t("customer.review.tap_to_rate") %></div>
+    <% if chosen %><div style="font-size:13px; font-weight:700; color:var(--primary);"><%= labels[chosen] %></div><% end %>
+  </div>
 
-    <label class="l-label">Nhận xét (không bắt buộc)</label>
-    <%= text_area_tag :comment, rating.comment, class: "l-field", rows: 4, placeholder: "Đồ uống ngon, phục vụ thân thiện…" %>
+  <%# ---- the words ---- %>
+  <div class="l-tile" style="margin-top:12px;" data-controller="charcount">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+      <label class="l-label" style="margin:0;"><%= t("customer.review.comment_label") %></label>
+      <span style="font-size:11.5px; color:var(--ink-2);" data-charcount-target="out"></span>
+    </div>
+    <%= text_area_tag :comment, rating.comment, class: "l-field", rows: 4,
+          maxlength: 500, style: "margin-top:8px;", placeholder: t("customer.review.comment_ph"),
+          data: { charcount_target: "input", action: "input->charcount#count" } %>
+    <div style="font-size:11.5px; color:var(--ink-2); margin-top:6px;"><%= t("customer.review.optional") %></div>
+  </div>
 
-    <%= submit_tag submit_label, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;",
-          data: { rating_target: "submit" }, disabled: chosen.blank? %>
-  <% end %>
-</div>
+  <%# ---- tags: what the shop does well. Free text cannot be counted, so the
+        shop page's "review highlights" are built from these. ---- %>
+  <div class="l-tile" style="margin-top:12px;">
+    <label class="l-label"><%= t("customer.review.tags_label") %></label>
+    <div class="l-chipset" data-controller="tagpick">
+      <% Rating::TAGS.each do |key| %>
+        <label class="l-tag <%= 'on' if picked.include?(key) %>" data-tagpick-target="tag">
+          <input type="checkbox" name="tags[]" value="<%= key %>" <%= "checked" if picked.include?(key) %>
+                 data-action="tagpick#toggle" hidden>
+          <%= t("customer.review.tag_#{key}") %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="l-note" style="margin-top:12px;">
+    <%= ui_icon(:eye, size: 16) %><span><%= t("customer.review.visibility_note", shop: current_workspace.name) %></span>
+  </div>
+
+  <%= submit_tag submit_label, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;",
+        data: { rating_target: "submit" }, disabled: chosen.blank? %>
+  <%= link_to t("customer.reward_detail.not_now"),
+        (current_workspace.feedback_public? ? member_shop_about_path : member_profile_path),
+        class: "l-btn l-btn-outline l-btn-block", style: "margin-top:10px;" %>
+<% end %>

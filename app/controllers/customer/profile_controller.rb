@@ -3,6 +3,12 @@ module Customer
     before_action :require_workspace!
     before_action :require_member!
 
+    # The design splits the account into a read-only summary and its own edit
+    # screen; both render from the same member record.
+    def edit
+      @member = current_member
+    end
+
     def show
       @member = current_member
     end
@@ -15,7 +21,7 @@ module Customer
       if raw_bday.present? && attrs[:birthday].nil?
         @member.assign_attributes(attrs.except(:birthday))
         @member.errors.add(:birthday, "không hợp lệ — nhập theo DD/MM/YYYY")
-        return render :show, status: :unprocessable_entity
+        return render :edit, status: :unprocessable_entity
       end
 
       # Email is the login identifier. There is no password, and signing in with
@@ -30,11 +36,11 @@ module Customer
       if changing && (taken = Member.where.not(id: @member.id).exists?(email: new_email))
         @member.assign_attributes(attrs)
         @member.errors.add(:email, t("customer.profile.email_taken"))
-        return render :show, status: :unprocessable_entity
+        return render :edit, status: :unprocessable_entity
       end
 
       unless @member.update(attrs)
-        return render :show, status: :unprocessable_entity
+        return render :edit, status: :unprocessable_entity
       end
 
       return redirect_to member_profile_path, notice: t("customer.profile.updated") unless changing
@@ -119,7 +125,7 @@ module Customer
     # :avatar has its own action; leaving it here let the text form attach one
     # through a path that never looked at the result.
     def profile_params
-      p = params.require(:member).permit(:name, :email, :phone, :birthday)
+      p = params.require(:member).permit(:name, :email, :phone, :birthday, :gender)
       p[:birthday] = parse_dmy(p[:birthday]) if p.key?(:birthday)
       p
     end

@@ -1,40 +1,78 @@
 <% content_for :title, t("customer.transactions.title") %>
-<% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.transactions.title") %></div>
-  <span class="l-chip l-chip-brand" style="margin-left:auto;"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span>
+<% content_for :tab, "history" %>
+<% tier = @member.tier %>
+
+<header class="l-subhead">
+  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.transactions.title") %></div>
+    <div class="s"><%= t("customer.transactions.subtitle") %></div>
+  </div>
 </header>
 
 <div class="l-screen">
-  <% if @transactions.empty? %>
-    <div class="l-tile" style="text-align:center; padding:40px 20px;">
-      <div style="font-size:40px;">🧾</div>
-      <p style="font-weight:600; margin-top:8px;"><%= t("customer.transactions.empty") %></p>
-      <p style="color:var(--ink-2); font-size:13px;"><%= t("customer.transactions.empty_sub") %></p>
+  <%# Balance plus where it sits on the tier ladder — the two facts that give
+      the ledger below its meaning. %>
+  <div class="l-balance">
+    <div style="display:flex; align-items:flex-start; gap:12px;">
+      <div style="flex:1; min-width:0;">
+        <div class="l-eyebrow"><%= t("customer.home.points_balance") %></div>
+        <div class="v"><%= number_with_delimiter(@member.points_balance) %><small><%= t("customer.common.points_unit") %></small></div>
+      </div>
+      <% if tier %><span class="l-pill gold lg" style="flex:none;"><%= tier.name %></span><% end %>
     </div>
-  <% else %>
-    <div class="l-tile" style="padding:6px 16px;">
+    <% if @member.next_tier %>
+      <div class="l-bar" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+      <div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--ink-2); margin-top:7px;">
+        <span><%= tier&.name %></span>
+        <span><%= t("customer.tiers.to_next_short", n: number_with_delimiter(@member.points_to_next), tier: @member.next_tier.name) %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="l-seg auto" style="margin-top:16px;">
+    <% [["all", t("customer.transactions.f_all")], ["earned", t("customer.transactions.f_earned")], ["redeemed", t("customer.transactions.f_redeemed")]].each do |key, label| %>
+      <%= link_to label, member_history_path(filter: (key == "all" ? nil : key)), class: ("active" if @filter == key) %>
+    <% end %>
+  </div>
+
+  <div style="margin-top:14px;">
+    <% if @transactions.empty? %>
+      <div class="l-empty">
+        <div class="ic"><%= ui_icon(:receipt, size: 26) %></div>
+        <div class="tt"><%= t("customer.transactions.empty") %></div>
+        <div class="mt"><%= t("customer.transactions.empty_sub") %></div>
+      </div>
+    <% else %>
       <% @transactions.each do |tx| %>
+        <% day = tx.created_at.to_date %>
         <% bill = tx.source_type == "Purchase" ? @purchases[tx.source_id] : nil %>
-        <div class="l-check" style="border-color:var(--line);" data-tx-id="<%= tx.id %>">
-          <span style="width:38px; height:38px; border-radius:12px; background:var(--surface-2); display:grid; place-items:center; font-size:18px; flex:none;"><%= tx.icon %></span>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:600; overflow-wrap:anywhere;"><%= tx.title %></div>
-            <div style="font-size:12px; color:var(--ink-2);">
-              <%= l(tx.created_at, format: :short) %><%= " · #{tx.outlet.name}" if tx.outlet %>
+        <%# data-tx-id is how the paging test tells rows apart. %>
+        <div class="l-row" data-tx-id="<%= tx.id %>" style="align-items:flex-start;">
+          <span class="ic <%= tx.credit? ? '' : 'muted' %>" style="width:42px; height:42px;"><%= tx.icon %></span>
+          <div class="bd">
+            <div class="l-eyebrow" style="font-size:10.5px;">
+              <%= day == Date.current ? t("customer.common.today") : l(day, format: :short) %>
+            </div>
+            <div class="tt" style="margin-top:2px;"><%= tx.title %></div>
+            <div class="mt">
+              <%= tx.created_at.strftime("%H:%M") %><%= " · #{tx.outlet.name}" if tx.outlet %>
               <%# Without the bill behind it, "+25 điểm" is unverifiable. %>
               <% if bill %> · <%= t("customer.transactions.bill", amount: number_with_delimiter(bill.amount)) %><% end %>
             </div>
           </div>
-          <div class="l-num" style="font-size:18px; color:<%= tx.credit? ? 'var(--good)' : 'var(--warn)' %>;">
+          <div class="tr" style="align-items:center; gap:6px; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; color:<%= tx.credit? ? 'var(--good)' : 'var(--warn)' %>;">
+            <span style="width:6px; height:6px; border-radius:50%; background:currentColor; flex:none;"></span>
             <%= tx.credit? ? "+" : "" %><%= number_with_delimiter(tx.amount) %>
           </div>
         </div>
       <% end %>
-    </div>
-    <% if @has_more %>
-      <%= link_to t("customer.transactions.load_more"), member_history_path(page: @page + 1), class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:14px;" %>
+      <% if @has_more %>
+        <%= link_to t("customer.transactions.load_more"), member_history_path(page: @page + 1, filter: (@filter == "all" ? nil : @filter)),
+              class: "l-btn l-btn-outline l-btn-block", style: "margin-top:16px;" %>
+      <% end %>
     <% end %>
-  <% end %>
+  </div>
 </div>

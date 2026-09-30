@@ -1,0 +1,83 @@
+<% content_for :title, t("customer.earn_success.title") %>
+<% content_for :tab, "" %>
+<% content_for :no_tabbar, true %>
+
+<%# The scan result inverts to the dark scanner chrome at the top, then hands
+    back to the page for the numbers and the decision. %>
+<header class="l-darkbar">
+  <%= link_to member_root_path, class: "l-iconbtn sm", "aria-label": t("customer.common.close") do %>
+    <%= ui_icon(:close, size: 17) %>
+  <% end %>
+  <div class="t"><%= t("customer.pos.scanned_title") %></div>
+  <span style="width:34px; flex:none;"></span>
+</header>
+
+<div class="l-dark" style="text-align:center; padding:8px 20px 34px;">
+  <div style="width:84px; height:84px; margin:0 auto; border-radius:50%; background:var(--good);
+              color:#fff; display:grid; place-items:center;">
+    <%= ui_icon(:check, size: 38, stroke: 2.4) %>
+  </div>
+  <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:16px;">
+    <%= t("customer.pos.valid_invoice", shop: current_workspace.name) %>
+  </div>
+  <div style="font-size:13.5px; opacity:.72; margin-top:6px;"><%= t("customer.pos.verified_fast") %></div>
+</div>
+
+<div class="l-screen no-tabs" style="padding-top:18px;">
+  <%# ---- what was actually scanned ---- %>
+  <div class="l-tile">
+    <div style="display:flex; align-items:center; gap:11px;">
+      <%= workspace_avatar(current_workspace, klass: "", style: "width:42px; height:42px; border-radius:12px; flex:none; font-size:14px;") %>
+      <div style="flex:1; min-width:0;">
+        <%# The outlet name already carries the shop name, so avoid "Shop · Shop — Branch". %>
+        <div style="font-weight:700; font-size:14.5px;"><%= @charge.outlet&.name.presence || current_workspace.name %></div>
+        <% if @charge.outlet&.address.present? %>
+          <div style="font-size:12px; color:var(--ink-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= @charge.outlet.address %></div>
+        <% end %>
+      </div>
+      <span class="l-pill good" style="flex:none;"><%= t("customer.pos.verified") %></span>
+    </div>
+    <div style="margin-top:12px; padding-top:4px; border-top:1px solid var(--line-soft);">
+      <div class="l-kv"><span class="k"><%= t("customer.pos.invoice") %></span><span class="v l-mono"><%= @charge.token.upcase %></span></div>
+      <div class="l-kv"><span class="k"><%= t("customer.earn_success.bill") %></span><span class="v"><%= number_with_delimiter(@charge.amount) %>đ</span></div>
+      <div class="l-kv"><span class="k"><%= t("customer.pos.purchased_at") %></span><span class="v"><%= l(@charge.created_at, format: :short) %></span></div>
+    </div>
+  </div>
+
+  <%# ---- what it is worth ---- %>
+  <div class="l-tile" style="margin-top:12px;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="color:var(--primary); display:grid; place-items:center;"><%= ui_icon(:coins, size: 20) %></span>
+      <span style="flex:1; min-width:0; font-weight:700; font-size:14.5px;"><%= t("customer.pos.points_earned") %></span>
+      <span style="flex:none; font-size:20px; font-weight:700; color:var(--primary); letter-spacing:-.025em;">
+        +<%= number_with_delimiter(@points) %>
+      </span>
+    </div>
+    <div style="font-size:12.5px; color:var(--ink-2); margin-top:7px;">
+      <%= current_workspace.program.earn_rate_label %><%
+        %><% if current_member.tier && current_member.tier.multiplier.to_f > 1 %> · <%= t("customer.pos.tier_rate", tier: current_member.tier.name, m: current_member.tier.multiplier) %><% end %>
+    </div>
+  </div>
+
+  <div class="l-delta" style="margin-top:12px;">
+    <div>
+      <div class="k"><%= t("customer.pos.before") %></div>
+      <div class="v"><%= number_with_delimiter(current_member.points_balance) %></div>
+    </div>
+    <span style="flex:none; color:var(--ink-2);"><%= ui_icon(:arrow_right, size: 18) %></span>
+    <div style="text-align:right;">
+      <div class="k"><%= t("customer.earn_success.new_balance") %></div>
+      <div class="v hi"><%= number_with_delimiter(current_member.points_balance + @points) %></div>
+    </div>
+  </div>
+
+  <%= button_to member_scan_claim_pos_path(token: @charge.token), method: :post,
+        class: "l-btn l-btn-primary l-btn-block", form: { style: "margin-top:18px;" } do %>
+    <%= ui_icon(:sparkles, size: 17) %><%= t("customer.pos.add_points", n: number_with_delimiter(@points)) %>
+  <% end %>
+  <%= link_to t("customer.pos.scan_another"), member_scan_path, class: "l-btn l-btn-outline l-btn-block", style: "margin-top:10px;" %>
+
+  <p style="text-align:center; color:var(--ink-2); font-size:12px; line-height:1.5; margin-top:14px;">
+    <%= t("customer.pos.once_only") %>
+  </p>
+</div>

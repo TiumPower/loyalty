@@ -1,48 +1,61 @@
 <% content_for :title, t("customer.missions.title") %>
-<% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.missions.title") %></div>
+<% content_for :tab, "missions" %>
+<%
+  groups = [["daily",  t("customer.missions.today")],
+            ["weekly", t("customer.missions.this_week")],
+            ["once",   t("customer.missions.one_time")]]
+  open_missions = @missions.reject { |m| @progress[m].completed? }
+  done_missions = @missions.select { |m| @progress[m].completed? }
+%>
+
+<header class="l-head" style="padding-bottom:6px;">
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.missions.title_shop", shop: current_workspace.name) %></div>
+    <div class="s"><%= t("customer.missions.subtitle_shop", shop: current_workspace.name) %></div>
+  </div>
+  <div class="sp"><span class="l-pill brand"><%= t("customer.missions.active_count", n: open_missions.size) %></span></div>
 </header>
 
 <div class="l-screen">
-  <% [["once", t("customer.missions.one_time")], ["daily", t("customer.missions.today")], ["weekly", t("customer.missions.this_week")]].each do |period, header| %>
-    <% list = @missions.select { |m| m.period == period } %>
-    <% next if list.empty? %>
-    <div class="l-section-h"><h3><%= header %></h3></div>
-    <div class="l-tile">
-      <% list.each do |m| %>
-        <% mp = @progress[m] %>
-        <div class="l-mission">
-          <div class="ic"><%= mission_icon(m, size: 26) %></div>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:600;"><%= m.title %></div>
-            <div class="l-bar"><span style="width:<%= mp.pct %>%;"></span></div>
-            <div style="font-size:11px; color:var(--ink-2); margin-top:4px;">
-              <% if m.mission_type == "spend" %><%= number_with_delimiter(mp.progress) %>/<%= number_with_delimiter(m.goal) %>đ<% else %><%= mp.progress %>/<%= m.goal %><% end %> · <%= t("customer.common.points_plus", n: m.reward_points) %>
-            </div>
-          </div>
-          <div style="flex:none; text-align:right;">
-            <% if mp.completed? %>
-              <span class="l-chip" style="background:var(--good-soft,#DEEBE1); color:var(--good);"><%= t("customer.missions.done") %></span>
-            <% elsif m.photo_proof? %>
-              <% if mp.pending? %>
-                <span class="l-chip" style="font-size:11px;"><%= t("customer.missions.pending_review") %></span>
-              <% else %>
-                <%= link_to (mp.rejected? ? t("customer.missions.resubmit") : t("customer.missions.submit_proof")),
-                      member_new_mission_submission_path(m), class: "l-btn l-btn-primary",
-                      style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
-              <% end %>
-            <% elsif m.mission_type == "checkin" %>
-              <%= link_to t("customer.common.checkin"), member_scan_path, class: "l-btn l-btn-primary", style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
-            <% elsif m.mission_type == "refer" %>
-              <%= link_to t("customer.missions.refer"), member_refer_path, class: "l-btn l-btn-primary", style: "padding:8px 14px; font-size:13px; white-space:nowrap;" %>
-            <% else %>
-              <span class="l-chip" style="font-size:11px;">Tự động khi mua hàng</span>
-            <% end %>
-          </div>
-        </div>
+  <p style="font-size:13px; color:var(--ink-2); line-height:1.55; margin-bottom:16px;">
+    <%= t("customer.missions.explainer") %>
+  </p>
+
+  <% if @missions.empty? %>
+    <div class="l-empty">
+      <div class="ic"><%= ui_icon(:target, size: 28) %></div>
+      <div class="tt"><%= t("customer.missions.empty") %></div>
+      <div class="mt"><%= t("customer.missions.empty_sub") %></div>
+    </div>
+  <% else %>
+    <%# The tabs jump to a group rather than hiding the others — the design
+        lists every group on one page and explains that above. %>
+    <div class="l-seg boxed">
+      <% groups.each do |period, label| %>
+        <% next if open_missions.none? { |m| m.period == period } %>
+        <a href="#g-<%= period %>"><%= label %></a>
       <% end %>
     </div>
+
+    <% groups.each do |period, label| %>
+      <% list = open_missions.select { |m| m.period == period } %>
+      <% next if list.empty? %>
+      <div class="l-grouplabel" id="g-<%= period %>" style="scroll-margin-top:12px;"><%= label %></div>
+      <% list.each { |m| %><%= render "customer/missions/card", m: m, mp: @progress[m] %><% } %>
+    <% end %>
+
+    <% if done_missions.any? %>
+      <div class="l-grouplabel"><%= t("customer.missions.completed") %></div>
+      <% done_missions.each do |m| %>
+        <div class="l-row dim">
+          <span class="ic muted"><%= mission_icon(m, size: 18) %></span>
+          <div class="bd">
+            <div class="tt" style="text-decoration:line-through;"><%= m.title %></div>
+            <div class="mt"><%= current_workspace.name %> · <%= t("customer.missions.done_note", n: m.reward_points) %></div>
+          </div>
+          <span class="tr" style="color:var(--good);"><%= ui_icon(:check, size: 19, stroke: 2.4) %></span>
+        </div>
+      <% end %>
+    <% end %>
   <% end %>
 </div>

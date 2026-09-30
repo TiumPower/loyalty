@@ -48,7 +48,7 @@ module Merchant
 
     private
 
-    def nav_key = :gamification
+    def nav_key = :missions_setup
 
     # Create one social_share mission per ticked network. Title/icon are set from
     # the network; points fall back to the flat reward when a per-network value

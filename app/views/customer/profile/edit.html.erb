@@ -1,0 +1,95 @@
+<% content_for :title, t("customer.profile.edit") %>
+<% content_for :tab, "me" %>
+<% genders = [["female", t("customer.profile.gender_female")], ["male", t("customer.profile.gender_male")], ["other", t("customer.profile.gender_other")]] %>
+
+<header class="l-subhead">
+  <%= link_to member_profile_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.profile.edit") %></div>
+    <div class="s"><%= t("customer.profile.edit_sub") %></div>
+  </div>
+</header>
+
+<div class="l-screen">
+  <% if @member.errors.any? %>
+    <div class="l-note warn" style="margin-bottom:14px;">
+      <%= ui_icon(:shield, size: 16) %><span><%= @member.errors.full_messages.to_sentence %></span>
+    </div>
+  <% end %>
+
+  <%# ---- avatar ---- %>
+  <div style="display:flex; flex-direction:column; align-items:center;">
+    <%= form_with url: member_profile_avatar_path, method: :patch, multipart: true, data: { controller: "avatarupload", turbo: false } do %>
+      <label style="position:relative; display:block; cursor:pointer;" title="<%= t("customer.profile.avatar_change") %>">
+        <div data-avatarupload-target="box" style="width:88px; height:88px; border-radius:50%; overflow:hidden; background:var(--surface-2); color:var(--ink-2); display:grid; place-items:center; font-weight:700; font-size:30px;">
+          <% if @member.avatar.attached? %>
+            <%= image_tag rails_storage_proxy_path(@member.avatar, only_path: true), style: "width:100%;height:100%;object-fit:cover;" %>
+          <% else %>
+            <%= @member.initials %>
+          <% end %>
+        </div>
+        <span style="position:absolute; right:0; bottom:0; width:30px; height:30px; border-radius:50%; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; border:2px solid var(--surface);">
+          <%= ui_icon(:camera, size: 14) %>
+        </span>
+        <%= file_field_tag "member[avatar]", accept: "image/*", data: { avatarupload_target: "input", action: "avatarupload#change" }, style: "position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" %>
+      </label>
+      <div style="text-align:center;">
+        <%= button_tag t("customer.profile.avatar_save"), type: "submit", class: "l-btn l-btn-primary l-btn-xs", data: { avatarupload_target: "save" }, style: "margin-top:12px; display:none;" %>
+      </div>
+    <% end %>
+    <div style="font-size:13px; font-weight:700; color:var(--primary); margin-top:10px;"><%= t("customer.profile.avatar_change") %></div>
+  </div>
+
+  <%= form_with model: @member, url: member_profile_path, method: :patch, data: { turbo: false } do |f| %>
+    <div class="l-tile" style="margin-top:18px;">
+      <label class="l-label"><%= t("customer.profile.name") %></label>
+      <%= f.text_field :name, class: "l-field", placeholder: t("customer.profile.name") %>
+
+      <label class="l-label" style="margin-top:16px;"><%= t("customer.profile.email") %></label>
+      <%= f.email_field :email, class: "l-field", autocomplete: "email", placeholder: "ban@vidu.com" %>
+      <%# Email is the login and there is no password, so say what saving it does. %>
+      <div style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= t("customer.profile.email_hint") %></div>
+      <% if session[:pending_email].present? %>
+        <div class="l-note amber" style="margin-top:8px;">
+          <%= ui_icon(:mail, size: 15) %>
+          <span>
+            <%= t("customer.profile.email_pending", email: session[:pending_email]) %>
+            <%= link_to t("customer.profile.email_confirm_cta"), member_profile_confirm_email_path,
+                  style: "font-weight:700; color:inherit; text-decoration:underline;" %>
+          </span>
+        </div>
+      <% end %>
+
+      <label class="l-label" style="margin-top:16px;"><%= t("customer.profile.phone") %></label>
+      <%= f.telephone_field :phone, class: "l-field", autocomplete: "tel", inputmode: "numeric", placeholder: "0901234567" %>
+
+      <label class="l-label" style="margin-top:16px;"><%= t("customer.profile.birthday") %></label>
+      <%# Masked text field guarantees DD/MM/YYYY on every browser; a ghost
+          overlay keeps the remaining template visible while typing. %>
+      <div class="l-datefield" data-controller="datemask">
+        <div class="l-datefield-ghost" data-datemask-target="ghost" aria-hidden="true"></div>
+        <%= f.text_field :birthday, value: @member.birthday&.strftime("%d/%m/%Y"),
+              class: "l-datefield-input", inputmode: "numeric", maxlength: 10, autocomplete: "bday",
+              data: { datemask_target: "input", action: "input->datemask#format" } %>
+      </div>
+      <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("customer.profile.birthday_hint") %></div>
+
+      <label class="l-label" style="margin-top:16px;"><%= t("customer.profile.gender") %></label>
+      <div class="l-chipset" data-controller="tagpick">
+        <% genders.each do |value, label| %>
+          <label class="l-tag <%= 'on' if @member.gender == value %>" data-tagpick-target="tag">
+            <%= f.radio_button :gender, value, hidden: true, data: { action: "tagpick#pick" } %><%= label %>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="l-note" style="margin-top:14px;">
+      <%= ui_icon(:shield, size: 16) %><span><%= t("customer.profile.privacy_note", shop: current_workspace.name) %></span>
+    </div>
+
+    <%= f.submit t("customer.profile.save"), class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;" %>
+  <% end %>
+</div>

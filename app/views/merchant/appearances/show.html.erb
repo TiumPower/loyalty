@@ -52,6 +52,35 @@
         </div>
       </div>
 
+      <%# ---- Shop cover photo. The customer app leads with it on the home
+              card and at the top of the shop page. ---- %>
+      <div class="l-panel" style="margin-bottom:16px;">
+        <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.cover_title") %></h3>
+        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.appearance.cover_note") %></p>
+        <div style="display:flex; align-items:center; gap:14px;" data-controller="upload">
+          <div data-upload-target="preview" style="width:112px; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; flex:none;">
+            <% if current_workspace.cover.attached? %>
+              <%= image_tag current_workspace.cover.variant(resize_to_limit: [480, 270]), style: "width:100%; height:100%; object-fit:cover;" %>
+            <% else %>
+              <span style="font-size:22px; color:var(--ink-2);">🏬</span>
+            <% end %>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <button type="button" class="l-upload" data-action="upload#pick" style="width:100%;">
+              <%= ui_icon(:launch, size: 18) %>
+              <span data-upload-target="name"><%= t("merchant.appearance.pick_cover") %></span>
+            </button>
+            <input type="file" name="cover" accept="image/png,image/jpeg,image/webp"
+                   data-upload-target="input" data-action="upload#changed" hidden>
+            <% if current_workspace.cover.attached? %>
+              <label style="display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:13px; color:var(--ink-2); cursor:pointer;">
+                <input type="checkbox" name="remove_cover" value="1" style="margin:0;"> <%= t("merchant.appearance.cover_remove") %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
       <div class="l-panel" style="margin-bottom:16px;">
         <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.colors_title") %></h3>
         <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.appearance.colors_note_html").html_safe %></p>

@@ -1,0 +1,116 @@
+<% content_for :title, t("merchant.void.review_title") %>
+<% content_for :title_en, "VOID PURCHASE" %>
+<% v = ->(k, **o) { t("merchant.void.#{k}", **o) } %>
+<% merchant_back merchant_transactions_path, t("merchant.nav.transactions") %>
+
+<div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px;">
+  <div style="flex:1; min-width:0;">
+    <h2 class="l-display" style="font-size:22px;"><%= v.(:review_title) %></h2>
+    <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= v.(:review_sub) %></p>
+  </div>
+  <span class="m-badge down" style="font-size:12px; padding:5px 12px;"><%= v.(:irreversible_badge) %></span>
+</div>
+
+<div class="m-ops" style="grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);">
+  <div>
+    <%# ---- What this bill actually was ---- %>
+    <div class="l-panel">
+      <div class="m-sec">
+        <div style="min-width:0;">
+          <h3><%= v.(:bill_title) %></h3>
+          <div class="sub"><%= v.(:bill_sub) %></div>
+        </div>
+        <span class="m-badge up"><%= t("merchant.transactions.posted_flag") %></span>
+      </div>
+      <div class="l-kv"><span class="k"><%= v.(:f_customer) %></span><span class="v"><%= @member.display_name %></span></div>
+      <div class="l-kv"><span class="k"><%= v.(:f_amount) %></span><span class="v"><%= number_with_delimiter(@purchase.amount) %>đ</span></div>
+      <div class="l-kv"><span class="k"><%= v.(:f_points) %></span><span class="v">+<%= number_with_delimiter(@points) %></span></div>
+      <div class="l-kv"><span class="k"><%= v.(:f_outlet) %></span><span class="v"><%= @purchase.outlet&.name || "—" %></span></div>
+      <div class="l-kv"><span class="k"><%= v.(:f_staff) %></span><span class="v"><%= @purchase.staff&.name || "—" %></span></div>
+      <div class="l-kv"><span class="k"><%= v.(:f_when) %></span><span class="v"><%= l(@purchase.created_at, format: :short) %></span></div>
+    </div>
+
+    <%# ---- What undoing it changes, line by line ---- %>
+    <div class="l-panel" style="margin-top:16px;">
+      <div class="m-sec">
+        <div style="min-width:0;">
+          <h3><%= v.(:impact_title) %></h3>
+          <div class="sub"><%= v.(:impact_sub) %></div>
+        </div>
+      </div>
+      <table class="m-table">
+        <thead><tr><th><%= v.(:c_type) %></th><th><%= v.(:c_now) %></th><th><%= v.(:c_after) %></th></tr></thead>
+        <tbody>
+          <tr>
+            <td><%= v.(:i_revenue) %></td>
+            <td class="m-num"><%= number_with_delimiter(@purchase.amount) %>đ</td>
+            <td class="m-num" style="color:var(--warn);">−<%= number_with_delimiter(@purchase.amount) %>đ</td>
+          </tr>
+          <tr>
+            <td><%= v.(:i_points) %></td>
+            <td class="m-num"><%= number_with_delimiter(@member.points_balance) %></td>
+            <td class="m-num" style="color:var(--warn);">−<%= number_with_delimiter(@reversible) %></td>
+          </tr>
+          <tr>
+            <td><%= v.(:i_stamps) %></td>
+            <td style="color:var(--ink-2);">—</td>
+            <td style="color:var(--ink-2);"><%= v.(:i_stamps_after) %></td>
+          </tr>
+          <tr>
+            <td><%= v.(:i_rewards) %></td>
+            <td style="color:var(--ink-2);">—</td>
+            <td style="color:var(--ink-2);"><%= v.(:i_rewards_after) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%# ---- The decision ---- %>
+  <%= form_with url: merchant_void_purchase_path(@purchase), method: :post, data: { turbo: false } do %>
+    <div class="l-panel">
+      <div class="m-sec" style="margin-bottom:12px;">
+        <div style="min-width:0;">
+          <h3 style="font-size:16px;"><%= v.(:reason_title) %></h3>
+          <div class="sub"><%= v.(:reason_sub) %></div>
+        </div>
+      </div>
+      <label class="l-label"><%= v.(:reason_label) %></label>
+      <%= text_area_tag :reason, nil, class: "l-field", rows: 3, placeholder: v.(:reason_ph) %>
+
+      <%# The one thing the reversal genuinely cannot undo, said plainly rather
+          than discovered afterwards. %>
+      <% if @shortfall.positive? %>
+        <div class="l-note warn" style="margin-top:14px;">
+          <%= ui_icon(:shield, size: 16) %>
+          <span><strong><%= v.(:shortfall_title) %></strong><br><%= v.(:shortfall_body, n: number_with_delimiter(@shortfall)) %></span>
+        </div>
+      <% end %>
+      <div class="l-note" style="margin-top:12px;">
+        <%= ui_icon(:shield, size: 16) %>
+        <span><%= v.(:keeps_audit) %></span>
+      </div>
+    </div>
+
+    <div class="l-panel" style="margin-top:16px;">
+      <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;"><%= v.(:balance_title) %></h3>
+      <div class="l-kv"><span class="k"><%= v.(:b_now) %></span><span class="v"><%= number_with_delimiter(@member.points_balance) %></span></div>
+      <div class="l-kv"><span class="k"><%= v.(:b_reverse) %></span><span class="v" style="color:var(--warn);">−<%= number_with_delimiter(@reversible) %></span></div>
+      <% if @shortfall.positive? %>
+        <div class="l-kv"><span class="k"><%= v.(:b_shortfall) %></span><span class="v" style="color:var(--ink-2);"><%= number_with_delimiter(@shortfall) %></span></div>
+      <% end %>
+      <div class="l-kv"><span class="k" style="font-weight:700; color:var(--ink);"><%= v.(:b_after) %></span>
+        <span class="v"><%= number_with_delimiter(@member.points_balance - @reversible) %></span></div>
+    </div>
+
+    <label style="display:flex; align-items:flex-start; gap:10px; margin-top:16px; font-size:13px; line-height:1.5; cursor:pointer;">
+      <input type="checkbox" required style="margin-top:2px; flex:none;">
+      <span><%= v.(:ack, name: @member.display_name, n: number_with_delimiter(@reversible)) %></span>
+    </label>
+
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <%= link_to t("merchant.cancel", default: "Huỷ"), merchant_transactions_path, class: "l-btn l-btn-ghost", style: "flex:1;" %>
+      <%= submit_tag v.(:confirm_cta), class: "l-btn l-btn-primary", style: "flex:1; background:var(--warn); box-shadow:none;" %>
+    </div>
+  <% end %>
+</div>

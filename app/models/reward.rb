@@ -12,6 +12,21 @@ class Reward < ApplicationRecord
   has_many :stamp_cards,  dependent: :restrict_with_error
   has_many :campaigns,    dependent: :restrict_with_error
   has_many :promo_codes,  dependent: :restrict_with_error
+  # Photo of the reward. The customer app leads with it wherever a reward is
+  # listed; shops that do not upload one fall back to the emoji icon, so this
+  # stays optional.
+  has_one_attached :image
+
+  IMAGE_TYPES     = %w[image/png image/jpeg image/webp].freeze
+  IMAGE_MAX_BYTES = 5.megabytes
+
+  # Checkbox on the merchant form: clearing the photo is a separate intent from
+  # replacing it, so it needs its own flag rather than an empty file field.
+  attr_accessor :remove_image
+
+  validate :image_is_a_reasonable_picture
+  after_save { image.purge_later if ActiveModel::Type::Boolean.new.cast(remove_image) && image.attached? }
+
 
   def in_use? = vouchers.exists? || stamp_cards.exists? || campaigns.exists? || promo_codes.exists?
 
@@ -262,4 +277,17 @@ class Reward < ApplicationRecord
   # filtering by "Quà tặng" saw cards labelled "gift", and customers read
   # "VOUCHER"/"GIFT" on the reward ticket in an otherwise Vietnamese app.
   def kind_label = I18n.t("merchant.rewards.kind_#{kind}", default: kind.to_s.humanize)
+
+  private
+
+  def image_is_a_reasonable_picture
+    return unless image.attached?
+    unless IMAGE_TYPES.include?(image.blob.content_type)
+      errors.add(:image, I18n.t("merchant.rewards.image_type_error"))
+    end
+    if image.blob.byte_size.to_i > IMAGE_MAX_BYTES
+      errors.add(:image, I18n.t("merchant.rewards.image_size_error", n: IMAGE_MAX_BYTES / 1.megabyte))
+    end
+  end
+
 end

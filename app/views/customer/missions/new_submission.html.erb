@@ -1,14 +1,20 @@
 <% content_for :title, t("customer.missions.submit_title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_missions_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:20px;"><%= @mission.title %></div>
+<header class="l-subhead">
+  <%= link_to member_missions_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t" style="font-size:18px;"><%= @mission.title %></div>
+    <div class="s"><%= t("customer.missions.submit_title") %></div>
+  </div>
 </header>
 
 <div class="l-screen">
   <% if @progress.rejected? && @progress.note.present? %>
-    <div class="l-panel" style="background:#F3DDD7; color:#B4402F; margin-bottom:14px;">
-      <strong><%= t("customer.missions.rejected_reason") %>:</strong> <%= @progress.note %>
+    <div class="l-note warn" style="margin-bottom:14px;">
+      <%= ui_icon(:shield, size: 16) %>
+      <span><strong><%= t("customer.missions.rejected_reason") %>:</strong> <%= @progress.note %></span>
     </div>
   <% end %>
 
@@ -23,8 +29,8 @@
     <% picon = { "facebook" => "📘", "zalo" => "💬", "instagram" => "📸", "tiktok" => "🎵" } %>
 
     <%# ---- Guide ---- %>
-    <div class="l-panel" style="margin-bottom:14px;">
-      <div style="font-weight:700; margin-bottom:8px;">📋 <%= t("customer.missions.sg_title") %></div>
+    <div class="l-tile" style="margin-bottom:14px;">
+      <div style="font-weight:700; margin-bottom:8px; font-size:15px;"><%= t("customer.missions.sg_title") %></div>
       <ol style="margin:0; padding-left:20px; font-size:13.5px; color:var(--ink-2); line-height:1.8;">
         <li><%= t("customer.missions.sg_1") %></li>
         <li><%= t("customer.missions.sg_2") %></li>
@@ -33,7 +39,7 @@
     </div>
 
     <%# ---- Step 1: open the allowed social networks ---- %>
-    <div class="l-panel" style="margin-bottom:14px;"
+    <div class="l-tile" style="margin-bottom:14px;"
          data-controller="share"
          data-share-url-value="<%= @share_url %>"
          data-share-text-value="<%= @share_text %>">
@@ -47,12 +53,11 @@
           </button>
         <% end %>
         <button type="button" class="l-btn l-btn-soft" style="flex:1; min-width:120px;" data-action="share#copy">
-          🔗 <span data-share-target="copyLabel"><%= t("customer.missions.copy_link") %></span>
+          <%= ui_icon(:copy, size: 16) %><span data-share-target="copyLabel"><%= t("customer.missions.copy_link") %></span>
         </button>
       </div>
-      <div data-share-target="status" hidden
-           style="margin-top:12px; padding:10px 12px; border-radius:10px; background:var(--good-soft,#DEEBE1); color:var(--good,#2E7D4F); font-size:12.5px; font-weight:600;">
-        ✓ <%= t("customer.missions.share_copied") %>
+      <div data-share-target="status" hidden class="l-note" style="margin-top:12px; background:var(--good-soft); color:var(--good);">
+        <%= ui_icon(:check, size: 15, stroke: 2.6) %><span><%= t("customer.missions.share_copied") %></span>
       </div>
     </div>
     <div style="font-weight:700; margin-bottom:8px;">2 · <%= t("customer.missions.submit_title") %></div>
@@ -60,20 +65,20 @@
 
   <%= form_with url: member_mission_submission_path(@mission), method: :post,
         html: { multipart: true }, data: { controller: "upload" } do %>
-    <div class="l-panel">
+    <div class="l-tile">
       <label class="l-label"><%= t("customer.missions.submit_photo_label") %></label>
       <p style="font-size:12px; color:var(--ink-2); margin:2px 0 10px;"><%= t("customer.missions.submit_photo_hint") %></p>
 
       <div data-upload-target="preview"
            style="width:100%; aspect-ratio:3/4; max-height:340px; border-radius:14px; overflow:hidden;
                   background:var(--surface-2); display:flex; align-items:center; justify-content:center;
-                  color:var(--ink-2); font-size:40px; margin-bottom:10px;">📷</div>
+                  color:var(--ink-2); margin-bottom:10px;"><%= ui_icon(:camera, size: 38, stroke: 1.5) %></div>
 
       <input type="file" name="submission[photo]" accept="image/*" required
              data-upload-target="input" data-action="change->upload#changed"
              style="display:none;">
-      <button type="button" class="l-btn l-btn-soft" data-action="upload#pick" style="width:100%;">
-        📎 <%= t("customer.missions.choose_photo") %>
+      <button type="button" class="l-btn l-btn-soft l-btn-block" data-action="upload#pick">
+        <%= ui_icon(:camera, size: 16) %><%= t("customer.missions.choose_photo") %>
       </button>
       <div data-upload-target="name" style="font-size:12px; color:var(--ink-2); margin-top:6px; text-align:center;"></div>
 
@@ -94,7 +99,7 @@
       <label class="l-label" style="margin-top:14px;"><%= t("customer.missions.submit_note_label") %></label>
       <textarea name="submission[note]" class="l-field" rows="2"></textarea>
 
-      <button type="submit" class="l-btn l-btn-primary" style="width:100%; margin-top:16px;">
+      <button type="submit" class="l-btn l-btn-primary l-btn-block" style="margin-top:16px;">
         <%= t("customer.missions.submit_cta") %>
       </button>
     </div>

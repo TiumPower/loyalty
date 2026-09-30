@@ -1,0 +1,79 @@
+<% content_for :title, t("merchant.nav.tiers") %>
+<% content_for :title_en, "MEMBER TIERS" %>
+
+<div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+  <div style="flex:1; min-width:220px;">
+    <h2 class="l-display" style="font-size:22px;"><%= t("merchant.tiers.title") %></h2>
+    <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= t("merchant.tiers.note") %></p>
+  </div>
+  <% unless current_program.tiers_enabled %>
+    <span class="m-badge down" style="font-size:12px; padding:5px 12px;"><%= t("merchant.tiers.off_badge") %></span>
+  <% end %>
+</div>
+
+<%# The design pairs the editor with a live preview of what a member sees, so a
+    threshold or multiplier can be checked against the card it produces. %>
+<div class="m-ops" style="grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);">
+  <div>
+    <div class="l-panel">
+    <%= form_with url: merchant_tiers_path, method: :patch do %>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:separate; border-spacing:0 12px; font-size:13.5px; min-width:560px;">
+          <thead><tr style="text-align:left; color:var(--ink-2); font-size:11px; text-transform:uppercase; letter-spacing:.05em;">
+            <th style="padding:6px 8px;"><%= t("merchant.tiers.th_tier") %></th>
+            <th><%= t("merchant.tiers.th_name") %></th>
+            <th><%= t("merchant.tiers.th_threshold") %></th>
+            <th><%= t("merchant.tiers.th_multiplier") %></th>
+            <th><%= t("merchant.tiers.th_benefits") %></th>
+            <th><%= t("merchant.tiers.th_colors") %></th>
+          </tr></thead>
+          <tbody>
+            <% @tiers.each do |tier| %>
+              <tr>
+                <td style="padding:9px 8px;"><span style="display:inline-block; width:22px; height:22px; border-radius:6px; background:<%= tier.gradient_css %>; vertical-align:middle;"></span></td>
+                <td><input type="text" name="tiers[<%= tier.id %>][name]" maxlength="40" value="<%= tier.name %>" class="l-field" style="min-width:120px;"></td>
+                <td><input type="number" name="tiers[<%= tier.id %>][threshold_points]" value="<%= tier.threshold_points %>" class="l-field" style="max-width:110px;" min="0" max="<%= Tier::MAX_THRESHOLD %>"></td>
+                <td><input type="number" step="0.1" name="tiers[<%= tier.id %>][multiplier]" value="<%= tier.multiplier %>" class="l-field" style="max-width:80px;" min="1" max="<%= Tier::MAX_MULTIPLIER %>" step="0.1"></td>
+                <td>
+                  <% effective = Array(tier.benefits).presence || default_benefits(tier) %>
+                  <textarea name="tiers[<%= tier.id %>][benefits]" class="l-field" rows="3"
+                            style="min-width:220px; resize:vertical; line-height:1.5;"
+                            placeholder="<%= t('merchant.tiers.benefits_ph') %>"><%= effective.join("\n") %></textarea>
+                </td>
+                <td style="white-space:nowrap;">
+                  <input type="color" name="tiers[<%= tier.id %>][gradient_from]" value="<%= tier.gradient_from.presence || '#B08D57' %>" style="width:34px; height:32px; border:1px solid var(--line); border-radius:8px; padding:2px; vertical-align:middle;">
+                  <input type="color" name="tiers[<%= tier.id %>][gradient_to]" value="<%= tier.gradient_to.presence || '#7A5C3A' %>" style="width:34px; height:32px; border:1px solid var(--line); border-radius:8px; padding:2px; vertical-align:middle;">
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--ink-2); font-size:12px; margin:10px 0;"><%= t("merchant.tiers.multiplier_hint") %></p>
+      <%= submit_tag t("merchant.tiers.save"), class: "l-btn l-btn-primary" %>
+    <% end %>
+  </div>
+  </div>
+
+  <%# ---- What a member sees ---- %>
+  <div class="l-panel">
+    <h3 style="font-size:16px; font-weight:700;"><%= t("merchant.tiers.preview_title") %></h3>
+    <p style="font-size:12.5px; color:var(--ink-2); margin-top:3px;"><%= t("merchant.tiers.preview_sub") %></p>
+    <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+      <% @tiers.each do |tier| %>
+        <div style="display:flex; align-items:center; gap:12px; padding:11px 13px; border:1px solid var(--line); border-radius:13px;">
+          <span style="width:40px; height:40px; border-radius:50%; flex:none; display:grid; place-items:center;
+                       background:<%= tier.gradient_css %>; color:#fff; font-weight:700; font-size:13px;"><%= tier.name.to_s.first %></span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:14px;"><%= tier.name %></div>
+            <div style="font-size:12px; color:var(--ink-2); margin-top:2px;">
+              <%= t("customer.tiers.from_points", n: number_with_delimiter(tier.threshold_points), m: tier.multiplier) %>
+            </div>
+          </div>
+          <span class="m-badge"><%= tier.multiplier %>x</span>
+        </div>
+      <% end %>
+    </div>
+    <p style="font-size:12px; color:var(--ink-2); margin-top:14px; line-height:1.5;"><%= t("merchant.tiers.preview_note") %></p>
+  </div>
+</div>

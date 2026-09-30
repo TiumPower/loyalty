@@ -1,90 +1,90 @@
 <% content_for :title, current_workspace.name %>
 <% content_for :tab, "home" %>
 <% tier = @tier %>
+<% prog = current_workspace.program %>
 
-<header class="l-appbar">
-  <%= workspace_avatar(current_workspace) %>
+<%# ---- header: greeting + notification bell ---- %>
+<header class="l-head">
   <div style="min-width:0;">
-    <div class="nm"><%= current_workspace.name %></div>
-    <div class="hi"><%= t("customer.home.greeting", name: @member.name.presence || current_workspace.branding_value("customer_term")) %></div>
+    <div class="t"><%= t("customer.home.greeting_#{greeting_period}", name: greeting_name(@member)) %></div>
+    <div class="s"><%= t("customer.home.greeting_sub", shop: current_workspace.name) %></div>
   </div>
-  <div style="margin-left:auto; display:flex; align-items:center; gap:14px; color:var(--ink);">
-    <%= link_to member_notifications_path, style: "position:relative; text-decoration:none; color:inherit; display:grid; place-items:center;" do %>
-      <%= ui_icon(:bell, size: 22) %><% if @unread.to_i.positive? %><span style="position:absolute; top:-5px; right:-6px; background:var(--warn); color:#fff; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:999px; display:grid; place-items:center; padding:0 4px;"><%= @unread %></span><% end %>
+  <div class="sp">
+    <%= link_to member_notifications_path, class: "l-iconbtn", "aria-label": t("customer.notifications.title") do %>
+      <%= ui_icon(:bell, size: 19) %>
+      <% if @unread.to_i.positive? %><span class="dot"></span><% end %>
     <% end %>
   </div>
 </header>
 
 <div class="l-screen">
-  <%# ---- Membership card (theme-coloured, tier as badge) → tier journey ---- %>
-  <%= link_to member_tier_path, style: "text-decoration:none; color:#fff; display:block;" do %>
-    <div class="l-card" style="--tier-from: var(--primary); --tier-to: color-mix(in srgb, var(--primary) 52%, #000);">
-      <% if tier %>
-        <div class="tier-badge" style="background:<%= tier.gradient_css %>;"><span class="medal">👑</span><%= t("customer.home.tier_badge", name: tier.name) %></div>
-      <% end %>
-      <div class="k" style="<%= 'margin-top:22px;' if tier %>"><%= t("customer.home.points_balance") %></div>
-      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px;">
-        <div class="pts"><%= number_with_delimiter(@member.points_balance) %></div>
-        <div style="text-align:right; opacity:.85; font-size:12px; padding-bottom:8px;">
-          <% if tier && tier.multiplier.to_f > 1 %><%= t("customer.home.per_bill_html", m: tier.multiplier) %><% else %><%= current_workspace.program.earn_rate_label %><% end %>
+  <%# ---- hero: the shop, then the balance ---- %>
+  <div class="l-shopcard">
+    <div class="cover"><%= shop_cover(current_workspace, size: 700) %></div>
+    <div style="display:flex; align-items:center; gap:11px; margin-top:12px;">
+      <%= workspace_avatar(current_workspace, klass: "brandmark") %>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:17px; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_workspace.name %></div>
+        <div style="display:flex; align-items:center; gap:7px; margin-top:5px;">
+          <% if @shop_rating.to_f.positive? %><span class="l-pill"><%= @shop_rating %> ★</span><% end %>
+          <span class="l-pill good"><%= t("customer.home.open_now") %></span>
         </div>
       </div>
-      <div class="name"><%= @member.display_name.upcase %></div>
-      <div class="meta">MEMBER · <%= @member.masked_contact %></div>
-    </div>
-  <% end %>
-
-  <%# ---- Points expiring soon (only when expiry is configured) ---- %>
-  <% exp_amt, exp_date = current_workspace.program.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
-  <% if exp_amt.to_i > 0 %>
-    <%= link_to member_wallet_path(tab: "rewards"), style: "display:flex; align-items:center; gap:8px; margin-top:12px; padding:11px 14px; border-radius:14px; background:#F7E0DA; color:#B4402F; text-decoration:none; font-size:13px; font-weight:600;" do %>
-      <%# This sentence was written straight into the markup in Vietnamese, so an
-          English customer got it in Vietnamese and nothing flagged it. %>
-      ⏳ <span><%= t("customer.home.expiring_html", n: number_with_delimiter(exp_amt),
-                     when: (exp_date ? t("customer.home.expiring_on", date: l(exp_date.to_date, format: :short)) : "")).html_safe %></span>
-    <% end %>
-  <% end %>
-
-  <%# ---- Quick actions — fixed order (My code + Scan already live in the tab
-        bar). Each item is shown only when its feature is enabled. ---- %>
-  <% prog = current_workspace.program %>
-  <%
-    items = []
-    items << [member_stamps_path,     :stamp,  t("customer.home.chip_stamps"),  false] if prog.stamps_enabled
-    items << [member_wheel_path,      :wheel,  t("customer.home.q_wheel"),      false] if prog.gamification_enabled
-    items << [member_missions_path,   :target, t("customer.home.q_missions"),   false] if prog.gamification_enabled
-    items << [member_refer_path,      :users,  t("customer.home.q_invite"),     false] if prog.referral_enabled
-    items << [member_badges_path,     :medal,  t("customer.home.chip_badges"),  false] if prog.gamification_enabled
-    items << [member_shop_about_path, "🏬",    t("customer.home.q_about"),      true]  if current_workspace.feedback_public?
-    # ≤5 items fit one row; 6+ split into two balanced rows (6 → 3+3).
-    cols = items.size > 5 ? (items.size / 2.0).ceil : items.size
-  %>
-  <div class="l-quick" style="grid-template-columns:repeat(<%= cols %>, 1fr);">
-    <% items.each do |path, icon, label, emoji| %>
-      <%= link_to path do %>
-        <span class="ic"><% if emoji %><span style="font-size:24px; line-height:1;"><%= icon %></span><% else %><%= ui_icon(icon, size: 26) %><% end %></span><%= label %>
+      <% if current_workspace.feedback_public? %>
+        <%= link_to t("customer.home.view_details"), member_shop_about_path, class: "l-btn l-btn-primary l-btn-sm", style: "flex:none;" %>
       <% end %>
+    </div>
+  </div>
+
+  <div class="l-balance" style="margin-top:14px;">
+    <div style="display:flex; align-items:flex-start; gap:12px;">
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.home.points_balance") %></div>
+        <div class="v" style="font-size:40px;"><%= number_with_delimiter(@member.points_balance) %> <small><%= t("customer.common.points_unit").upcase %></small></div>
+      </div>
+      <% if tier %>
+        <%= link_to member_tier_path, class: "l-pill gold lg", style: "flex:none;" do %>
+          <%= ui_icon(:star, size: 13, stroke: 2.2) %><%= t("customer.home.tier_badge", name: tier.name) %>
+        <% end %>
+      <% end %>
+    </div>
+    <%= link_to member_history_path, class: "link" do %>
+      <%= t("customer.home.view_history") %> <%= ui_icon(:chevron_right, size: 14, stroke: 2.4) %>
     <% end %>
   </div>
 
-  <%# ---- Offers carousel (real redeemable rewards; each card opens the reward) ---- %>
+  <%# ---- Points expiring soon. The design has no slot for it, but it is the one
+        thing on this screen with a deadline, so it sits under the balance it
+        applies to. ---- %>
+  <% exp_amt, exp_date = prog.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
+  <% if exp_amt.to_i > 0 %>
+    <%= link_to member_wallet_path, class: "l-note amber", style: "margin-top:12px; text-decoration:none;" do %>
+      <%= ui_icon(:clock, size: 17) %>
+      <span><%= t("customer.home.expiring_html", n: number_with_delimiter(exp_amt),
+                   when: (exp_date ? t("customer.home.expiring_on", date: l(exp_date.to_date, format: :short)) : "")).html_safe %></span>
+    <% end %>
+  <% end %>
+
+  <%# ---- Featured rewards ---- %>
   <% if @offers.present? %>
-    <% grads = ["linear-gradient(135deg,#8C4A2F,#E08A3C)", "linear-gradient(135deg,#3F7A57,#2C5A3E)",
-                "linear-gradient(135deg,#4B9FE1,#3574B0)", "linear-gradient(135deg,#7A5C3A,#B08D57)"] %>
-    <div class="l-section-h"><h3><%= t("customer.home.offers_title", term: current_workspace.branding_value("customer_term")) %></h3><%= link_to t("customer.common.all"), member_wallet_path(tab: "rewards") %></div>
+    <div class="l-sec">
+      <h3><%= t("customer.home.offers_title") %></h3>
+      <%= link_to t("customer.common.see_all"), member_wallet_path, class: "l-pill good" %>
+    </div>
     <div data-controller="carousel">
       <div class="l-carousel" data-carousel-target="track">
-        <% @offers.each_with_index do |r, i| %>
+        <% @offers.each do |r| %>
           <% open = r.redeem_open? %>
-          <%= link_to member_reward_path(r), class: "l-offer", style: "text-decoration:none; color:#fff; background:#{grads[i % grads.size]}; position:relative;" do %>
-            <div class="l-eyebrow" style="color:#fff; opacity:.85;"><%= r.display_icon %> <%= r.value_label %></div>
-            <div class="big"><%= r.title %></div>
-            <div style="font-size:12.5px; opacity:.9;">
-              <% if open %>
-                <% if r.cost_points %><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %> · <% end %><%= t("customer.reward.redeem_cta") %> ›
-              <% else %>
-                🕑 <%= r.redeem_window_hint %>
+          <%= link_to member_reward_path(r), class: "l-offer #{'dim' unless open}" do %>
+            <div class="ph"><%= reward_art(r, size: 240, emoji_size: 32) %></div>
+            <div class="tt"><%= truncate(r.title, length: 40) %></div>
+            <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px;">
+              <% if r.cost_points %>
+                <span class="l-pill good" style="align-self:flex-start;"><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %></span>
               <% end %>
+              <span class="l-btn <%= open ? "l-btn-primary" : "" %> l-btn-xs l-btn-block">
+                <%= open ? t("customer.reward.redeem_cta") : t("customer.wallet.state_unavailable") %>
+              </span>
             </div>
           <% end %>
         <% end %>
@@ -93,31 +93,85 @@
     </div>
   <% end %>
 
-  <%# ---- Today's missions ---- %>
-  <% if @missions&.any? %>
-    <div class="l-section-h"><h3><%= t("customer.home.missions_today") %></h3><%= link_to t("customer.common.all"), member_missions_path %></div>
-    <div class="l-tile">
-      <% @missions.each do |m| %>
-        <% mp = @progress[m] %>
-        <div class="l-check <%= 'done' if mp.completed? %>">
-          <span class="box" style="display:grid; place-items:center; line-height:1; font-size:13px; color:#fff;"><%= "✓" if mp.completed? %></span>
-          <div style="flex:1;"><div style="font-weight:600;"><%= mission_icon(m, size: 18) %> <%= m.title %></div><div style="font-size:12px; color:var(--ink-2);"><%= t("customer.common.points_plus", n: m.reward_points) %></div></div>
-          <% unless mp.completed? %>
-            <% if m.mission_type == "checkin" %>
-              <%= link_to t("customer.common.checkin"), member_scan_path, class: "l-btn l-btn-soft", style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
-            <% elsif m.photo_proof? %>
-              <% if mp.pending? %>
-                <span class="l-chip" style="font-size:11px;"><%= t("customer.missions.pending_review") %></span>
-              <% else %>
-                <%= link_to (mp.rejected? ? t("customer.missions.resubmit") : t("customer.missions.submit_proof")),
-                      member_new_mission_submission_path(m), class: "l-btn l-btn-soft",
-                      style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
-              <% end %>
-            <% elsif m.mission_type == "refer" %>
-              <%= link_to t("customer.missions.refer"), member_refer_path, class: "l-btn l-btn-soft", style: "padding:6px 12px; font-size:12px; white-space:nowrap;" %>
+  <%# ---- Play & Collect: the lucky spin and the stamp card, side by side ---- %>
+  <% spin_on  = prog.gamification_enabled && @wheel.present? %>
+  <% stamp_on = prog.stamps_enabled && @stamp_card.present? %>
+  <% if spin_on || stamp_on %>
+    <div class="l-sec"><h3><%= t("customer.home.play_collect") %></h3></div>
+    <div class="l-duo" style="grid-template-columns:repeat(<%= (spin_on && stamp_on) ? 2 : 1 %>,minmax(0,1fr));">
+      <% if spin_on %>
+        <div class="l-mini">
+          <div class="hd">
+            <span class="ic"><%= ui_icon(:refresh, size: 18) %></span>
+            <div style="min-width:0;">
+              <div class="tt"><%= t("customer.wheel.title") %></div>
+              <div class="mt"><%= @wheel_free ? t("customer.home.spin_free_today") : t("customer.wheel.spin_cost", n: @wheel.cost_points) %></div>
+            </div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px;">
+            <% if @wheel_top_prize.to_i.positive? %>
+              <span style="font-size:12px; color:var(--primary); font-weight:700;"><%= t("customer.home.win_up_to", n: number_with_delimiter(@wheel_top_prize)) %></span>
             <% end %>
-          <% end %>
+            <% if @wheel_free %><span class="l-pill amber" style="font-size:11px; padding:3px 9px;"><%= t("customer.home.daily_bonus") %></span><% end %>
+          </div>
+          <%= link_to t("customer.home.spin_now"), member_wheel_path, class: "l-btn l-btn-primary l-btn-sm l-btn-block", style: "margin-top:auto;" %>
         </div>
+      <% end %>
+      <% if stamp_on %>
+        <% sm = @stamp_membership; left = [@stamp_card.target_count - sm.count, 0].max %>
+        <div class="l-mini">
+          <div class="hd">
+            <span class="ic" style="font-size:17px;"><%= @stamp_card.display_icon %></span>
+            <div style="min-width:0;">
+              <div class="tt"><%= truncate(@stamp_card.title, length: 30) %></div>
+              <div class="mt"><%= t("customer.stamps.title") %></div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px;">
+            <div style="min-width:0;">
+              <div style="font-size:12px; font-weight:700;"><%= t("customer.home.stamps_of", n: sm.count, total: @stamp_card.target_count) %></div>
+              <% if @stamp_card.reward %>
+                <div style="font-size:12px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= @stamp_card.reward.title %></div>
+              <% end %>
+            </div>
+            <% if left.positive? %><span class="l-pill brand" style="flex:none;"><%= t("customer.home.n_left", n: left) %></span><% end %>
+          </div>
+          <%= link_to t("customer.home.view_card"), member_stamps_path, class: "l-btn l-btn-outline l-btn-sm l-btn-block", style: "margin-top:auto;" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ---- Missions: two compact cards, the rest behind "See all" ---- %>
+  <% if @missions&.any? %>
+    <div class="l-sec">
+      <h3><%= t("customer.missions.title") %></h3>
+      <%= link_to t("customer.common.see_all"), member_missions_path, class: "l-pill good" %>
+    </div>
+    <div class="l-duo">
+      <% @missions.first(2).each do |m| %>
+        <% mp = @progress[m] %>
+        <% left = [m.goal.to_i - mp.progress.to_i, 0].max %>
+        <%= link_to member_missions_path, class: "l-mini" do %>
+          <div class="hd">
+            <%# The badge counts what is left to DO. A spend goal is money, not a
+                count, so that one keeps its icon instead of showing "100000". %>
+            <% countable = m.mission_type != "spend" && left <= 99 %>
+            <span class="ic count" style="<%= 'font-size:16px;' unless countable %>">
+              <%= mp.completed? ? "✓" : (countable ? left : mission_icon(m, size: 16)) %>
+            </span>
+            <div style="min-width:0;">
+              <div class="tt"><%= truncate(m.title, length: 30) %></div>
+              <div class="mt"><%= mission_left_text(m, mp) %></div>
+            </div>
+          </div>
+          <div class="ft">
+            <span class="l-pill good"><%= t("customer.common.points_count", n: m.reward_points) %></span>
+            <span class="l-pill <%= "brand" if mp.completed? %>">
+              <%= mp.completed? ? t("customer.missions.done") : t("customer.missions.in_progress") %>
+            </span>
+          </div>
+        <% end %>
       <% end %>
     </div>
   <% end %>

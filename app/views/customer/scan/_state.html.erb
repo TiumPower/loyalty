@@ -1,9 +1,14 @@
-<div class="l-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center;">
-  <div style="font-size:60px;"><%= icon %></div>
-  <h2 class="l-display" style="font-size:22px; margin-top:10px;"><%= title %></h2>
-  <p style="color:var(--ink-2); font-size:14px; margin-top:6px; max-width:300px;"><%= message %></p>
-  <div style="display:flex; gap:10px; margin-top:20px;">
-    <%= link_to t("customer.common.wallet"), member_wallet_path, class: "l-btn l-btn-ghost" %>
-    <%= link_to t("customer.common.scan_other"), member_scan_path, class: "l-btn l-btn-primary" %>
+<%# Shared outcome screen for every scan that did not earn anything: same shape
+    as the success screens so a failure does not look like a different app. %>
+<% tone = local_assigns.fetch(:tone, "warn") %>
+<div class="l-screen no-tabs" style="display:flex; flex-direction:column; justify-content:center; min-height:88vh;">
+  <div class="l-result">
+    <div class="halo <%= tone %>"><%= icon.is_a?(Symbol) ? ui_icon(icon, size: 38) : icon %></div>
+    <h1><%= title %></h1>
+    <p><%= message %></p>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:10px; margin-top:26px;">
+    <%= link_to t("customer.common.scan_other"), member_scan_path, class: "l-btn l-btn-primary l-btn-block" %>
+    <%= link_to t("customer.common.wallet"), member_wallet_path, class: "l-btn l-btn-outline l-btn-block" %>
   </div>
 </div>

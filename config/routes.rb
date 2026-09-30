@@ -62,7 +62,8 @@ Rails.application.routes.draw do
   namespace :merchant do
     root "dashboard#show"
     get  "choose",            to: "choose#show",              as: :choose
-    patch "tiers",            to: "tiers#update",             as: :tiers
+    get   "tiers",            to: "tiers#show",               as: :tiers
+    patch "tiers",            to: "tiers#update"
     resource :account, only: [:show, :update], controller: "account"
     get "quick_login_qr", to: "account#quick_login_qr", as: :quick_login_qr
     get "go/:token",      to: "quick_logins#create",    as: :quick_login
@@ -98,6 +99,9 @@ Rails.application.routes.draw do
     end
     resources :transactions, only: [:index]
     # Undo a mis-rung bill (reverses points + revenue; see VoidPurchase).
+    # Undoing a bill is destructive, so it gets a review screen of its own
+    # before the POST that actually reverses it.
+    get  "purchases/:id/void", to: "purchases#confirm_void", as: :confirm_void_purchase
     post "purchases/:id/void", to: "purchases#void", as: :void_purchase
     # In-app alert inbox for the shop (new reviews, out-of-stock rewards…).
     resources :alerts, only: [:index]
@@ -139,8 +143,13 @@ Rails.application.routes.draw do
     resources :rewards, only: [:index, :new, :create, :edit, :update, :destroy] do
       member { patch :toggle } # bật/tắt phát hành nhanh
     end
-    # Gamification management
+    # Gamification management. The design gives stamp cards, missions and the
+    # games/badges shelf a tab each, so they are addressable screens rather than
+    # client-side panels of one very long page.
     get   "gamification",      to: "gamification#show"
+    get   "stamp-cards",       to: "gamification#stamps", as: :stamp_cards_admin
+    get   "missions-setup",    to: "gamification#missions", as: :missions_admin
+    get   "games-badges",      to: "gamification#games", as: :games_admin
     patch "gamification/wheel", to: "gamification#update_wheel", as: :wheel_config
     resources :stamp_cards, only: [:create, :update, :destroy] do
       # Pause / run straight from the list, without saving the whole card (JSON).
@@ -172,6 +181,9 @@ Rails.application.routes.draw do
     delete "logout", to: "sessions#destroy",     as: :logout
     # core tabs (fleshed out in later phases)
     get  "wallet",  to: "wallet#index",  as: :wallet
+    # The vouchers a member already holds are their own screen in the design,
+    # reached from the wallet's second tab.
+    get  "vouchers", to: "vouchers#index", as: :vouchers
     get  "rewards/:id",        to: "rewards#show",  as: :reward
     post "rewards/:id/redeem", to: "rewards#redeem", as: :redeem_reward
     get  "vouchers/:id",        to: "vouchers#show",   as: :voucher
@@ -179,6 +191,8 @@ Rails.application.routes.draw do
     get  "vouchers/:id/status", to: "vouchers#status", as: :voucher_status
     get "scan",         to: "scan#show",    as: :scan
     get "scan/resolve", to: "scan#resolve", as: :scan_resolve
+    # Scanning a bill only previews it; this is the "Add points" confirmation.
+    post "scan/claim",  to: "scan#claim_pos", as: :scan_claim_pos
     get "my-code", to: "codes#show",    as: :my_code
     get "my-code/token",  to: "codes#token",  as: :my_code_token   # fresh rotating QR
     get "my-code/recent", to: "codes#recent", as: :my_code_recent  # poll for a new earn
@@ -193,6 +207,7 @@ Rails.application.routes.draw do
     get  "missions/:id/submit", to: "missions#new_submission",    as: :new_mission_submission
     post "missions/:id/submit", to: "missions#create_submission", as: :mission_submission
     get  "badges",  to: "badges#index",  as: :badges
+    get  "badges/:id", to: "badges#show", as: :badge
     get  "wheel",   to: "wheel#show",    as: :wheel
     post "wheel/spin", to: "wheel#spin",  as: :wheel_spin
     # CRM / notifications / referral
@@ -201,6 +216,7 @@ Rails.application.routes.draw do
     get  "refer",        to: "referrals#show", as: :refer
     get  "join/:code",   to: "sessions#join",  as: :join
     get   "me", to: "profile#show",   as: :profile
+    get   "me/edit", to: "profile#edit", as: :edit_profile
     patch "me", to: "profile#update"
     patch "me/avatar", to: "profile#avatar", as: :profile_avatar
     # Email is the login, so changing it is proven with a code sent to the NEW

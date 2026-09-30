@@ -1,8 +1,28 @@
 module Customer
   class VouchersController < BaseController
+
     before_action :require_workspace!
     before_action :require_member!
-    before_action :set_voucher
+    before_action :set_voucher, except: :index
+
+    MAX_VOUCHERS = 120 # this used to load every voucher a member had ever held
+
+    # The vouchers a member holds, split by state — its own screen in the design.
+    def index
+      @member = current_member
+      # Everything still live is loaded whatever its age: capping by recency
+      # would hide a long-dated voucher behind a wall of newer history. Only the
+      # finished ones are capped.
+      live = @member.vouchers.active.includes(:reward).to_a
+      usable, lapsed = live.partition(&:usable?)
+      history = @member.vouchers.where.not(state: "active")
+                       .recent.includes(:reward).limit(MAX_VOUCHERS).to_a
+      # Usable first, soonest to expire on top, so the urgent one leads.
+      @usable  = usable.sort_by { |v| [v.expires_at ? 0 : 1, v.expires_at || v.created_at] }
+      @used    = history.select { |v| v.state == "used" }.sort_by { |v| -v.created_at.to_i }
+      @expired = (lapsed + history.reject { |v| v.state == "used" }).sort_by { |v| -v.created_at.to_i }
+      @tab = %w[available used expired].include?(params[:tab]) ? params[:tab] : default_tab
+    end
 
     # Renders one of: used confirmation / expired / point-of-use code / detail.
     def show; end
@@ -25,6 +45,13 @@ module Customer
     end
 
     private
+
+    def default_tab
+      return "available" if @usable.any?
+      return "used"      if @used.any?
+      "expired"
+    end
+
 
     def set_voucher
       @voucher = current_member.vouchers.includes(:reward).find(params[:id])

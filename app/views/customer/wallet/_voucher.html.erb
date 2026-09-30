@@ -1,16 +1,28 @@
-<% state = v.expired? ? "expired" : v.state %>
-<%= link_to member_voucher_path(v), class: "l-ticket #{state}", style: "margin-bottom:12px;" do %>
-  <div class="stub"><div class="v"><%= v.reward.value_label %></div><div class="u"><%= v.reward.kind_label %></div></div>
-  <div class="perf"></div>
-  <div class="body">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-      <div style="font-weight:700; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= v.reward.display_icon %> <%= v.reward.title %></div>
-      <span class="state <%= state %>" style="flex:none; white-space:nowrap;"><%= t("customer.reward.state.#{state}") %></span>
+<%
+  state = v.expired? ? "expired" : v.state
+  live  = state == "active"
+  soon  = live && v.expires_at && v.expires_at <= 7.days.from_now
+  tone  = live ? (soon ? "var(--amber)" : "var(--good)") : "var(--ink-2)"
+%>
+<%= link_to member_voucher_path(v), class: "l-vrow #{'dim' unless live}" do %>
+  <div class="thumb"><%= reward_art(v.reward, size: 160, emoji_size: 24) %></div>
+  <div class="bd">
+    <div style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:<%= tone %>;">
+      <span style="width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block; flex:none;"></span>
+      <%= t("customer.reward.state.#{state}") %>
     </div>
-    <div style="font-size:12px; color:var(--ink-2); margin-top:6px;">
-      <%= t("customer.common.code_label") %> <span class="l-mono"><%= v.code %></span>
-      <% if state == "active" && v.expires_at %> · <%= t("customer.common.exp_short", date: l(v.expires_at.to_date, format: :short)) %><% end %>
-      <% if state == "used" && v.used_at %> · <%= v.used_at.strftime("%H:%M %d/%m") %><% end %>
+    <div class="tt" style="margin-top:3px;"><%= truncate(v.reward.title, length: 34) %></div>
+    <div class="mt">
+      <% if live && v.expires_at %>
+        <%= soon ? t("customer.wallet.expires_in_days", n: [((v.expires_at.to_date - Date.current).to_i), 0].max)
+                 : t("customer.common.valid_until", date: l(v.expires_at.to_date, format: :short)) %>
+      <% elsif state == "used" && v.used_at %>
+        <%= t("customer.voucher.used_short", time: l(v.used_at, format: :short)) %><%= " · #{v.used_outlet.name}" if v.used_outlet %>
+      <% elsif state == "expired" && v.expires_at %>
+        <%= t("customer.wallet.expired_on", date: l(v.expires_at.to_date, format: :short)) %>
+      <% end %>
     </div>
+    <div class="code"><%= v.code %></div>
   </div>
+  <span style="flex:none; color:var(--ink-2);"><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
 <% end %>

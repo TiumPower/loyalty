@@ -4,6 +4,13 @@ module Merchant
 
     # Built-in theme presets demonstrating dynamic branding on one layout.
     PRESETS = {
+      "warm_roast" => {
+        "label" => "Warm Roast",
+        "theme" => { "primary" => "#C45A38", "primary_2" => "#E99A14", "on_primary" => "#FFFFFF",
+                     "surface" => "#F6F1E8", "surface_2" => "#EFE8DB", "ink" => "#2E241B",
+                     "ink_2" => "#8A8179", "line" => "#E8E0D3", "radius" => "16px",
+                     "font_display" => "DM Sans", "font_body" => "DM Sans" }
+      },
       "cozy_cafe" => {
         "label" => "Cozy Cafe",
         "theme" => { "primary" => "#8C4A2F", "primary_2" => "#E08A3C", "on_primary" => "#FFF7EE",
@@ -61,6 +68,15 @@ module Merchant
           end
           @workspace.logo.attach(params[:logo])
         end
+        if params[:cover].present?
+          if (problem = logo_problem(params[:cover]))
+            @workspace.errors.add(:cover, problem)
+            @presets = PRESETS
+            return render :show, status: :unprocessable_entity
+          end
+          @workspace.cover.attach(params[:cover])
+        end
+        @workspace.cover.purge_later if params[:remove_cover] == "1" && @workspace.cover.attached?
       end
 
       if @workspace.save

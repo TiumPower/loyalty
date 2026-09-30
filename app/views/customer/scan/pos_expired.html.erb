@@ -1,2 +1,2 @@
 <% content_for :title, t("customer.scan.title") %><% content_for :tab, "" %>
-<%= render "state", icon: "⌛", title: t("customer.scan.pos_expired_title"), message: t("customer.scan.pos_expired_msg") %>
+<%= render "state", icon: :clock, tone: "warn", title: t("customer.scan.pos_expired_title"), message: t("customer.scan.pos_expired_msg") %>

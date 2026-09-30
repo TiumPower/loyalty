@@ -1,0 +1,43 @@
+<% content_for :title, t("customer.wallet.my_vouchers") %>
+<% content_for :tab, "wallet" %>
+<% lists = { "available" => @usable, "used" => @used, "expired" => @expired } %>
+
+<header class="l-subhead">
+  <%= link_to member_wallet_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.wallet.my_vouchers") %></div>
+    <div class="s"><%= t("customer.wallet.owned_sub") %></div>
+  </div>
+</header>
+
+<div class="l-screen">
+  <%# ---- how many are ready right now ---- %>
+  <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; background:var(--ink); color:var(--surface);">
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; opacity:.7;"><%= current_workspace.name %></div>
+      <div style="font-size:19px; font-weight:700; letter-spacing:-.02em; margin-top:3px;"><%= t("customer.wallet.ready_count", n: @usable.size) %></div>
+    </div>
+    <span style="width:44px; height:44px; border-radius:12px; flex:none; display:grid; place-items:center; background:rgba(255,255,255,.14);">
+      <%= ui_icon(:ticket, size: 22) %>
+    </span>
+  </div>
+
+  <div class="l-seg boxed" style="margin-top:16px;">
+    <% [["available", t("customer.wallet.v_available"), @usable.size],
+        ["used",      t("customer.wallet.v_used"),      @used.size],
+        ["expired",   t("customer.wallet.v_expired"),   @expired.size]].each do |key, label, n| %>
+      <%= link_to "#{label} #{n}", member_vouchers_path(tab: key), class: ("active" if @tab == key) %>
+    <% end %>
+  </div>
+
+  <div style="margin-top:14px;">
+    <% list = lists[@tab] %>
+    <% if list.empty? %>
+      <%= render "customer/wallet/empty", icon: :ticket, text: t("customer.wallet.v_empty_#{@tab}") %>
+    <% else %>
+      <% list.each { |v| %><%= render "customer/wallet/voucher", v: v %><% } %>
+    <% end %>
+  </div>
+</div>

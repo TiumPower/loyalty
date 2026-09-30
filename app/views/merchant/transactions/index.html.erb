@@ -52,71 +52,83 @@
   </div>
 <% end %>
 
-<%# ---- Summary KPIs ---- %>
-<div class="l-kpis" style="margin-bottom:16px;">
-  <div class="l-kpi"><div class="k"><%= tx.(:earned) %></div><div class="v" style="color:var(--primary);">+<%= number_with_delimiter(@earned) %></div></div>
-  <div class="l-kpi"><div class="k"><%= tx.(:spent) %></div><div class="v"><%= @spent.zero? ? "0" : "−#{number_with_delimiter(@spent)}" %></div></div>
-  <% if @expired.to_i.positive? %>
-    <div class="l-kpi"><div class="k"><%= tx.(:expired) %></div><div class="v" style="color:var(--ink-2);">−<%= number_with_delimiter(@expired) %></div></div>
-  <% end %>
-  <div class="l-kpi"><div class="k"><%= tx.(:total) %></div><div class="v"><%= number_with_delimiter(@total) %></div></div>
+<%# ---- Summary: the four figures the filter above resolves to ---- %>
+<div class="m-metrics" style="margin-bottom:16px;">
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= tx.(:earned) %></span><span class="ic"><%= ui_icon(:sparkles, size: 15) %></span></div>
+    <div class="row"><span class="v" style="color:var(--good);">+<%= number_with_delimiter(@earned) %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= tx.(:spent) %></span><span class="ic"><%= ui_icon(:gift, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= @spent.zero? ? "0" : "−#{number_with_delimiter(@spent)}" %></span></div>
+  </div>
+  <div class="m-metric">
+    <%# Lapsed points are not redemptions — shown separately so the two are
+        never read as the same number. %>
+    <div class="hd"><span class="k"><%= tx.(:expired) %></span><span class="ic"><%= ui_icon(:clock, size: 15) %></span></div>
+    <div class="row"><span class="v" style="color:var(--ink-2);"><%= @expired.to_i.zero? ? "0" : "−#{number_with_delimiter(@expired)}" %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= tx.(:total) %></span><span class="ic"><%= ui_icon(:receipt, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@total) %></span><span class="m-badge"><%= @range[:label] %></span></div>
+  </div>
 </div>
 
-<%# ---- Ledger table ---- %>
+<%# ---- Ledger: one row per point movement, with the bill behind it ---- %>
 <div class="l-panel">
   <div style="overflow-x:auto;">
-    <table style="width:100%; border-collapse:collapse; font-size:13.5px; min-width:720px;">
-      <thead><tr style="text-align:left; color:var(--ink-2); font-size:11px; text-transform:uppercase; letter-spacing:.06em;">
-        <th style="padding:8px 10px;"><%= tx.(:th_time) %></th>
-        <th><%= tx.(:th_customer) %></th>
-        <th><%= tx.(:th_kind) %></th>
-        <th><%= tx.(:th_detail) %></th>
-        <th><%= tx.(:th_branch) %></th>
-        <th><%= tx.(:th_staff) %></th>
-        <th style="text-align:right;"><%= tx.(:th_amount) %></th>
-        <th></th>
-      </tr></thead>
+    <table class="m-table" style="min-width:920px;">
+      <thead>
+        <tr>
+          <th><%= tx.(:th_transaction) %></th>
+          <th><%= tx.(:th_customer) %></th>
+          <th><%= tx.(:th_branch) %></th>
+          <th><%= tx.(:th_amount_bill) %></th>
+          <th><%= tx.(:th_points) %></th>
+          <th><%= tx.(:th_status) %></th>
+          <th><%= tx.(:th_staff) %></th>
+          <th></th>
+        </tr>
+      </thead>
       <tbody>
         <% @transactions.each do |t| %>
-          <tr style="border-top:1px solid var(--line);">
-            <td style="padding:11px 10px; white-space:nowrap; color:var(--ink-2);"><%= l(t.created_at, format: :short) %></td>
-            <td style="font-weight:600;">
-              <%= link_to t.member.display_name, merchant_customer_path(t.member),
-                    style: "color:var(--primary-ink); text-decoration:none;" %>
+          <% bill = @purchases[t.source_id] if t.source_type == "Purchase" %>
+          <tr>
+            <td>
+              <div style="font-weight:600; white-space:nowrap;"><%= t.icon %> <%= t("customer.tx.#{t.kind}", default: t.kind.humanize) %></div>
+              <div style="font-size:12px; color:var(--ink-2); white-space:nowrap;"><%= l(t.created_at, format: :short) %></div>
             </td>
-            <td style="white-space:nowrap;"><%= t.icon %> <%= t("customer.tx.#{t.kind}", default: t.kind.humanize) %></td>
-            <td style="color:var(--ink-2);">
-              <% bill = @purchases[t.source_id] if t.source_type == "Purchase" %>
-              <% if bill %>
-                <%= tx.(:bill_of, amount: number_with_delimiter(bill.amount)) %>
-                <% if t.note.present? %><span style="display:block; font-size:11.5px;"><%= t.note %></span><% end %>
-              <% else %>
-                <%= t.note.presence || "—" %>
+            <td>
+              <%= link_to t.member.display_name, merchant_customer_path(t.member),
+                    style: "font-weight:600; color:var(--primary-ink); text-decoration:none;" %>
+              <% if t.note.present? && bill.nil? %>
+                <div style="font-size:12px; color:var(--ink-2);"><%= t.note %></div>
               <% end %>
             </td>
             <td style="color:var(--ink-2);"><%= t.outlet&.name || tx.(:no_branch) %></td>
-            <td style="color:var(--ink-2);"><%= t.staff&.name || "—" %></td>
-            <td style="text-align:right; font-weight:700; font-variant-numeric:tabular-nums; color:<%= t.credit? ? 'var(--primary)' : 'var(--ink)' %>;">
+            <td class="m-num"><%= bill ? "#{number_with_delimiter(bill.amount)}đ" : "—" %></td>
+            <td class="m-num" style="color:<%= t.credit? ? 'var(--good)' : 'var(--warn)' %>;">
               <%= t.credit? ? "+" : "−" %><%= number_with_delimiter(t.amount.abs) %>
             </td>
-            <%# Hoàn tác hoá đơn ghi nhầm — chỉ hiện với dòng tích điểm chưa bị huỷ %>
-            <td style="text-align:right; white-space:nowrap; padding-right:10px;">
-              <% pur = @purchases[t.source_id] if t.source_type == "Purchase" %>
-              <% if pur&.voided? %>
-                <span style="font-size:11px; color:var(--ink-2);"><%= tx.(:voided_flag) %></span>
-              <% elsif pur&.voidable_by?(current_user, current_membership) %>
-                <%= button_to tx.(:undo), merchant_void_purchase_path(pur),
-                      class: "l-btn l-btn-ghost", style: "padding:4px 10px; font-size:12px;",
-                      form: { style: "display:inline;",
-                              data: { turbo_confirm: t("merchant.void.confirm",
-                                                       n: number_with_delimiter(t.amount.abs),
-                                                       name: t.member.display_name) } } %>
+            <td>
+              <% if bill&.voided? %>
+                <span class="m-badge down"><%= tx.(:voided_flag) %></span>
+              <% else %>
+                <span class="m-badge up"><%= tx.(:posted_flag) %></span>
+              <% end %>
+            </td>
+            <td style="color:var(--ink-2);"><%= t.staff&.name || "—" %></td>
+            <%# Undo a mis-keyed bill — only on an earn row that is still posted. %>
+            <td style="white-space:nowrap;">
+              <% if bill && !bill.voided? && bill.voidable_by?(current_user, current_membership) %>
+                <%= link_to tx.(:undo), merchant_confirm_void_purchase_path(bill),
+                      class: "l-btn l-btn-ghost", style: "padding:4px 12px; font-size:12px;" %>
               <% end %>
             </td>
           </tr>
         <% end %>
         <% if @transactions.empty? %>
-          <tr><td colspan="8" style="padding:20px; text-align:center; color:var(--ink-2);"><%= tx.(:empty) %></td></tr>
+          <tr><td colspan="8" style="padding:24px; text-align:center; color:var(--ink-2);"><%= tx.(:empty) %></td></tr>
         <% end %>
       </tbody>
     </table>
@@ -135,3 +147,7 @@
     </div>
   <% end %>
 </div>
+
+<p style="font-size:12.5px; color:var(--ink-2); line-height:1.55; margin-top:14px;">
+  <%= tx.(:safeguard_note) %>
+</p>

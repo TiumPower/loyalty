@@ -1,65 +1,99 @@
 <% content_for :title, t("customer.wallet.title") %>
 <% content_for :tab, "wallet" %>
-<header class="l-appbar">
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.wallet.title") %></div>
-  <span class="l-chip l-chip-brand" style="margin-left:auto;"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span>
+<%
+  # Three shelves, as the design labels them: redeemable now, only at certain
+  # times, and gone.
+  shelves = @rewards.group_by do |r|
+    case r.redeem_state
+    when :open         then :open
+    when :out_of_stock then :gone
+    else                    :later
+    end
+  end
+%>
+
+<header class="l-head" style="padding-bottom:6px;">
+  <div style="min-width:0;">
+    <span class="l-pill brand" style="margin-bottom:8px;"><%= current_workspace.name %></span>
+    <div class="t"><%= t("customer.wallet.title") %></div>
+    <div class="s"><%= t("customer.wallet.subtitle_shop", shop: current_workspace.name) %></div>
+  </div>
 </header>
 
-<div class="l-screen" data-controller="tabs" data-tabs-active-class-value="active" data-tabs-active-value="<%= %w[rewards owned expiring].include?(params[:tab]) ? params[:tab] : @default_tab %>">
-  <% usable_count = @vouchers.count(&:usable?) %>
-  <div class="l-wtabs">
-    <button data-tabs-target="tab" data-name="rewards" data-action="tabs#select"><%= t("customer.wallet.tab_redeemable") %></button>
-    <button data-tabs-target="tab" data-name="owned" data-action="tabs#select" style="position:relative;">
-      <%= t("customer.wallet.tab_owned") %>
-      <% if usable_count > 0 %>
-        <span style="position:absolute; top:-4px; right:-2px; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--primary-2,#E08A3C); color:#fff; font-size:11px; font-weight:700; line-height:18px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.2);"><%= usable_count %></span>
-      <% end %>
-    </button>
-    <button data-tabs-target="tab" data-name="expiring" data-action="tabs#select"><%= t("customer.wallet.tab_expiring") %></button>
+<div class="l-screen">
+  <%# ---- the two numbers that decide what happens next ---- %>
+  <div class="l-duo">
+    <div class="l-tile">
+      <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.wallet.stat_points") %></div>
+      <div style="font-size:26px; font-weight:700; letter-spacing:-.03em; margin-top:4px; font-variant-numeric:tabular-nums;"><%= number_with_delimiter(@member.points_balance) %></div>
+      <div style="font-size:12px; color:var(--ink-2); margin-top:4px; line-height:1.4;">
+        <% if @next_goal %>
+          <%= t("customer.wallet.to_next_reward", n: number_with_delimiter(@next_goal.cost_points.to_i - @member.points_balance)) %>
+        <% else %>
+          <%= t("customer.wallet.ready_to_redeem") %>
+        <% end %>
+      </div>
+      <%= link_to t("customer.home.view_history"), member_history_path, class: "l-btn l-btn-soft l-btn-xs", style: "margin-top:10px;" %>
+    </div>
+    <div class="l-tile">
+      <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.wallet.stat_vouchers") %></div>
+      <div style="font-size:26px; font-weight:700; letter-spacing:-.03em; margin-top:4px; font-variant-numeric:tabular-nums;"><%= @usable.size %></div>
+      <div style="font-size:12px; margin-top:4px; line-height:1.4; color:<%= @expiring.any? ? 'var(--amber)' : 'var(--ink-2)' %>;">
+        <%= @expiring.any? ? t("customer.wallet.n_expiring", n: @expiring.size) : t("customer.wallet.none_expiring") %>
+      </div>
+    </div>
   </div>
 
-  <%# ---- Có thể đổi (catalog) ---- %>
-  <div data-tabs-target="panel" data-name="rewards">
+  <%# ---- the two halves of the wallet. "My Vouchers" is its own screen. ---- %>
+  <div class="l-seg auto" style="margin-top:18px;">
+    <span class="active"><%= t("customer.wallet.tab_catalog") %></span>
+    <%= link_to t("customer.wallet.my_vouchers"), member_vouchers_path %>
+  </div>
+
+  <div style="margin-top:14px;">
     <% if @rewards.empty? %>
-      <%= render "customer/wallet/empty", icon: "🎁", text: t("customer.wallet.empty_redeemable") %>
+      <%= render "customer/wallet/empty", icon: :gift, text: t("customer.wallet.empty_redeemable") %>
     <% else %>
-      <% @rewards.each do |r| %>
-        <% open = r.redeem_open? %>
-        <% hint = r.redeem_window_hint %>
-        <%= link_to member_reward_path(r), class: "l-ticket", style: "margin-bottom:12px; position:relative; #{'opacity:.62; filter:grayscale(.35);' unless open}" do %>
-          <div class="stub"><div class="v"><%= r.value_label %></div><div class="u"><%= r.kind_label %></div></div>
-          <div class="perf"></div>
-          <div class="body">
-            <div style="font-weight:700;"><%= r.display_icon %> <%= r.title %></div>
-            <div style="font-size:12px; color:var(--ink-2); margin:4px 0;"><%= truncate(r.description.to_s, length: 60) %></div>
-            <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap;">
-              <span class="l-chip l-chip-brand"><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %></span>
-              <% if r.remaining %><span class="l-chip"><%= t("customer.wallet.remaining", n: r.remaining) %></span><% end %>
-              <% if !open && hint %>
-                <span class="l-chip" style="background:var(--surface-2); color:var(--ink-2);">🕑 <%= hint %></span>
+      <% [[:open, t("customer.wallet.shelf_open")],
+          [:later, t("customer.wallet.shelf_later")],
+          [:gone, t("customer.wallet.shelf_gone")]].each do |key, label| %>
+        <% list = shelves[key] or next %>
+        <div class="l-sec" style="margin-top:16px;">
+          <h3 style="font-size:14px;"><%= label %></h3>
+          <span style="font-size:12.5px; color:var(--ink-2);">
+            <%= key == :open ? t("customer.wallet.n_available", n: list.size) : t("customer.wallet.shelf_count", n: list.size) %>
+          </span>
+        </div>
+        <% list.each do |r| %>
+          <% open = r.redeem_open? %>
+          <%= link_to member_reward_path(r), class: "l-vrow #{'dim' unless open}" do %>
+            <div class="thumb" style="width:64px; height:64px;"><%= reward_art(r, size: 180, emoji_size: 26) %></div>
+            <div class="bd">
+              <div class="tt"><%= truncate(r.title, length: 36) %></div>
+              <div style="display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; margin-top:4px;
+                          color:<%= open ? 'var(--good)' : (r.redeem_state == :out_of_stock ? 'var(--warn)' : 'var(--amber)') %>;">
+                <span style="width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block; flex:none;"></span>
+                <%= open ? t("customer.wallet.state_available") : (r.redeem_state == :out_of_stock ? t("customer.wallet.state_soldout") : t("customer.wallet.state_window")) %>
+              </div>
+              <div class="mt">
+                <% if !open && r.redeem_window_hint.present? %><%= r.redeem_window_hint %>
+                <% elsif r.remaining %><%= t("customer.wallet.remaining", n: r.remaining) %>
+                <% end %>
+              </div>
+              <div style="font-size:13px; font-weight:700; color:var(--primary); margin-top:3px;"><%= t("customer.common.points_count", n: number_with_delimiter(r.cost_points)) %></div>
+            </div>
+            <div style="flex:none;">
+              <% if open %>
+                <span class="l-btn l-btn-soft l-btn-xs"><%= t("customer.reward.redeem_cta") %></span>
+              <% else %>
+                <span class="l-pill <%= r.redeem_state == :out_of_stock ? 'warn' : 'amber' %>">
+                  <%= r.redeem_state == :out_of_stock ? t("customer.wallet.state_soldout") : t("customer.wallet.state_unavailable") %>
+                </span>
               <% end %>
             </div>
-          </div>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
-  </div>
-
-  <%# ---- Đã đổi (owned vouchers) ---- %>
-  <div data-tabs-target="panel" data-name="owned" hidden>
-    <% if @vouchers.empty? %>
-      <%= render "customer/wallet/empty", icon: "🎟️", text: t("customer.wallet.empty_owned") %>
-    <% else %>
-      <% @vouchers.each do |v| %><%= render "customer/wallet/voucher", v: v %><% end %>
-    <% end %>
-  </div>
-
-  <%# ---- Sắp hết hạn ---- %>
-  <div data-tabs-target="panel" data-name="expiring" hidden>
-    <% if @expiring.empty? %>
-      <%= render "customer/wallet/empty", icon: "⏳", text: t("customer.wallet.empty_expiring") %>
-    <% else %>
-      <% @expiring.each do |v| %><%= render "customer/wallet/voucher", v: v %><% end %>
     <% end %>
   </div>
 </div>

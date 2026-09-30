@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_27_084304) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_30_072750) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -494,6 +494,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_27_084304) do
     t.text "reply_body"
     t.datetime "replied_at"
     t.bigint "replied_by_id"
+    t.jsonb "tags", default: [], null: false
     t.index ["member_id"], name: "index_ratings_on_member_id"
     t.index ["outlet_id"], name: "index_ratings_on_outlet_id"
     t.index ["replied_by_id"], name: "index_ratings_on_replied_by_id"

@@ -1,118 +1,138 @@
 <% content_for :title, t("customer.profile.title") %>
 <% content_for :tab, "me" %>
-<header class="l-appbar">
-  <%= member_avatar(@member, klass: "avatar") %>
-  <div><div class="nm"><%= @member.display_name %></div><div class="hi"><%= @member.email.presence || @member.phone %></div></div>
+<% tier = @member.tier %>
+
+<%# The design centres the title between a back button and a matching spacer. %>
+<header class="l-subhead" style="padding-bottom:6px;">
+  <%= link_to member_root_path, class: "l-iconbtn sm", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 17) %>
+  <% end %>
+  <div style="flex:1; text-align:center;"><div style="font-size:17px; font-weight:700;"><%= t("customer.profile.title") %></div></div>
+  <span style="width:34px; flex:none;"></span>
 </header>
-<div class="l-screen">
-  <% if @member.errors.any? %>
-    <div class="l-tile" style="margin-bottom:14px; background:#F7E0DA; color:#B4402F;"><%= @member.errors.full_messages.to_sentence %></div>
+
+<div class="l-screen" style="padding-top:8px;">
+  <%# ---- who you are ---- %>
+  <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding:12px 0 6px;">
+    <%= member_avatar(@member, klass: "", style: "width:80px; height:80px; border-radius:50%; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; font-weight:700; font-size:28px; overflow:hidden;") %>
+    <div style="font-weight:700; font-size:20px; letter-spacing:-.02em; margin-top:14px;"><%= @member.display_name %></div>
+    <div style="font-size:13.5px; color:var(--ink-2); margin-top:3px;"><%= @member.email.presence || @member.phone %></div>
+    <%= link_to t("customer.profile.edit"), member_edit_profile_path,
+          style: "margin-top:12px; font-size:13.5px; font-weight:700; color:var(--primary); text-decoration:none;" %>
+  </div>
+
+  <%# ---- three numbers ---- %>
+  <div class="l-stats" style="border:none; box-shadow:none; background:transparent; border-radius:0; padding:16px 0;">
+    <div>
+      <div class="v"><%= number_with_delimiter(@member.points_balance) %></div>
+      <div class="k"><%= t("customer.common.points_unit").upcase %></div>
+    </div>
+    <div>
+      <div class="v"><%= tier&.name || "—" %></div>
+      <div class="k"><%= t("customer.profile.tier") %></div>
+    </div>
+    <div>
+      <div class="v"><%= @member.referrals_made.count %></div>
+      <div class="k"><%= t("customer.referrals.invited") %></div>
+    </div>
+  </div>
+
+  <%# ---- tier progress ---- %>
+  <% if tier %>
+    <div class="l-tile">
+      <div style="display:flex; align-items:flex-start; gap:12px;">
+        <div style="flex:1; min-width:0;">
+          <div class="l-eyebrow"><%= t("customer.profile.loyalty") %></div>
+          <div style="font-weight:700; font-size:16px; margin-top:3px;"><%= t("customer.profile.tier_named", name: tier.name) %></div>
+        </div>
+        <span class="l-pill gold" style="flex:none;"><%= tier.name %></span>
+      </div>
+      <% if @member.next_tier %>
+        <div class="l-bar thick" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+        <div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--ink-2); margin-top:8px;">
+          <span><%= number_with_delimiter(@member.points_balance) %> / <%= number_with_delimiter(@member.next_tier.threshold_points) %> <%= t("customer.common.points_unit").upcase %></span>
+          <span><%= t("customer.tiers.to_next_short", n: number_with_delimiter(@member.points_to_next), tier: @member.next_tier.name) %></span>
+        </div>
+      <% end %>
+      <%= link_to member_tier_path, style: "display:flex; align-items:center; gap:6px; margin-top:14px; font-size:13.5px; font-weight:700; color:var(--primary); text-decoration:none;" do %>
+        <%= t("customer.profile.view_benefits") %><%= ui_icon(:chevron_right, size: 15, stroke: 2.4) %>
+      <% end %>
+    </div>
   <% end %>
 
-  <%# ---- Avatar upload (own form: click avatar → preview → save) ---- %>
-  <div class="l-tile" style="margin-bottom:14px;">
-    <%= form_with url: member_profile_avatar_path, method: :patch, multipart: true, data: { controller: "avatarupload", turbo: false } do %>
-      <div style="display:flex; align-items:center; gap:16px;">
-        <label style="position:relative; flex:none; cursor:pointer;" title="<%= t("customer.profile.avatar_change") %>">
-          <div data-avatarupload-target="box" style="width:72px; height:72px; border-radius:20px; overflow:hidden; background:var(--surface-2); color:var(--ink-2); display:grid; place-items:center; font-weight:700; font-size:22px;">
-            <% if @member.avatar.attached? %>
-              <%= image_tag rails_storage_proxy_path(@member.avatar, only_path: true), style: "width:100%;height:100%;object-fit:cover;" %>
-            <% else %>
-              <%= @member.initials %>
-            <% end %>
-          </div>
-          <span style="position:absolute; right:-4px; bottom:-4px; width:28px; height:28px; border-radius:50%; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,.2);">📷</span>
-          <%= file_field_tag "member[avatar]", accept: "image/*", data: { avatarupload_target: "input", action: "avatarupload#change" }, style: "position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" %>
-        </label>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:600;"><%= t("customer.profile.avatar_title") %></div>
-          <div style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= t("customer.profile.avatar_hint") %></div>
-          <%= button_tag t("customer.profile.avatar_save"), type: "submit", class: "l-btn l-btn-primary", data: { avatarupload_target: "save" }, style: "margin-top:10px; display:none; padding:8px 16px; font-size:13px;" %>
-        </div>
-      </div>
+  <%# ---- point history, on its own row as the design has it ---- %>
+  <div class="l-rows" style="margin-top:14px;">
+    <%= link_to member_history_path do %>
+      <span class="ic"><%= ui_icon(:history, size: 20) %></span>
+      <span style="flex:1; min-width:0;"><%= t("customer.home.view_history") %></span>
+      <span class="tr"><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
     <% end %>
   </div>
 
-  <div class="l-tile" style="margin-bottom:14px;">
-    <div class="l-display" style="font-size:16px; margin-bottom:12px;"><%= t("customer.profile.account") %></div>
-    <%= form_with model: @member, url: member_profile_path, method: :patch, data: { turbo: false } do |f| %>
-      <label class="l-label"><%= t("customer.profile.name") %></label>
-      <%= f.text_field :name, class: "l-field", placeholder: t("customer.profile.name") %>
-
-      <label class="l-label" style="margin-top:12px;"><%= t("customer.profile.email") %></label>
-      <%= f.email_field :email, class: "l-field", autocomplete: "email", placeholder: "ban@vidu.com" %>
-      <%# Email is the login and there is no password, so say what saving it does. %>
-      <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("customer.profile.email_hint") %></div>
-      <% if session[:pending_email].present? %>
-        <div style="margin-top:8px; padding:9px 12px; border-radius:12px; background:var(--surface-2); font-size:12.5px;">
-          <%= t("customer.profile.email_pending", email: session[:pending_email]) %>
-          <%= link_to t("customer.profile.email_confirm_cta"), member_profile_confirm_email_path,
-                style: "font-weight:700; color:var(--primary); text-decoration:underline;" %>
-        </div>
-      <% end %>
-
-      <label class="l-label" style="margin-top:12px;"><%= t("customer.profile.phone") %></label>
-      <%= f.telephone_field :phone, class: "l-field", autocomplete: "tel", inputmode: "numeric", placeholder: "0901234567" %>
-
-      <label class="l-label" style="margin-top:12px;"><%= t("customer.profile.birthday") %></label>
-      <%# Masked text field guarantees DD/MM/YYYY on every browser; a ghost
-          overlay keeps the remaining DD/MM/YYYY template visible while typing. %>
-      <div class="l-datefield" data-controller="datemask">
-        <div class="l-datefield-ghost" data-datemask-target="ghost" aria-hidden="true"></div>
-        <%= f.text_field :birthday, value: @member.birthday&.strftime("%d/%m/%Y"),
-              class: "l-datefield-input", inputmode: "numeric", maxlength: 10,
-              autocomplete: "bday",
-              data: { datemask_target: "input", action: "input->datemask#format" } %>
-      </div>
-      <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("customer.profile.birthday_hint") %></div>
-
-      <%= f.submit t("customer.profile.save"), class: "l-btn l-btn-primary l-btn-block", style: "margin-top:16px;" %>
-    <% end %>
-  </div>
-
-  <div class="l-tile" style="margin-bottom:14px; padding:6px 16px;">
-    <%= link_to member_history_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span><%= t("customer.profile.history") %></span><span style="color:var(--ink-2);">›</span>
-    <% end %>
-    <%= link_to member_tier_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span><%= t("customer.profile.tier") %></span><span style="color:var(--ink-2);">›</span>
-    <% end %>
-    <%= link_to member_notifications_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span><%= t("customer.profile.notifications") %></span><span style="color:var(--ink-2);">›</span>
-    <% end %>
-    <%= link_to member_refer_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span><%= t("customer.profile.refer") %></span><span style="color:var(--ink-2);">›</span>
-    <% end %>
-    <%= link_to member_new_review_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-      <span><%= t("customer.profile.review_shop") %></span><span style="color:var(--ink-2);">›</span>
-    <% end %>
-    <% if current_workspace.feedback_public? %>
-      <%= link_to member_shop_about_path, class: "l-toggle-row", style: "text-decoration:none; color:var(--ink);" do %>
-        <span><%= t("customer.profile.about_shop") %></span><span style="color:var(--ink-2);">›</span>
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="l-tile" style="margin-bottom:14px;">
-    <div class="l-toggle-row"><span><%= t("customer.profile.language") %></span>
-      <span style="display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden;">
-        <% [["VI", :vi], ["EN", :en]].each do |label, loc| %>
-          <% on = I18n.locale == loc %>
-          <%= link_to label, set_locale_path(loc),
-                style: "padding:6px 16px; font-size:12px; font-weight:700; text-decoration:none; #{on ? 'background:var(--primary); color:var(--on-primary);' : 'color:var(--ink-2); background:transparent;'}" %>
-        <% end %>
+  <%# ---- settings ---- %>
+  <div class="l-rows" style="margin-top:14px;">
+    <div>
+      <span class="ic"><%= ui_icon(:globe, size: 20) %></span>
+      <span style="flex:1; min-width:0;"><%= t("customer.profile.language") %></span>
+      <span class="tr" style="gap:0;">
+        <span style="display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden;">
+          <% [["VI", :vi], ["EN", :en]].each do |label, loc| %>
+            <% on = I18n.locale == loc %>
+            <%= link_to label, set_locale_path(loc),
+                  style: "padding:6px 15px; font-size:12px; font-weight:700; text-decoration:none; #{on ? 'background:var(--primary); color:var(--on-primary);' : 'color:var(--ink-2); background:transparent;'}" %>
+          <% end %>
+        </span>
       </span>
     </div>
+
+    <%# The design's "Notification Settings" row is where web push lives. %>
     <% if PushSender.configured? %>
-      <div class="l-toggle-row" data-action="click->pwa#togglePush" style="cursor:pointer;">
-        <span><%= t("customer.pwa.notifications") %><br><span data-pwa-target="pushLabel" style="font-size:12px; color:var(--ink-2);"></span></span>
-        <span class="l-switch" data-pwa-target="pushToggle"><span class="knob"></span></span>
+      <div data-action="click->pwa#togglePush" style="cursor:pointer;">
+        <span class="ic"><%= ui_icon(:bell, size: 20) %></span>
+        <span style="flex:1; min-width:0;">
+          <%= t("customer.profile.notification_settings") %>
+          <span data-pwa-target="pushLabel" style="display:block; font-size:12px; color:var(--ink-2);"></span>
+        </span>
+        <span class="tr"><span class="l-switch" data-pwa-target="pushToggle"><span class="knob"></span></span></span>
       </div>
     <% end %>
-    <div class="l-toggle-row"><span><%= t("customer.profile.store") %></span><span style="color:var(--ink-2);"><%= current_workspace.name %></span></div>
-    <div class="l-toggle-row"><span><%= t("customer.profile.referral_code") %></span><span class="l-mono"><%= @member.referral_code %></span></div>
+
+    <%= link_to member_notifications_path do %>
+      <span class="ic"><%= ui_icon(:mail, size: 20) %></span>
+      <span style="flex:1; min-width:0;"><%= t("customer.profile.notifications") %></span>
+      <span class="tr"><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
+    <% end %>
+
+    <% if current_workspace.program.referral_enabled %>
+      <%= link_to member_refer_path do %>
+        <span class="ic"><%= ui_icon(:users, size: 20) %></span>
+        <span style="flex:1; min-width:0;"><%= t("customer.profile.refer") %></span>
+        <span class="tr"><span class="l-mono"><%= @member.referral_code %></span><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
+      <% end %>
+    <% end %>
+
+    <%# "Privacy & Security" in the design; here it is the one honest thing the
+        app can say about the data it holds. %>
+    <%= link_to member_edit_profile_path do %>
+      <span class="ic"><%= ui_icon(:shield, size: 20) %></span>
+      <span style="flex:1; min-width:0;"><%= t("customer.profile.privacy") %></span>
+      <span class="tr"><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
+    <% end %>
+
+    <%# "Help & Support" → the shop itself, which is who can actually help. %>
+    <% if current_workspace.feedback_public? %>
+      <%= link_to member_shop_about_path do %>
+        <span class="ic"><%= ui_icon(:help, size: 20) %></span>
+        <span style="flex:1; min-width:0;"><%= t("customer.profile.help") %></span>
+        <span class="tr"><%= current_workspace.name %><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
+      <% end %>
+    <% end %>
   </div>
-  <%= button_to t("customer.profile.logout"), member_logout_path, method: :delete,
-        form: { data: { turbo_confirm: t("customer.profile.logout") + "?" } },
-        class: "l-btn l-btn-ghost l-btn-block" %>
+
+  <div style="text-align:center; margin-top:26px;">
+    <%= button_to t("customer.profile.logout"), member_logout_path, method: :delete,
+          form: { data: { turbo_confirm: t("customer.profile.logout") + "?" } },
+          class: "l-btn l-btn-ghost l-btn-block", style: "color:var(--warn);" %>
+    <div style="font-size:11.5px; color:var(--ink-2); margin-top:14px;"><%= current_workspace.name %></div>
+  </div>
 </div>

@@ -18,6 +18,10 @@ module Merchant
       # staff quick-login launcher: same tool, but a minimal chrome (no merchant
       # sidebar/menu) so a phone at the counter behaves like a dedicated device.
       @kiosk = params[:kiosk].present?
+      # What this counter has done today — the design keeps it beside the tool so
+      # a cashier can see their own work without leaving the screen. Kiosk mode
+      # stays a single column, so it does not need this.
+      load_counter_activity unless @kiosk
       render layout: "scanner_kiosk" if @kiosk
     end
 
@@ -32,6 +36,16 @@ module Merchant
     private
 
     def nav_key = :scanner
+
+    # Today's postings at the active branch (all branches when none is chosen).
+    def load_counter_activity
+      scope = PointTransaction.where(created_at: Time.zone.now.all_day)
+      scope = scope.where(outlet_id: current_outlet.id) if current_outlet
+      @today_earned  = scope.net_credits.sum(:amount)
+      @today_spent   = scope.redemptions.sum(:amount).abs
+      @today_count   = scope.count
+      @today_recent  = scope.recent.includes(:member).limit(5).to_a
+    end
 
     # Branches whose check-in QR the current user may display.
     #   owner            → every branch (can pick)

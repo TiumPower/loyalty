@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 // Member multi-purpose scanner. Reads a QR (URL or bare token) and navigates to
 // the resolve endpoint, which auto-detects promo-claim vs POS-earn.
 export default class extends Controller {
-  static targets = ["video", "status", "overlay"]
+  static targets = ["video", "status", "overlay", "recognised"]
   static values = {
     resolveUrl: String,
     scanningText: String, deniedText: String, unsupportedText: String, failedText: String
@@ -107,11 +107,22 @@ export default class extends Controller {
 
   go(value) {
     value = (value || "").trim()
-    try {
-      const u = new URL(value)
-      if (u.origin === location.origin) { window.location.href = value; return }
-    } catch (e) { /* not a URL */ }
-    window.location.href = `${this.resolveUrlValue}?code=${encodeURIComponent(value)}`
+    // Confirm the hit on screen before the page changes: a camera that simply
+    // jumps gives no sign it read anything, which is what the design's
+    // "recognised outlet" card is for.
+    this.confirmHit(() => {
+      try {
+        const u = new URL(value)
+        if (u.origin === location.origin) { window.location.href = value; return }
+      } catch (e) { /* not a URL */ }
+      window.location.href = `${this.resolveUrlValue}?code=${encodeURIComponent(value)}`
+    })
+  }
+
+  confirmHit(next) {
+    if (!this.hasRecognisedTarget) return next()
+    this.recognisedTarget.hidden = false
+    setTimeout(next, 550)
   }
 
   stop() {

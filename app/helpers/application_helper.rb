@@ -79,6 +79,77 @@ module ApplicationHelper
     content_tag(:div, inner, class: klass, style: ["overflow:hidden", style].compact.join(";"))
   end
 
+  # Just the given name, for the home greeting: "Chào buổi chiều, Tô Trung Tuân"
+  # wraps onto two lines and pushes the bell out of the header, and a greeting
+  # reads better on a first name anyway. Vietnamese names put it last.
+  def greeting_name(member)
+    full = member.display_name.to_s.strip
+    parts = full.split(/\s+/)
+    parts.size > 1 && I18n.locale.to_s == "vi" ? parts.last : parts.first.to_s
+  end
+
+  # One line saying what a mission actually asks for. Missions carry no
+  # description column, and the design wants a sentence under the title — so
+  # build it from the mission's own type and goal rather than leaving a gap.
+  def mission_goal_text(mission, shop: nil)
+    shop ||= mission.workspace&.name
+    n = mission.goal.to_i
+    case mission.mission_type
+    when "spend" then t("customer.missions.goal_spend", amount: number_with_delimiter(n), shop: shop)
+    else t("customer.missions.goal_#{mission.mission_type}", n: n, shop: shop, default: "")
+    end
+  end
+
+  # "3 orders left" — what is still outstanding on a mission, which is what the
+  # design's compact home card leads with (the full goal lives on the missions
+  # screen).
+  def mission_left_text(mission, progress)
+    return t("customer.missions.completed") if progress.completed?
+    left = [mission.goal.to_i - progress.progress.to_i, 0].max
+    case mission.mission_type
+    when "spend" then t("customer.missions.left_spend", amount: number_with_delimiter(left))
+    else t("customer.missions.left_#{mission.mission_type}", n: left, default: t("customer.missions.left_generic", n: left))
+    end
+  end
+
+  # Which half of the day the customer is opening the app in — the home screen
+  # greets them with it. Uses the app time zone, not the browser's.
+  def greeting_period
+    h = Time.current.hour
+    return "morning"   if h < 11
+    return "afternoon" if h < 18
+    "evening"
+  end
+
+  # The shop's wide photo, for the home card and the shop page. Falls back to
+  # the logo on its brand tint so the frame is never an empty grey box.
+  def shop_cover(ws, size: 780)
+    if ws&.cover&.attached?
+      image_tag(ws.cover.variant(resize_to_fill: [size, (size * 0.56).round]), alt: "",
+                style: "width:100%;height:100%;object-fit:cover;display:block;")
+    elsif ws&.logo&.attached?
+      image_tag(workspace_icon_url(ws), alt: "",
+                style: "width:56%;height:56%;object-fit:contain;display:block;margin:auto;")
+    else
+      content_tag(:span, ws&.logo_initials,
+                  style: "font-size:34px;font-weight:700;color:var(--primary);opacity:.5;")
+    end
+  end
+
+  # Reward artwork. The design leads with a photo wherever a reward appears, but
+  # a shop that has not uploaded one still needs something in the frame — so
+  # fall back to the reward's emoji on a brand tint. `size` drives the variant
+  # only; the box itself is sized by the surrounding component's CSS.
+  def reward_art(reward, size: 320, emoji_size: nil)
+    if reward&.image&.attached?
+      image_tag(reward.image.variant(resize_to_fill: [size, size]), alt: "",
+                style: "width:100%;height:100%;object-fit:cover;display:block;")
+    else
+      content_tag(:span, reward&.display_icon,
+                  style: ["line-height:1", ("font-size:#{emoji_size}px" if emoji_size)].compact.join(";"))
+    end
+  end
+
   # Member avatar: uploaded image (cover-cropped) if present, else initials.
   def member_avatar(member, klass: "avatar", style: nil)
     if member&.avatar&.attached?
@@ -118,5 +189,18 @@ module ApplicationHelper
     perks << "Quà sinh nhật đặc biệt"      if tier.multiplier.to_f >= 1.5
     perks << "Ưu tiên hỗ trợ & sự kiện VIP" if tier.multiplier.to_f >= 2
     perks
+  end
+
+  # The tier screen lists benefits as a label with its value on the right, so a
+  # member can read what the tier is worth at a glance. A shop that wrote its
+  # own benefit lines gets those as plain rows (no value to show).
+  def tier_benefit_rows(tier)
+    return tier.benefits.map { |b| [:sparkles, b, nil] } if tier.benefits.present?
+    m = tier.multiplier.to_f
+    rows = [[:flame, t("customer.tiers.multiplier"), "#{tier.multiplier}x"]]
+    rows << [:gift,    t("customer.tiers.b_birthday"), t("customer.tiers.b_yes")] if m >= 1.5
+    rows << [:mail,    t("customer.tiers.b_support"),  t("customer.tiers.b_yes")] if m >= 2
+    rows << [:sparkles, t("customer.tiers.b_events"),  t("customer.tiers.b_invited")] if m > 1
+    rows
   end
 end

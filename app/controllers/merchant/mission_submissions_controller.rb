@@ -27,7 +27,7 @@ module Merchant
 
     private
 
-    def nav_key = :gamification
+    def nav_key = :missions_setup
 
     def photo_mission_ids
       current_workspace.missions.where(mission_type: Mission::PHOTO_PROOF_TYPES).select(:id)

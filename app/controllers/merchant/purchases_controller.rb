@@ -3,6 +3,23 @@ module Merchant
   # (Purchase#voidable_by?): managers always, the cashier who created it while
   # it's still fresh.
   class PurchasesController < BaseController
+    # The review screen: what this bill did, what undoing it will reverse, and
+    # what it cannot take back. The scanner keeps its inline one-tap undo.
+    def confirm_void
+      @purchase = Purchase.find(params[:id])
+      return redirect_to(merchant_transactions_path, alert: t("merchant.void.already")) if @purchase.voided?
+      unless @purchase.voidable_by?(current_user, current_membership)
+        return redirect_to(merchant_transactions_path, alert: t("merchant.void.not_allowed"))
+      end
+      @member = @purchase.member
+      @points = @purchase.points_earned.to_i
+      # Only what the customer still holds can come back; the rest is recorded
+      # as a shortfall rather than pushing them negative.
+      @reversible = [[@points, @member.points_balance.to_i].min, 0].max
+      @shortfall  = @points - @reversible
+      @ledger_tx  = PointTransaction.where(source: @purchase).order(:id).to_a
+    end
+
     def void
       @purchase = Purchase.find(params[:id])
 

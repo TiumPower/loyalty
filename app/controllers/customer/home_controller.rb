@@ -38,8 +38,22 @@ module Customer
           end
           @missions = candidates.sort_by.with_index { |m, i| [all[m].completed? ? 1 : 0, i] }.first(3)
           @progress = @missions.index_with { |m| all[m] }
-          @has_stamps = current_workspace.stamp_cards.active.exists?
+          # "Play & collect" needs the live state of the two habit loops, not
+          # just whether the feature is switched on — the cards show a spin
+          # count and a stamp progress bar.
+          @wheel = current_workspace.spin_wheel
+          @wheel_free = @wheel && @wheel.free_spin_available?(@member)
+          # "Win up to 100 pts" on the home card — the best point prize the
+          # wheel actually carries, not a number typed into the design.
+          @wheel_top_prize = @wheel&.resolved_segments.to_a.select { |s| s["kind"] == "points" }.map { |s| s["value"].to_i }.max.to_i
         end
+        if prog.stamps_enabled
+          @stamp_card = current_workspace.stamp_cards.active.ordered.detect(&:running?)
+          @stamp_membership = @stamp_card&.membership_for(@member)
+          @stamp_card = nil if @stamp_membership.nil?
+        end
+        # Shown on the shop card; nil when the shop keeps feedback private.
+        @shop_rating = current_workspace.feedback_public? ? Rating.average(:stars)&.round(1) : nil
         render :show
       end
     end

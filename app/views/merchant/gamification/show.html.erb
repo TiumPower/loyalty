@@ -1,5 +1,8 @@
-<% content_for :title, t("merchant.nav.gamification") %>
-<% content_for :title_en, "GAMES" %>
+<% titles = { "stamps" => [t("merchant.nav.stamp_cards"), "STAMP CARDS"],
+              "missions" => [t("merchant.nav.missions"), "MISSIONS"],
+              "games" => [t("merchant.nav.games"), "GAMES & BADGES"] } %>
+<% content_for :title, titles.dig(@section.to_s, 0) || t("merchant.nav.gamification") %>
+<% content_for :title_en, titles.dig(@section.to_s, 1) || "GAMES" %>
 
 <% unless @program.gamification_enabled %>
   <div class="l-panel" style="margin-bottom:16px; display:flex; align-items:center; gap:12px;">
@@ -9,28 +12,13 @@
   </div>
 <% end %>
 
-<div data-controller="tabs" data-tabs-key-value="gamification">
-  <%# ---- Tab bar ---- %>
-  <style>
-    /* Make the active gamification tab clearly stand out (solid primary pill). */
-    [role="tablist"] .l-chip-brand{
-      background:var(--primary); color:var(--on-primary,#fff); font-weight:700;
-      box-shadow:0 6px 16px -6px var(--primary);
-    }
-    [role="tablist"] .l-chip-brand:hover{ background:var(--primary); color:var(--on-primary,#fff); }
-  </style>
-  <div role="tablist" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-    <% [["stamps", t("merchant.gami.stamps")], ["missions", t("merchant.gami.missions")],
-        ["badges", t("merchant.gami.badges")], ["wheel", t("merchant.gami.wheel")]].each do |key, label| %>
-      <button type="button" class="l-chip" data-tabs-target="tab" data-tab="<%= key %>"
-              data-action="tabs#select" style="cursor:pointer; border:none; font-size:14px; padding:9px 16px;">
-        <%= label %>
-      </button>
-    <% end %>
-  </div>
 
-  <%# ---- Stamp cards ---- %>
-  <div class="l-panel" data-tabs-target="panel" data-tab="stamps">
+<%# One screen per tab of the design's loyalty sub-navigation. The panels used
+    to be client-side tabs on one very long page; they are addressable now, so a
+    link can point at "stamp cards" and land there. %>
+<% case @section %>
+<% when "stamps" %>
+  <div class="l-panel">
     <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.stamps") %></h3>
     <%= render "merchant/gamification/reward_source", context: :stamp %>
     <style>
@@ -108,8 +96,9 @@
     </div>
   </div>
 
+<% when "missions" %>
   <%# ---- Missions ---- %>
-  <div class="l-panel" data-tabs-target="panel" data-tab="missions" hidden>
+  <div class="l-panel">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
       <h3 class="l-display" style="font-size:18px; margin:0;"><%= t("merchant.gami.missions") %></h3>
       <% pending = MissionProgress.where(mission_id: current_workspace.missions.where(mission_type: Mission::PHOTO_PROOF_TYPES).select(:id), approval_status: "pending").count %>
@@ -243,9 +232,10 @@
     </div>
   </div>
 
+<% when "games" %>
   <%# ---- Badges (editable) ---- %>
   <% crit = { "first_purchase" => t("merchant.gami.crit_first"), "purchases_count" => t("merchant.gami.crit_count"), "points_total" => t("merchant.gami.crit_points"), "night_owl" => t("merchant.gami.crit_night") } %>
-  <div class="l-panel" data-tabs-target="panel" data-tab="badges" hidden>
+  <div class="l-panel">
     <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.badges") %></h3>
     <%= render "merchant/gamification/reward_source", context: :badge %>
     <% @badges.each do |b| %>
@@ -323,7 +313,8 @@
   </div>
 
   <%# ---- Lucky wheel (editable prizes) ---- %>
-  <div class="l-panel" data-tabs-target="panel" data-tab="wheel" hidden>
+  <div style="height:16px;"></div>
+  <div class="l-panel">
     <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.gami.wheel") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.gami.wheel_note") %></p>
     <% rows = @wheel.resolved_segments.dup; rows << {} while rows.size < 2 %>
@@ -373,4 +364,4 @@
       <%= submit_tag t("merchant.gami.save_wheel"), class: "l-btn l-btn-primary", style: "margin-top:16px;" %>
     <% end %>
   </div>
-</div>
+<% end %>

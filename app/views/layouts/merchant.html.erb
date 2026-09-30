@@ -48,6 +48,16 @@
             </span>
           </div>
         </header>
+        <%# The other screens of the current section, as the design's tab strip
+            under the page title. A one-screen section renders nothing. %>
+        <% tabs = merchant_section_tabs(defined?(nav_key) ? nav_key : nil) %>
+        <% if tabs %>
+          <nav class="m-subnav" style="padding:14px clamp(16px,3vw,32px) 0;">
+            <% tabs.each do |key, label, path, _| %>
+              <%= link_to label, path, class: ("active" if key == nav_key) %>
+            <% end %>
+          </nav>
+        <% end %>
         <div class="l-content"><%= yield %></div>
       </main>
     </div>

@@ -1,36 +1,94 @@
 <% content_for :title, t("customer.referrals.title") %>
 <% content_for :tab, "" %>
 <% ink = current_workspace.theme_value(:ink).to_s.delete("#") %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.referrals.title") %></div>
+
+<header class="l-subhead">
+  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.referrals.title") %></div>
+    <div class="s"><%= t("customer.referrals.subtitle") %></div>
+  </div>
 </header>
 
-<div class="l-screen">
-  <div class="l-card" style="--tier-from: var(--primary); --tier-to: var(--primary-2); text-align:center;">
-    <div class="k" style="opacity:.9;"><%= t("customer.referrals.invite_both") %></div>
-    <div class="pts" style="font-size:38px;"><%= t("customer.common.points_plus", n: number_with_delimiter(@reward_points)) %></div>
-    <div class="meta"><%= t("customer.referrals.per_friend") %></div>
-  </div>
+<div class="l-screen"
+     data-controller="share" data-share-url-value="<%= @join_url %>"
+     data-share-text-value="<%= t("customer.referrals.share_text", name: current_workspace.name) %>">
 
-  <div class="l-tile" style="text-align:center; margin-top:16px;">
-    <div style="display:inline-block; padding:14px; background:#fff; border:1px solid var(--line); border-radius:16px;">
-      <%= qr_svg(@join_url, color: ink, size: 180) %>
+  <%# ---- The code, big enough to read out loud ---- %>
+  <div class="l-tile">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="flex:1; min-width:0;">
+        <div class="l-eyebrow"><%= t("customer.referrals.your_code") %></div>
+        <div class="l-mono" style="font-size:27px; font-weight:700; letter-spacing:.12em; margin-top:5px; overflow-wrap:anywhere;"><%= @member.referral_code %></div>
+      </div>
+      <button type="button" class="l-iconbtn" data-action="share#copy" aria-label="<%= t("customer.referrals.copy") %>">
+        <%= ui_icon(:copy, size: 17) %>
+      </button>
     </div>
-    <div class="l-eyebrow" style="margin-top:12px;"><%= t("customer.referrals.your_code") %></div>
-    <div class="l-mono" style="font-size:26px; font-weight:700; letter-spacing:.14em;"><%= @member.referral_code %></div>
+    <p style="font-size:13px; color:var(--ink-2); line-height:1.5; margin-top:12px;">
+      <%= t("customer.referrals.explainer", n: number_with_delimiter(@reward_points)) %>
+    </p>
+    <p data-share-target="status" hidden style="font-size:12.5px; color:var(--good); font-weight:600; margin-top:8px;">
+      <span data-share-target="copyLabel"><%= t("customer.referrals.copied") %></span>
+    </p>
   </div>
 
-  <div style="display:flex; gap:10px; margin-top:14px;"
-       data-controller="share" data-share-url-value="<%= @join_url %>"
-       data-share-text-value="<%= t("customer.referrals.share_text", name: current_workspace.name) %>">
-    <button class="l-btn l-btn-primary" style="flex:1;" data-action="share#native"><%= t("customer.referrals.share") %></button>
-    <button class="l-btn l-btn-ghost" style="flex:1;" data-action="share#copy" data-share-target="copyBtn"><%= t("customer.referrals.copy") %></button>
+  <%# ---- Ways to pass it on ---- %>
+  <div class="l-sec"><h3 style="font-size:15px;"><%= t("customer.referrals.quick_share") %></h3></div>
+  <div class="l-share">
+    <button type="button" data-action="share#native">
+      <span class="ic"><%= ui_icon(:share, size: 18) %></span><%= t("customer.referrals.share") %>
+    </button>
+    <button type="button" data-action="share#openPlatform"
+            data-share-href="https://www.facebook.com/sharer/sharer.php?u=<%= CGI.escape(@join_url) %>">
+      <span class="ic" style="font-weight:800;">f</span>Facebook
+    </button>
+    <button type="button" data-action="share#openPlatform" data-share-href="https://zalo.me/">
+      <span class="ic" style="font-weight:800; font-size:13px;">Za</span>Zalo
+    </button>
+    <button type="button" data-action="share#copy">
+      <span class="ic"><%= ui_icon(:copy, size: 18) %></span><%= t("customer.referrals.copy") %>
+    </button>
   </div>
 
-  <div class="l-tile" style="margin-top:16px; display:flex; justify-content:space-around; text-align:center;">
-    <div><div class="l-num" style="font-size:28px;"><%= @invited %></div><div style="font-size:12px; color:var(--ink-2);"><%= t("customer.referrals.invited") %></div></div>
-    <div><div class="l-num" style="font-size:28px; color:var(--good);"><%= @completed %></div><div style="font-size:12px; color:var(--ink-2);"><%= t("customer.referrals.completed") %></div></div>
-    <div><div class="l-num" style="font-size:28px; color:var(--primary-ink);">+<%= number_with_delimiter(@completed * @reward_points) %></div><div style="font-size:12px; color:var(--ink-2);"><%= t("customer.referrals.points_earned") %></div></div>
+  <%# ---- The QR, for passing it on in person ---- %>
+  <div class="l-qrpanel" style="margin-top:18px;">
+    <span class="notch l"></span><span class="notch r"></span>
+    <div class="frame"><%= qr_svg(@join_url, color: ink, size: 180) %></div>
+    <div style="font-size:12.5px; color:var(--ink-2); margin-top:12px;"><%= t("customer.referrals.qr_hint") %></div>
   </div>
+
+  <%# ---- What it has added up to ---- %>
+  <div class="l-sec"><h3 style="font-size:15px;"><%= t("customer.referrals.your_referrals") %></h3></div>
+  <div class="l-tile" style="font-size:13.5px; line-height:1.5;">
+    <%= t("customer.referrals.summary_html",
+          invited: tag.strong(@invited),
+          joined: tag.strong(@completed, style: "color:var(--good);"),
+          points: tag.strong("#{number_with_delimiter(@completed * @reward_points)} #{t('customer.common.points_unit')}", style: "color:var(--primary);")).html_safe %>
+  </div>
+
+  <% if @referrals.any? %>
+    <div style="margin-top:12px;"></div>
+    <% @referrals.each do |r| %>
+      <div class="l-row">
+        <span class="ic <%= 'muted' unless r.completed? %>"><%= r.referred&.initials %></span>
+        <div class="bd">
+          <div class="tt"><%= r.referred&.display_name %></div>
+          <div class="mt">
+            <%= r.completed? ? t("customer.referrals.joined_ago", time: time_ago_in_words(r.updated_at))
+                             : t("customer.referrals.pending") %>
+          </div>
+        </div>
+        <div class="tr">
+          <% if r.completed? %>
+            <span class="l-pill good">+<%= number_with_delimiter(@reward_points) %></span>
+          <% else %>
+            <span class="l-pill"><%= t("customer.referrals.pending_short") %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 </div>

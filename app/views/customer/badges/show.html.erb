@@ -1,0 +1,90 @@
+<% content_for :title, @badge.name %>
+<% content_for :tab, "" %>
+<% earned = @mine.present? %>
+<% pct = @target.to_i.positive? ? [(@done * 100.0 / @target), 100].min.round : 0 %>
+
+<header class="l-subhead">
+  <%= link_to member_badges_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.badges.detail_title") %></div></div>
+  <div class="sp">
+    <% if earned %>
+      <button type="button" class="l-iconbtn" data-controller="share"
+              data-share-url-value="<%= member_badges_url(host: request.host_with_port) %>"
+              data-share-text-value="<%= t("customer.badges.share_text", badge: @badge.name, shop: current_workspace.name) %>"
+              data-action="share#native" aria-label="<%= t("customer.badges.share") %>">
+        <%= ui_icon(:share, size: 17) %>
+      </button>
+    <% end %>
+  </div>
+</header>
+
+<div class="l-screen" style="text-align:center;">
+  <%# ---- the badge itself ---- %>
+  <div style="width:132px; height:132px; margin:8px auto 0; border-radius:50%; display:grid; place-items:center;
+              background:<%= earned ? 'var(--primary-soft)' : 'var(--surface-2)' %>;">
+    <div style="width:96px; height:96px; border-radius:50%; display:grid; place-items:center; font-size:40px;
+                background:<%= earned ? 'var(--primary)' : 'var(--line)' %>; color:<%= earned ? 'var(--on-primary)' : 'var(--ink-2)' %>;">
+      <%= earned ? @badge.display_icon : ui_icon(:lock, size: 34) %>
+    </div>
+  </div>
+
+  <% if earned %>
+    <span class="l-pill good" style="margin-top:18px;">
+      <%= t("customer.badges.earned_on", date: l(@mine.created_at.to_date, format: :short)) %>
+    </span>
+  <% else %>
+    <span class="l-pill" style="margin-top:18px;"><%= t("customer.badges.locked") %></span>
+  <% end %>
+
+  <h1 style="font-size:23px; font-weight:700; letter-spacing:-.025em; margin-top:12px;"><%= @badge.name %></h1>
+  <% if @badge.description.present? %>
+    <p style="font-size:14px; color:var(--ink-2); line-height:1.55; margin:8px auto 0; max-width:300px;"><%= @badge.description %></p>
+  <% end %>
+
+  <%# ---- how it is earned, and what it pays ---- %>
+  <div class="l-tile" style="margin-top:22px; text-align:left;">
+    <div style="display:flex; align-items:flex-start; gap:12px;">
+      <div style="flex:1; min-width:0;">
+        <div class="l-eyebrow"><%= t("customer.badges.achievement") %></div>
+        <div style="font-weight:700; font-size:15px; margin-top:3px;"><%= @badge.requirement_text %></div>
+      </div>
+      <span class="l-pill <%= earned ? 'good' : '' %>" style="flex:none;"><%= @done %>/<%= @target %></span>
+    </div>
+    <div class="l-bar" style="margin-top:14px;"><span style="width:<%= pct %>%;"></span></div>
+
+    <% if @badge.reward_points.to_i.positive? || @badge.reward %>
+      <div style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line-soft);">
+        <span style="width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center;
+                     background:var(--primary-soft); color:var(--primary);"><%= ui_icon(:coins, size: 18) %></span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:14px;"><%= t("customer.badges.completion_reward") %></div>
+          <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;">
+            <%= @badge.reward ? @badge.reward.title : t("customer.badges.added_to_balance") %>
+          </div>
+        </div>
+        <% if @badge.reward_points.to_i.positive? %>
+          <span style="flex:none; font-weight:700; color:var(--primary);">+<%= number_with_delimiter(@badge.reward_points) %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if earned %>
+    <button type="button" class="l-btn l-btn-primary l-btn-block" style="margin-top:18px;"
+            data-controller="share"
+            data-share-url-value="<%= member_badges_url(host: request.host_with_port) %>"
+            data-share-text-value="<%= t("customer.badges.share_text", badge: @badge.name, shop: current_workspace.name) %>"
+            data-action="share#native">
+      <%= ui_icon(:share, size: 17) %><%= t("customer.badges.share") %>
+    </button>
+  <% end %>
+
+  <% if @next_up %>
+    <% nd, nt = @next_up.progress_for(@member) %>
+    <p style="font-size:12.5px; color:var(--ink-2); margin-top:16px;">
+      <%= t("customer.badges.next_up", name: @next_up.name, done: nd, total: nt) %>
+    </p>
+  <% end %>
+</div>

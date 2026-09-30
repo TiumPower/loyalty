@@ -1,35 +1,70 @@
 <% content_for :title, t("customer.badges.title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.badges.title") %></div>
-  <span class="l-chip l-chip-brand" style="margin-left:auto;"><%= @earned.size %>/<%= @badges.size %></span>
+<% tier = @member.tier %>
+<header class="l-subhead">
+  <%= link_to member_tier_path, class: "l-iconbtn",
+        data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.badges.title") %></div>
+    <div class="s"><%= t("customer.badges.subtitle") %></div>
+  </div>
+  <div class="sp"><span class="l-pill good"><%= t("customer.badges.earned_count", n: @earned.size) %></span></div>
 </header>
 
 <div class="l-screen">
+  <%# The member's standing, above the collection — the design frames badges as
+      one shelf of a bigger trophy case. %>
+  <% if tier %>
+    <div class="l-tile">
+      <div style="display:flex; align-items:center; gap:13px;">
+        <span style="width:52px; height:52px; border-radius:50%; flex:none; display:grid; place-items:center;
+                     background:<%= tier.gradient_css %>; color:#fff;"><%= ui_icon(:star, size: 22, stroke: 2) %></span>
+        <div style="flex:1; min-width:0;">
+          <div class="l-eyebrow"><%= t("customer.badges.your_collection") %></div>
+          <div style="font-weight:700; font-size:16px; margin-top:2px;"><%= tier.name %></div>
+        </div>
+        <span class="l-pill brand" style="flex:none;"><%= t("customer.badges.of_total", n: @earned.size, total: @badges.size) %></span>
+      </div>
+      <% if @member.next_tier %>
+        <div class="l-bar" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-2); margin-top:6px;">
+          <span><%= number_with_delimiter(@member.points_balance) %> <%= t("customer.common.points_unit") %></span>
+          <span><%= number_with_delimiter(@member.next_tier.threshold_points) %> · <%= @member.next_tier.name %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="l-sec"><h3 style="font-size:15px;"><%= t("customer.badges.collection", shop: current_workspace.name) %></h3></div>
+
   <% if @badges.empty? %>
-    <div class="l-tile" style="text-align:center; padding:40px 20px;"><div style="font-size:40px;">🏅</div><p style="font-weight:600; margin-top:8px;"><%= t("customer.badges.empty") %></p></div>
+    <div class="l-empty">
+      <div class="ic"><%= ui_icon(:trophy, size: 26) %></div>
+      <div class="tt"><%= t("customer.badges.empty") %></div>
+      <div class="mt"><%= t("customer.badges.empty_sub") %></div>
+    </div>
   <% else %>
     <div class="l-badge-grid">
       <% @badges.each do |b| %>
         <% earned = @earned.include?(b.id) %>
-        <div class="l-badge <%= 'locked' unless earned %>">
-          <div class="ic"><%= earned ? b.display_icon : "🔒" %></div>
+        <% done, target = @progress[b] %>
+        <%= link_to member_badge_path(b), class: "l-badge #{'earned' if earned}" do %>
+          <span class="ic" style="width:54px; height:54px; font-size:22px;">
+            <%= earned ? b.display_icon : ui_icon(:lock, size: 20) %>
+          </span>
           <div class="nm"><%= b.name %></div>
-          <% if b.description.present? %>
-            <div style="font-size:10px; color:var(--ink-2); margin-top:2px;"><%= b.description %></div>
-          <% end %>
-          <div style="font-size:10px; color:var(--ink-2); margin-top:4px; display:flex; flex-direction:column; gap:2px; align-items:center;">
-            <span>🎯 <%= b.requirement_text %></span>
-            <% if b.reward_points.to_i.positive? %>
-              <span style="color:var(--primary);">🎁 <%= t("customer.badges.reward_hint", n: b.reward_points) %></span>
+          <div class="rq"><%= truncate(b.description.presence || b.requirement_text, length: 44) %></div>
+          <div class="ft">
+            <span class="prog"><%= done %>/<%= target %></span>
+            <% if earned %>
+              <span class="l-pill good"><%= t("customer.badges.earned") %></span>
+            <% else %>
+              <span style="color:var(--ink-2); flex:none;"><%= ui_icon(:lock, size: 14) %></span>
             <% end %>
-            <% if b.reward_id.present? && b.reward %>
-              <span style="color:var(--primary);">🎁 <%= t("customer.badges.reward_voucher", reward: b.reward.title) %></span>
-            <% end %>
-            <% if earned %><span style="color:var(--good,#2E9E5B); font-weight:600;"><%= t("customer.badges.earned") %></span><% end %>
           </div>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% end %>

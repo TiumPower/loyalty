@@ -3,50 +3,57 @@
 <% happy = @rating.stars >= 4 %>
 <% google = current_workspace.google_review_url %>
 
-<header class="l-appbar">
-  <%= link_to "←", (current_workspace.feedback_public? ? member_shop_about_path : member_root_path),
-        style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.review_thanks.title") %></div>
+<header class="l-subhead">
+  <%= link_to (current_workspace.feedback_public? ? member_shop_about_path : member_root_path),
+        class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.review_thanks.title") %></div></div>
 </header>
 
 <div class="l-screen">
-  <div class="l-tile" style="text-align:center;">
-    <div style="font-size:48px; line-height:1;"><%= happy ? "🎉" : "🙏" %></div>
-    <div style="color:var(--primary-2,#E08A3C); font-size:26px; letter-spacing:3px; margin-top:8px;">
-      <%= "★" * @rating.stars %><span style="opacity:.3;"><%= "★" * (5 - @rating.stars) %></span>
+  <div class="l-result">
+    <div class="halo <%= happy ? '' : 'brand' %>">
+      <%= happy ? ui_icon(:sparkles, size: 36) : ui_icon(:mail, size: 34) %>
     </div>
-    <h2 class="l-display" style="font-size:21px; margin-top:12px;">
-      <%= happy ? t("customer.review_thanks.happy_title") : t("customer.review_thanks.sorry_title") %>
-    </h2>
-    <p style="color:var(--ink-2); font-size:14px; margin-top:8px;">
-      <%= happy ? t("customer.review_thanks.happy_body", shop: current_workspace.name)
-                : t("customer.review_thanks.sorry_body", shop: current_workspace.name) %>
-    </p>
+    <div style="color:var(--primary-2); font-size:24px; letter-spacing:4px; margin-top:12px;">
+      <%= "★" * @rating.stars %><span style="opacity:.25;"><%= "★" * (5 - @rating.stars) %></span>
+    </div>
+    <h1><%= happy ? t("customer.review_thanks.happy_title") : t("customer.review_thanks.sorry_title") %></h1>
+    <p><%= happy ? t("customer.review_thanks.happy_body", shop: current_workspace.name)
+                 : t("customer.review_thanks.sorry_body", shop: current_workspace.name) %></p>
+  </div>
 
-    <%# Khách hài lòng → mời đăng công khai lên Google. Kênh kéo khách mới rẻ nhất. %>
-    <% if happy && google.present? %>
-      <div style="margin-top:18px; padding:14px; border-radius:14px; background:var(--surface-2); text-align:left;">
-        <div style="font-weight:700; font-size:15px;"><%= t("customer.review_thanks.google_title") %></div>
-        <p style="color:var(--ink-2); font-size:13px; margin-top:4px;"><%= t("customer.review_thanks.google_body") %></p>
-        <%= link_to t("customer.review_thanks.google_cta"), google,
-              target: "_blank", rel: "noopener nofollow",
-              class: "l-btn l-btn-primary l-btn-block", style: "margin-top:12px;" %>
-      </div>
-    <% end %>
+  <%# A happy customer is the cheapest route to a new one — ask while they are
+      still on the screen that said thank you. %>
+  <% if happy && google.present? %>
+    <div class="l-tile" style="margin-top:22px;">
+      <div style="font-weight:700; font-size:15px;"><%= t("customer.review_thanks.google_title") %></div>
+      <p style="color:var(--ink-2); font-size:13px; margin-top:5px; line-height:1.5;"><%= t("customer.review_thanks.google_body") %></p>
+      <%= link_to google, target: "_blank", rel: "noopener nofollow",
+            class: "l-btn l-btn-primary l-btn-block", style: "margin-top:12px;" do %>
+        <%= ui_icon(:star, size: 16, stroke: 2.2) %><%= t("customer.review_thanks.google_cta") %>
+      <% end %>
+    </div>
+  <% end %>
 
-    <%# Khách chấm thấp mà quán có bật "xin lỗi tự động" → quà đã vào ví %>
-    <% if @apology %>
-      <div style="margin-top:18px; padding:14px; border-radius:14px; background:var(--surface-2); text-align:left;">
-        <div style="font-weight:700; font-size:15px;">🎁 <%= t("customer.review_thanks.apology_title") %></div>
-        <p style="color:var(--ink-2); font-size:13px; margin-top:4px;">
+  <%# A low score with automatic apology switched on: the voucher is already in
+      the wallet, so point at it rather than just saying sorry. %>
+  <% if @apology %>
+    <div class="l-tile pad-0" style="margin-top:14px;">
+      <div class="l-hero <%= 'no-art' unless @apology.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@apology.reward, size: 720, emoji_size: 44) %></div>
+      <div style="padding:14px 16px 16px;">
+        <span class="l-pill brand"><%= t("customer.review_thanks.apology_title") %></span>
+        <div style="font-weight:700; font-size:16px; margin-top:8px;"><%= @apology.reward&.title %></div>
+        <p style="color:var(--ink-2); font-size:13px; margin-top:5px; line-height:1.5;">
           <%= t("customer.review_thanks.apology_body", title: @apology.reward&.title) %>
         </p>
         <%= link_to t("customer.review_thanks.apology_cta"), member_voucher_path(@apology),
               class: "l-btn l-btn-primary l-btn-block", style: "margin-top:12px;" %>
       </div>
-    <% end %>
+    </div>
+  <% end %>
 
-    <%= link_to t("customer.common.home_back"), member_root_path,
-          class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:14px;" %>
-  </div>
+  <%= link_to t("customer.common.home_back"), member_root_path,
+        class: "l-btn l-btn-outline l-btn-block", style: "margin-top:16px;" %>
 </div>

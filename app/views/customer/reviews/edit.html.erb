@@ -1,10 +1,13 @@
-<% content_for :title, "Sửa đánh giá" %>
+<% content_for :title, t("customer.review.edit_title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_shop_about_path, data: { controller: "goback", action: "goback#back" }, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;">Sửa đánh giá</div>
+<header class="l-subhead">
+  <%= link_to member_shop_about_path, class: "l-iconbtn",
+        data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.review.edit_title") %></div></div>
 </header>
 
 <div class="l-screen">
-  <%= render "form", rating: @rating, url: member_review_path(@rating), method: :patch, submit_label: "Cập nhật đánh giá" %>
+  <%= render "form", rating: @rating, url: member_review_path(@rating), method: :patch, submit_label: t("customer.review.update") %>
 </div>

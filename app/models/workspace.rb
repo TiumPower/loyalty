@@ -19,6 +19,11 @@ class Workspace < ApplicationRecord
 
   has_one_attached :logo
   validate :logo_is_a_reasonable_image
+  # Wide shop photo. The customer app leads with it on the home card and at the
+  # top of the shop page; without one those fall back to the logo tint, so it
+  # stays optional.
+  has_one_attached :cover
+  validate :cover_is_a_reasonable_image
   has_many :memberships, dependent: :destroy
   has_many :users,   through: :memberships
   has_many :outlets, dependent: :destroy
@@ -247,24 +252,26 @@ class Workspace < ApplicationRecord
   end
 
   # -- Theming (per-workspace white-label) ---------------------------------
-  # Neutral defaults = the "Cozy Cafe" preset from the product mockup. Each
-  # workspace overrides a handful of base tokens; the rest derive via CSS
-  # color-mix in the token stylesheet + the _theme_vars partial.
+  # Neutral defaults = the cream/terracotta palette of the customer-app design
+  # file. Each workspace overrides a handful of base tokens; the rest derive via
+  # CSS color-mix in the token stylesheet + the _theme_vars partial, so a shop
+  # that picks its own colours still gets the same layout and contrast.
   DEFAULT_THEME = {
-    "primary"      => "#8C4A2F",  # warm brown
-    "primary_2"    => "#E08A3C",  # orange accent
-    "on_primary"   => "#FFF7EE",
-    "surface"      => "#FBF6EF",  # cream
-    "surface_2"    => "#F3E9DD",
-    "ink"          => "#3A2A20",
-    "ink_2"        => "#7A6656",
-    "line"         => "#E7D9C9",
-    "radius"       => "22px",
-    "font_display" => "Fraunces",          # serif for big numerals
-    "font_body"    => "Plus Jakarta Sans"
+    "primary"      => "#C45A38",  # terracotta
+    "primary_2"    => "#E99A14",  # amber accent (tier / highlight)
+    "on_primary"   => "#FFFFFF",
+    "surface"      => "#F6F1E8",  # warm cream page
+    "surface_2"    => "#EFE8DB",
+    "ink"          => "#2E241B",
+    "ink_2"        => "#8A8179",
+    "line"         => "#E8E0D3",
+    "radius"       => "16px",
+    "font_display" => "DM Sans",
+    "font_body"    => "DM Sans"
   }.freeze
 
   FONT_STACKS = {
+    "DM Sans"            => '"DM Sans", ui-sans-serif, system-ui, sans-serif',
     "Fraunces"           => '"Fraunces", Georgia, "Times New Roman", serif',
     "Playfair Display"   => '"Playfair Display", Georgia, serif',
     "Plus Jakarta Sans"  => '"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif',
@@ -349,6 +356,18 @@ class Workspace < ApplicationRecord
     end
     if blob.byte_size.to_i > LOGO_MAX_BYTES
       errors.add(:logo, "tối đa #{(LOGO_MAX_BYTES / 1.megabyte).to_i}MB")
+    end
+  end
+
+  def cover_is_a_reasonable_image
+    return unless cover.attached? && cover.changed_for_autosave?
+    blob = cover.blob
+    return if blob.nil?
+    unless LOGO_TYPES.include?(blob.content_type)
+      errors.add(:cover, "phải là ảnh PNG, JPG, WEBP hoặc GIF")
+    end
+    if blob.byte_size.to_i > LOGO_MAX_BYTES
+      errors.add(:cover, "tối đa #{(LOGO_MAX_BYTES / 1.megabyte).to_i}MB")
     end
   end
 

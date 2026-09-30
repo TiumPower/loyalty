@@ -24,6 +24,20 @@ module Customer
       end
     end
 
+
+    # Confirm step for the screen above.
+    def claim_pos
+      @charge = current_workspace.pos_charges.find_by(token: params[:token].to_s)
+      return invalid! unless @charge
+      @result, err = @charge.claim!(current_member)
+      case err
+      when nil      then render :earn_success
+      when :used    then render :pos_used, status: :unprocessable_entity
+      when :expired then render :pos_expired, status: :unprocessable_entity
+      else invalid!
+      end
+    end
+
     private
 
     # ---- Store check-in (scan the on-site QR) ----
@@ -66,16 +80,25 @@ module Customer
     end
 
     # ---- POS self-scan earn (§6.2) ----
+    # Scanning only READS the bill: the design shows what was found and what it
+    # is worth, and the customer presses "Add points". Claiming straight off the
+    # scan gave no chance to notice the wrong bill had been scanned.
     def handle_pos(token)
       @charge = current_workspace.pos_charges.find_by(token: token)
       return invalid! unless @charge
-      @result, err = @charge.claim!(current_member)
-      case err
-      when nil      then render :earn_success
-      when :used    then render :pos_used, status: :unprocessable_entity
-      when :expired then render :pos_expired, status: :unprocessable_entity
-      else invalid!
-      end
+      return render(:pos_used, status: :unprocessable_entity)    if @charge.state == "claimed"
+      return render(:pos_expired, status: :unprocessable_entity) if @charge.expired?
+      @points = estimated_points(@charge)
+      render :pos_preview
+    end
+
+    # What the bill is worth before it is claimed, using the same rate and tier
+    # multiplier EarnPoints will apply.
+    def estimated_points(charge)
+      prog = current_program
+      base = prog.points_for(charge.amount)
+      mult = (prog.tiers_enabled ? (current_member.tier&.multiplier || 1) : 1).to_f
+      (base * mult).floor
     end
 
     def invalid!

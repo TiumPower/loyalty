@@ -52,7 +52,7 @@ module Merchant
 
     private
 
-    def nav_key = :gamification
+    def nav_key = :stamp_cards
 
     def card_params
       params.require(:stamp_card).permit(:title, :description, :icon, :target_count, :reward_id, :active)

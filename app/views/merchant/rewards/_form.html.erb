@@ -1,4 +1,4 @@
-<%= form_with model: reward, url: url, method: method, data: { controller: "rewardform", turbo_frame: "_top",
+<%= form_with model: reward, url: url, method: method, multipart: true, data: { controller: "rewardform", turbo_frame: "_top",
       rewardform_vnd_label_value: t("merchant.reward_units.vnd_label"),
       rewardform_percent_label_value: t("merchant.reward_units.percent_label"),
       rewardform_item_label_value: t("merchant.reward_units.item_label"),
@@ -26,6 +26,25 @@
           <button type="button" class="l-iconpick-btn" data-action="iconpick#pick" data-emoji="<%= e %>"><%= e %></button>
         <% end %>
       </div>
+    </div>
+  </div>
+
+  <%# Photo of the reward. The customer app leads with it in the catalogue,
+      the wallet and the voucher; without one it falls back to the emoji above. %>
+  <label class="l-label" style="margin-top:12px;"><%= t("merchant.rewards.image") %></label>
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div style="width:74px; height:74px; border-radius:12px; flex:none; overflow:hidden; background:var(--surface-2);
+                display:grid; place-items:center; font-size:30px;">
+      <%= reward_art(reward, size: 160) %>
+    </div>
+    <div style="flex:1; min-width:0;">
+      <%= f.file_field :image, accept: "image/png,image/jpeg,image/webp", class: "l-field", style: "padding:10px 12px; font-size:13px;" %>
+      <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("merchant.rewards.image_hint") %></div>
+      <% if reward.image.attached? %>
+        <label style="display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:13px; color:var(--ink-2); cursor:pointer;">
+          <%= f.check_box :remove_image, { style: "margin:0;" }, "1", "0" %> <%= t("merchant.rewards.image_remove") %>
+        </label>
+      <% end %>
     </div>
   </div>
 

@@ -64,7 +64,7 @@ class StampCardToggleTest < ActionDispatch::IntegrationTest
     assert_equal false, JSON.parse(response.body)["active"]
     assert_not mission.reload.active?
 
-    get "/merchant/gamification"
+    get "/merchant/missions-setup"
     assert_match toggle_merchant_mission_path(mission), response.body
     assert_no_match(/type="checkbox"[^>]*name="mission\[active\]"/, response.body)
   end

@@ -1,19 +1,25 @@
 <% content_for :title, t("customer.wheel.title") %>
 <% content_for :tab, "" %>
 <% segs = @wheel.resolved_segments; n = segs.size; ang = 360.0 / n %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.wheel.title") %></div>
+
+<header class="l-subhead">
+  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.wheel.title") %></div>
+    <div class="s"><%= t("customer.wheel.subtitle") %></div>
+  </div>
+  <div class="sp"><span class="l-pill brand"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span></div>
 </header>
 
 <div class="l-screen" data-controller="wheel"
      data-wheel-spin-url-value="<%= member_wheel_spin_path %>"
      data-wheel-count-value="<%= n %>"
-     data-wheel-cost-value="<%= @wheel.cost_points %>"
-     style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100dvh - 150px);">
+     data-wheel-cost-value="<%= @wheel.cost_points %>">
 
   <div class="l-wheel-wrap">
-    <div class="l-wheel-pointer">▼</div>
+    <span class="l-wheel-pointer"></span>
     <svg class="l-wheel" data-wheel-target="wheel" viewBox="0 0 200 200">
       <% segs.each_with_index do |s, i| %>
         <% a0 = (i * ang - 90) * Math::PI / 180; a1 = ((i + 1) * ang - 90) * Math::PI / 180 %>
@@ -27,15 +33,34 @@
               transform="rotate(<%= ((i + 0.5) * ang).round(1) %>, <%= tx.round(1) %>, <%= ty.round(1) %>)"><%= s['label'] %></text>
       <% end %>
     </svg>
-    <div class="l-wheel-hub"></div>
+    <div class="l-wheel-hub"><%= ui_icon(:star, size: 22, stroke: 2) %></div>
   </div>
 
-  <div data-wheel-target="result" style="min-height:28px; margin:10px 0; font-weight:700; font-size:18px; color:var(--primary-ink);"></div>
+  <div data-wheel-target="result" style="min-height:26px; margin:20px 0 6px; text-align:center; font-weight:700; font-size:17px; color:var(--primary);"></div>
 
-  <button class="l-btn l-btn-primary l-btn-block" data-wheel-target="btn" data-action="wheel#spin" style="max-width:340px; margin:0 auto;">
+  <button class="l-btn l-btn-primary l-btn-block" data-wheel-target="btn" data-action="wheel#spin"
+          style="letter-spacing:.06em; text-transform:uppercase;">
     <%= @free ? t("customer.wheel.spin_free") : t("customer.wheel.spin_cost", n: @wheel.cost_points) %>
   </button>
-  <p data-wheel-target="hint" style="color:var(--ink-2); font-size:13px; margin-top:10px;">
+  <p data-wheel-target="hint" style="color:var(--ink-2); font-size:12.5px; margin-top:10px; text-align:center;">
     <%= @free ? t("customer.wheel.hint_free") : t("customer.wheel.hint_paid", n: @wheel.cost_points) %>
   </p>
+
+  <%# ---- Recent winners ---- %>
+  <% if @recent.any? %>
+    <div class="l-sec"><h3 style="font-size:15px;"><%= t("customer.wheel.recent_winners") %></h3></div>
+    <div class="l-rows">
+      <% @recent.each do |log| %>
+        <div>
+          <span class="ic" style="color:var(--primary);">
+            <%= log.result_kind == "reward" ? ui_icon(:gift, size: 18) : ui_icon(:ticket, size: 18) %>
+          </span>
+          <span style="flex:1; min-width:0; font-size:14px; font-weight:600;">
+            <%= log.result_kind == "reward" ? (log.voucher&.reward&.title || t("customer.wheel.prize_reward")) : t("customer.common.points_plus", n: log.result_value.to_i) %>
+          </span>
+          <span class="tr"><%= t("customer.notifications.ago", time: time_ago_in_words(log.created_at)) %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

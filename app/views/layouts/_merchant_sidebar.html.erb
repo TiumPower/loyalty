@@ -1,8 +1,12 @@
+<%# Six entries, one per flow of the admin design. Which screens sit inside each
+    is decided once, in MerchantHelper#merchant_sections, and the tab strip under
+    every page title reads from the same map — so nothing can fall out of the nav. %>
 <% nav = defined?(nav_key) ? nav_key : nil %>
+<% active_section = merchant_section_for(nav)&.dig(:key) %>
 <aside class="l-side" data-controller="activenav">
   <div class="brand">
     <div class="logo"><%= current_workspace&.logo_initials || "DL" %></div>
-    <div>
+    <div style="min-width:0;">
       <div class="nm"><%= current_workspace&.name || "Quenly" %></div>
       <div class="sub"><%= t("merchant.nav.merchant_tag") %></div>
     </div>
@@ -16,80 +20,37 @@
       </summary>
       <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
         <% accessible_workspaces.each do |ws| %>
-          <%# turbo: false — đổi workspace xong là redirect sang subdomain của
-              workspace đó; Turbo không theo được redirect chéo origin (nó gửi
-              OPTIONS rồi im lặng bỏ), nên bấm vào nút này sẽ không có gì xảy ra. %>
+          <%# turbo: false — switching redirects to that workspace's subdomain, and
+              Turbo cannot follow a cross-origin redirect (it sends OPTIONS then
+              quietly gives up), so the button would appear to do nothing. %>
           <%= button_to ws.name, merchant_switch_workspace_path(ws), class: "l-nav-item",
                 form: { data: { turbo: false } },
                 style: "background:none;border:none;text-align:left;width:100%;#{'font-weight:700;' if ws.id == current_workspace&.id}" %>
         <% end %>
       </div>
     </details>
-  <% else %>
-    <div class="l-ws"><div class="k"><%= t("merchant.nav.workspace") %></div><div class="v"><%= current_workspace&.name %></div></div>
   <% end %>
 
-  <div class="l-navgrp"><%= t("merchant.nav.group_ops") %></div>
+  <%# The counter scanner keeps its own prominent button: it is the most-used
+      action in the shop and does not deserve to be one tab among many. %>
   <%= link_to merchant_scanner_path, class: "l-nav-scan #{'active' if nav == :scanner}" do %>
     <%= ui_icon(:scan, size: 20) %><span><%= t("merchant.nav.scanner") %></span>
   <% end %>
-  <%= link_to merchant_root_path, class: "l-nav-item #{'active' if nav == :dashboard}" do %>
-    <span>▣</span><span><%= t("merchant.nav.dashboard") %></span>
-  <% end %>
-  <% if current_membership&.can_manage? %>
-    <%= link_to merchant_outlets_path, class: "l-nav-item #{'active' if nav == :outlets}" do %>
-      <span>⌂</span><span><%= t("merchant.nav.outlets") %></span>
-    <% end %>
-  <% end %>
-  <%= link_to merchant_customers_path, class: "l-nav-item #{'active' if nav == :customers}" do %>
-    <span>☺</span><span><%= t("merchant.nav.customers") %></span>
-  <% end %>
-  <%= link_to merchant_transactions_path, class: "l-nav-item #{'active' if nav == :transactions}" do %>
-    <span>≡</span><span><%= t("merchant.nav.transactions") %></span>
-  <% end %>
-  <% if current_membership&.can_manage? %>
-  <%= link_to merchant_rewards_path, class: "l-nav-item #{'active' if nav == :rewards}" do %>
-    <span>🎁</span><span><%= t("merchant.nav.rewards") %></span>
-  <% end %>
-  <%= link_to merchant_campaigns_path, class: "l-nav-item #{'active' if nav == :campaigns}" do %>
-    <span>◈</span><span><%= t("merchant.nav.campaigns") %><%= " 🔒" if feature_locked?(:campaigns) %></span>
-  <% end %>
-  <%= link_to merchant_gamification_path, class: "l-nav-item #{'active' if nav == :gamification}" do %>
-    <span>🎯</span><span><%= t("merchant.nav.gamification") %><%= " 🔒" if feature_locked?(:gamification) %></span>
-  <% end %>
-  <%= link_to merchant_feedback_path, class: "l-nav-item #{'active' if nav == :feedback}" do %>
-    <span>⭐</span><span><%= t("merchant.nav.feedback") %></span>
-  <% end %>
-  <%= link_to merchant_broadcasts_path, class: "l-nav-item #{'active' if nav == :broadcasts}" do %>
-    <span>✉</span><span><%= t("merchant.nav.broadcasts") %></span>
-  <% end %>
 
-  <div class="l-navgrp"><%= t("merchant.nav.group_config") %></div>
-  <%= link_to merchant_loyalty_program_path, class: "l-nav-item #{'active' if nav == :program}" do %>
-    <span>◉</span><span><%= t("merchant.nav.program") %></span>
-  <% end %>
-  <%= link_to merchant_automations_path, class: "l-nav-item #{'active' if nav == :automations}" do %>
-    <span>⚡</span><span><%= t("merchant.nav.automations") %></span>
-  <% end %>
-  <%= link_to merchant_appearance_path, class: "l-nav-item #{'active' if nav == :appearance}" do %>
-    <span>◐</span><span><%= t("merchant.nav.appearance") %></span>
-  <% end %>
-  <%= link_to merchant_staff_index_path, class: "l-nav-item #{'active' if nav == :staff}" do %>
-    <span>☻</span><span><%= t("merchant.nav.staff") %></span>
-  <% end %>
-  <%= link_to merchant_domain_path, class: "l-nav-item #{'active' if nav == :domain}" do %>
-    <span>◍</span><span><%= t("merchant.nav.domain") %></span>
-  <% end %>
-  <%= link_to merchant_billing_path, class: "l-nav-item #{'active' if nav == :billing}" do %>
-    <span>◇</span><span><%= t("merchant.nav.billing") %></span>
-  <% end %>
-  <% end %>
+  <nav style="margin-top:6px;">
+    <% merchant_sections.each do |sec| %>
+      <% on = active_section == sec[:key] %>
+      <%= link_to sec[:items].first[2], class: "l-nav-item #{'active' if on}" do %>
+        <%= ui_icon(sec[:icon], size: 20) %><span><%= sec[:label] %></span>
+      <% end %>
+    <% end %>
+  </nav>
 
   <div class="foot">
     <%= link_to merchant_account_path, style: "display:flex; align-items:center; gap:10px; flex:1; min-width:0; text-decoration:none; color:inherit; border-radius:10px; padding:4px 6px; #{'background:rgba(255,255,255,.1);' if nav == :account}", title: t("merchant.nav.account") do %>
       <div class="av"><%= current_user&.initials %></div>
       <div style="min-width:0;">
-        <div style="font-size:13px; font-weight:600;"><%= current_user&.name %></div>
+        <div style="font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_user&.name %></div>
         <div style="font-size:11px; opacity:.6;"><%= current_membership&.label %></div>
       </div>
     <% end %>

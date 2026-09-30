@@ -27,11 +27,17 @@ class GamificationRewardGuideTest < ActionDispatch::IntegrationTest
 
   test "with rewards the guide explains the picker for stamps and badges" do
     create_reward("Cà phê")
-    get "/merchant/gamification"
+
+    # Stamp cards and badges are separate screens; each explains its own picker.
+    get "/merchant/stamp-cards"
     assert_response :success
     assert_match I18n.t("merchant.gami.reward_source_stamp"), response.body
-    assert_match I18n.t("merchant.gami.reward_source_badge"), response.body
     assert_match I18n.t("merchant.gami.reward_source_manage"), response.body
+    assert_match I18n.t("merchant.gami.reward_opt", title: "Cà phê"), response.body
+
+    get "/merchant/games-badges"
+    assert_response :success
+    assert_match I18n.t("merchant.gami.reward_source_badge"), response.body
     assert_match I18n.t("merchant.gami.reward_opt", title: "Cà phê"), response.body
   end
 

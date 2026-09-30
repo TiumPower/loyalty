@@ -8,6 +8,12 @@ module Merchant
     # got past validation entirely and came back as a 500 from Postgres. Now the
     # whole grid is applied in one transaction and rolled back as a unit, so the
     # merchant never ends up with half their tiers changed.
+    # The design gives tiers a screen of their own, beside a preview of the card
+    # a member will actually see.
+    def show
+      @tiers = current_workspace.tiers.ordered.to_a
+    end
+
     def update
       rows   = params.fetch(:tiers, {})
       tiers  = current_workspace.tiers.ordered.to_a
@@ -37,7 +43,7 @@ module Merchant
 
     private
 
-    def nav_key = :program
+    def nav_key = :tiers
 
     # One perk per line (newline-separated).
     def parse_benefits(raw) = raw.to_s.split(/[\r\n]+/).map(&:strip).reject(&:blank?)

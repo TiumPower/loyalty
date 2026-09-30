@@ -2,7 +2,14 @@ module Merchant
   class GamificationController < BaseController
     before_action :require_manager!, only: [:update_wheel]
 
-    def show
+    # One loader for all four screens; @section decides which panel renders.
+    def show    = load_and_render("stamps")
+    def stamps  = load_and_render("stamps")
+    def missions = load_and_render("missions")
+    def games   = load_and_render("games")
+
+    private def load_and_render(section)
+      @section = section
       return render_locked_feature(:gamification) if feature_locked?(:gamification)
       @program     = current_program
       @stamp_cards = current_workspace.stamp_cards.ordered.to_a
@@ -14,7 +21,9 @@ module Merchant
                                         @wheel.segments.to_a.map { |sg| sg["reward_id"] })
       @new_stamp_card = StampCard.new(target_count: 9)
       @new_mission    = Mission.new(period: "daily", reward_points: 20, goal: 1)
+      render :show
     end
+    public
 
     def update_wheel
       wheel = current_workspace.spin_wheel || current_workspace.build_spin_wheel
@@ -46,6 +55,9 @@ module Merchant
 
     private
 
-    def nav_key = :gamification
+    def nav_key
+      { "stamps" => :stamp_cards, "missions" => :missions_setup, "games" => :games }
+        .fetch(@section.to_s, :stamp_cards)
+    end
   end
 end

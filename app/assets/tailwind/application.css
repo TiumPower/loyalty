@@ -185,36 +185,51 @@ body.marketing { background: url("grain.png") var(--surface); }
 }
 
 /* ================================================================
-   DYNAMIC LOYALTY — neutral design tokens (defaults = "Cozy Cafe").
+   DYNAMIC LOYALTY — neutral design tokens (defaults = the buyer design file).
    Every workspace overrides a few base tokens via the inline
    <style> block from layouts/_theme_vars (rendered inside <body>),
    and the rest derive here with color-mix so layouts never break.
    ================================================================ */
 :root {
-  --primary:      #8C4A2F;
-  --primary-2:    #E08A3C;
-  --on-primary:   #FFF7EE;
-  --surface:      #FBF6EF;
-  --surface-2:    #F3E9DD;
-  --ink:          #3A2A20;
-  --ink-2:        #7A6656;
-  --line:         #E7D9C9;
-  --radius:       22px;
+  --primary:      #C45A38;
+  --primary-2:    #E99A14;
+  --on-primary:   #FFFFFF;
+  --surface:      #F6F1E8;
+  --surface-2:    #EFE8DB;
+  --ink:          #2E241B;
+  --ink-2:        #8A8179;
+  --line:         #E8E0D3;
+  --radius:       16px;
 
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body:    "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* derived */
   --primary-soft: color-mix(in srgb, var(--primary) 12%, #fff);
   --primary-ink:  color-mix(in srgb, var(--primary) 80%, #000);
+  /* Card surface — a warm white pulled from the page colour, so cards sit on
+     any workspace's background without going cold grey. */
+  --card:         color-mix(in srgb, var(--surface) 20%, #fff);
+  /* Hairline between rows inside one card: lighter than the card's own border. */
+  --line-soft:    color-mix(in srgb, var(--ink) 8%, var(--surface));
   /* Button colour — defaults to brand; per-app layouts (e.g. Super Admin)
      override it to their leftbar colour. Single var so color-mix stays valid. */
   --btn-primary:     var(--primary);
   --btn-primary-ink: var(--on-primary);
+  --shadow-sm:    0 1px 2px rgba(40,24,12,.04);
+  --shadow-card:  0 1px 2px rgba(40,24,12,.04), 0 6px 18px rgba(40,24,12,.05);
   --shadow:       0 1px 2px rgba(40,24,12,.05), 0 10px 30px rgba(40,24,12,.08);
-  --shadow-lg:    0 30px 70px rgba(40,24,12,.18);
-  --good:         #3F7A57;
-  --warn:         #B4402F;
+  --shadow-lg:    0 24px 60px rgba(40,24,12,.16);
+  /* Status colours are semantic, not brand — they stay put across workspaces so
+     "earned", "expired" and "careful" always read the same way. */
+  --good:         #0F9D6B;
+  --good-soft:    #D9F7E8;
+  --warn:         #C0392B;
+  --warn-soft:    #FBE7E1;
+  --amber:        #B0780C;
+  --amber-soft:   #FFF4DC;
+  /* Camera / result screens that invert to a dark chrome. */
+  --scanner-bg:   color-mix(in srgb, var(--ink) 92%, #000);
 }
 
 body {
@@ -227,6 +242,11 @@ body {
 /* ---- typography helpers ---- */
 .l-display { font-family: var(--font-display); letter-spacing: -.01em; }
 .l-num     { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+/* The customer app sets figures in a bold sans rather than the serif the
+   dashboards use, so it tightens and weights them; scoped so the merchant and
+   admin screens keep the look they had. */
+.pwa-app .l-display { font-weight:700; letter-spacing:-.018em; }
+.pwa-app .l-num     { font-weight:700; letter-spacing:-.025em; }
 .l-eyebrow { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; }
 .l-mono    { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
@@ -305,79 +325,472 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-datefield-input { position:relative; width:100%; border:none; background:transparent; color:var(--ink); border-radius:14px; outline:none; }
 .l-label { display:block; font-size:13px; font-weight:600; color: var(--ink-2); margin-bottom:6px; }
 
+/* Plain card. The customer app restyles it below (scoped to .pwa-app); this is
+   the version the merchant screens use. */
+.l-tile { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow: var(--shadow); }
+
 /* =====================================================================
-   MEMBER — mobile-first PWA
+   MEMBER — customer PWA.
+   Component set mirrors the buyer design file: a warm cream page, warm-white
+   cards on a single radius, one accent colour and a floating tab bar.
+   Nothing here hard-codes a brand colour — everything derives from the
+   workspace tokens, so a shop that sets its own primary/surface/ink gets the
+   same layout in its own palette.
    ===================================================================== */
 .l-phone { min-height:100dvh; max-width:480px; margin:0 auto; background: var(--surface);
   position:relative; display:flex; flex-direction:column; }
-.l-screen { flex:1; padding:18px 18px calc(96px + env(safe-area-inset-bottom)); }
-.l-appbar { display:flex; align-items:center; gap:12px; padding:16px 18px 6px; }
-.l-appbar .avatar { width:44px; height:44px; border-radius:14px; background: var(--primary);
-  color: var(--on-primary); display:grid; place-items:center; font-weight:700; font-family:var(--font-display); }
-.l-appbar .hi { font-size:13px; color: var(--ink-2); }
-.l-appbar .nm { font-weight:700; font-size:16px; }
+.l-screen { flex:1; padding:4px 20px calc(112px + env(safe-area-inset-bottom)); }
+/* Screens with no tab bar (scanner, auth, success) do not need the tall gutter. */
+.l-screen.no-tabs { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+/* Full-bleed screens manage their own side padding (e.g. a cover image). */
+.l-screen.flush { padding-left:0; padding-right:0; }
 
-/* membership card — premium bank-card feel, tinted by tier gradient */
-.l-card { border-radius: var(--radius); padding:22px; color:#fff; position:relative; overflow:hidden;
-  box-shadow: var(--shadow-lg); background:
-    linear-gradient(135deg, var(--tier-from, #B08D57) 0%, var(--tier-to, #7A5C3A) 100%); }
-.l-card::after { content:""; position:absolute; inset:0; background:
-  radial-gradient(120% 80% at 90% -10%, rgba(255,255,255,.25), transparent 60%); pointer-events:none; }
-.l-card .k { font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.85; }
-.l-card .pts { font-family:var(--font-display); font-size:46px; line-height:1; margin:6px 0 2px; font-variant-numeric:tabular-nums; }
-.l-card .tier-badge { position:absolute; top:16px; right:16px; display:inline-flex; align-items:center; gap:9px;
-  color:#fff; font-weight:800; font-size:14px; letter-spacing:.02em; padding:9px 18px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.4); box-shadow:0 5px 16px rgba(0,0,0,.22); text-shadow:0 1px 2px rgba(0,0,0,.28); }
-.l-card .tier-badge .medal { font-size:17px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
-.l-card .name { margin-top:16px; font-weight:600; letter-spacing:.04em; opacity:.95; }
-.l-card .meta { font-size:12px; opacity:.8; margin-top:2px; }
+/* ---------- page headers ---------- */
+/* Tab-root screens: big title + one line of context, actions on the right. */
+.l-head { display:flex; align-items:flex-start; gap:12px; padding:18px 20px 14px; }
+.l-head .t { font-size:24px; font-weight:700; letter-spacing:-.022em; line-height:1.16; }
+.l-head .s { font-size:14px; color:var(--ink-2); margin-top:3px; line-height:1.35; }
+.l-head .sp { margin-left:auto; flex:none; display:flex; align-items:center; gap:8px; }
 
-.l-quick { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px; }
-.l-quick a { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:6px; padding:13px 4px;
-  border-radius:16px; background:#fff; border:1px solid var(--line); text-decoration:none; color:var(--ink);
-  font-size:11.5px; font-weight:600; line-height:1.15; text-align:center; min-width:0; box-shadow: var(--shadow); }
-.l-quick .ic { width:28px; height:28px; display:grid; place-items:center; color: var(--primary); }
+/* Pushed screens: circular back button, then title (+ optional subtitle). */
+.l-subhead { display:flex; align-items:center; gap:12px; padding:16px 20px 12px; }
+.l-subhead .t { font-size:20px; font-weight:700; letter-spacing:-.018em; line-height:1.2; }
+.l-subhead .s { font-size:13px; color:var(--ink-2); margin-top:2px; }
+.l-subhead .sp { margin-left:auto; flex:none; display:flex; align-items:center; gap:8px; }
 
-.l-section-h { display:flex; align-items:center; justify-content:space-between; margin:22px 2px 10px; }
-.l-section-h h3 { font-size:16px; font-weight:700; }
-.l-section-h a { font-size:13px; color: var(--primary-ink); font-weight:600; text-decoration:none; }
+/* Circular icon button — back arrow, bell, share, close. */
+.l-iconbtn { position:relative; width:40px; height:40px; border-radius:50%; flex:none;
+  display:grid; place-items:center; background: var(--card); border:1px solid var(--line);
+  color: var(--ink); text-decoration:none; box-shadow: var(--shadow-sm); cursor:pointer;
+  transition: border-color .15s, color .15s, background .15s; }
+.l-iconbtn:hover { border-color: color-mix(in srgb, var(--primary) 42%, var(--line)); color: var(--primary); }
+.l-iconbtn.sm { width:34px; height:34px; }
+.l-iconbtn .num { position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; padding:0 5px;
+  border-radius:999px; background: var(--warn); color:#fff; font-size:10.5px; font-weight:700;
+  line-height:18px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.l-iconbtn .dot { position:absolute; top:8px; right:9px; width:8px; height:8px; border-radius:50%;
+  background: var(--warn); border:1.5px solid var(--card); }
 
-.l-tile { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow: var(--shadow); }
+/* ---------- cards ---------- */
+.pwa-app .l-tile { background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
+  padding:16px; box-shadow: var(--shadow-card); }
+.pwa-app .l-tile.flat { box-shadow:none; }
+.pwa-app .l-tile.pad-0 { padding:0; overflow:hidden; }
+.pwa-app a.l-tile, .pwa-app button.l-tile { display:block; width:100%; text-align:left; color:inherit; text-decoration:none; }
+.pwa-app a.l-tile:hover, .pwa-app button.l-tile:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
 
-/* offer carousel — full-bleed so cards scroll to the screen edge with a peek */
-.l-carousel { display:flex; gap:12px; overflow-x:auto; padding:0 18px 6px; margin:0 -18px;
-  scroll-snap-type:x mandatory; scroll-padding-left:18px; -webkit-overflow-scrolling:touch; }
+/* Section heading: title left, "see all" on the right. */
+.l-sec { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:22px 2px 10px; }
+.l-sec h3 { font-size:17px; font-weight:700; letter-spacing:-.015em; }
+.l-sec .more { font-size:13px; font-weight:600; color: var(--primary); text-decoration:none; }
+.l-sec .more:hover { text-decoration:underline; }
+/* Uppercase group label above a list (DAILY / WEEKLY / COMPLETED). */
+.l-grouplabel { font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color: var(--ink-2); margin:20px 2px 8px; }
+
+/* ---------- pills ---------- */
+.l-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px;
+  font-size:12px; font-weight:600; line-height:1.4; white-space:nowrap;
+  background: var(--surface-2); color: var(--ink-2); text-decoration:none; }
+.l-pill.brand { background: var(--primary-soft); color: var(--primary-ink); }
+.l-pill.solid { background: var(--primary); color: var(--on-primary); }
+.l-pill.good { background: var(--good-soft);  color: var(--good); }
+.l-pill.warn { background: var(--warn-soft);  color: var(--warn); }
+.l-pill.amber { background: var(--amber-soft); color: var(--amber); }
+.l-pill.dark { background: var(--ink); color: var(--surface); }
+.l-pill.gold { background: linear-gradient(135deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 70%, #000));
+  color:#fff; font-weight:700; box-shadow:0 2px 8px color-mix(in srgb, var(--primary-2) 40%, transparent); }
+.l-pill.lg { padding:7px 14px; font-size:13px; }
+/* Leading status dot (Available / Used / Expired). */
+.l-pill .bead { width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
+a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
+
+/* Small uppercase label above a value. */
+.pwa-app .l-eyebrow { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-2); font-weight:600; }
+
+/* ---------- buttons ---------- */
+.pwa-app .l-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 20px; border-radius:14px; font-weight:700; font-size:15px; cursor:pointer;
+  border:1.5px solid transparent; text-decoration:none; transition:.15s; font-family:inherit; }
+.pwa-app .l-btn-primary { background: var(--btn-primary); color: var(--btn-primary-ink);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--btn-primary) 26%, transparent); }
+.pwa-app .l-btn-primary:hover { background: color-mix(in srgb, var(--btn-primary) 88%, #000);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--btn-primary) 34%, transparent); }
+.pwa-app .l-btn-primary:active { transform: translateY(1px); box-shadow: 0 3px 10px color-mix(in srgb, var(--btn-primary) 28%, transparent); }
+/* Secondary action under a primary one: outlined in the brand colour. */
+.pwa-app .l-btn-outline { background: var(--card); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 42%, transparent); }
+.pwa-app .l-btn-outline:hover { background: var(--primary-soft); border-color: var(--primary); }
+.pwa-app .l-btn-ghost { background: var(--card); color: var(--ink); border-color: var(--line); }
+.pwa-app .l-btn-ghost:hover { background: var(--surface-2); }
+.pwa-app .l-btn-soft { background: var(--primary-soft); color: var(--primary-ink); }
+.pwa-app .l-btn-soft:hover { background: color-mix(in srgb, var(--primary) 20%, #fff); }
+.pwa-app .l-btn-dark { background: var(--ink); color: var(--surface); }
+.pwa-app .l-btn-dark:hover { background: color-mix(in srgb, var(--ink) 86%, #000); }
+.pwa-app .l-btn-block { width:100%; }
+.pwa-app .l-btn-sm { padding:9px 15px; font-size:13px; border-radius:11px; }
+.pwa-app .l-btn-xs { padding:6px 12px; font-size:12px; border-radius:9px; }
+.pwa-app .l-btn:disabled, .pwa-app .l-btn[disabled] { background: var(--surface-2); color: var(--ink-2);
+  border-color:transparent; box-shadow:none; cursor:not-allowed; }
+.pwa-app .l-btn svg { flex:none; }
+
+/* Segmented control — Catalog / My Vouchers, Daily / Weekly / One-time. */
+.l-seg { display:flex; gap:6px; align-items:center; }
+.l-seg > * { flex:1; }
+.l-seg button, .l-seg a { display:block; width:100%; text-align:center; border:1px solid transparent;
+  background:transparent; padding:9px 10px; border-radius:999px; font-size:13.5px; font-weight:600;
+  color: var(--ink-2); cursor:pointer; text-decoration:none; font-family:inherit; transition:.15s; }
+.l-seg button:hover, .l-seg a:hover { color: var(--ink); }
+.l-seg button.active, .l-seg a.active { background: var(--primary); color: var(--on-primary); }
+/* Variant sitting on a white card: inactive tabs get a card background. */
+.l-seg.boxed { background: var(--card); border:1px solid var(--line); border-radius:999px; padding:5px; gap:4px; }
+.l-seg.boxed button.active, .l-seg.boxed a.active { box-shadow:0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent); }
+/* Chips that are not full width (auto-sized pills). The base rule stretches
+   each control to the track; here they size to their label instead, so the
+   width:100% above has to be undone or every chip fills the row. */
+.l-seg.auto { flex-wrap:wrap; }
+.l-seg.auto > * { flex:0 0 auto; }
+.l-seg.auto button, .l-seg.auto a { width:auto; padding:8px 16px; }
+.l-seg.auto button:not(.active), .l-seg.auto a:not(.active) { background: var(--surface-2); }
+
+/* ---------- list rows ---------- */
+/* A tappable row: tinted icon square, title + meta, trailing value or chevron. */
+.l-row { display:flex; align-items:center; gap:12px; background: var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:13px 14px; text-decoration:none; color: var(--ink);
+  box-shadow: var(--shadow-sm); transition: border-color .15s, box-shadow .15s; }
+a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+.l-row + .l-row { margin-top:10px; }
+.l-row .ic { width:40px; height:40px; border-radius:12px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); font-size:19px; }
+.l-row .ic.muted { background: var(--surface-2); color: var(--ink-2); }
+.l-row .ic.good { background: var(--good-soft);  color: var(--good); }
+.l-row .ic.round { border-radius:50%; }
+.l-row .bd { flex:1; min-width:0; }
+.l-row .tt { font-weight:700; font-size:14.5px; line-height:1.3; }
+.l-row .mt { font-size:12.5px; color: var(--ink-2); margin-top:2px; line-height:1.35; }
+.l-row .tr { flex:none; margin-left:auto; text-align:right; color: var(--ink-2); display:flex; align-items:center; gap:8px; }
+.l-row.dim { opacity:.6; }
+
+/* Settings-style rows stacked inside one card, separated by hairlines. */
+.l-rows { background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-card); overflow:hidden; }
+.l-rows > * { display:flex; align-items:center; gap:12px; padding:14px 16px; text-decoration:none;
+  color: var(--ink); border-bottom:1px solid var(--line-soft); background:transparent;
+  width:100%; border-left:none; border-right:none; border-top:none; font-family:inherit; font-size:15px; text-align:left; }
+.l-rows > *:last-child { border-bottom:none; }
+.l-rows a:hover, .l-rows button:hover { background: var(--surface-2); }
+.l-rows .ic { color: var(--ink-2); flex:none; display:grid; place-items:center; }
+.l-rows .tr { margin-left:auto; display:flex; align-items:center; gap:8px; color: var(--ink-2); font-size:13.5px; flex:none; }
+
+/* Three numbers divided by hairlines (profile / referral). */
+.l-stats { display:flex; align-items:stretch; background: var(--card); border:1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-card); padding:16px 8px; }
+.l-stats > div { flex:1; text-align:center; min-width:0; }
+.l-stats > div + div { border-left:1px solid var(--line-soft); }
+.l-stats .v { font-size:21px; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.l-stats .k { font-size:11.5px; color: var(--ink-2); margin-top:3px; }
+
+/* ---------- progress ---------- */
+.l-bar { height:7px; border-radius:999px; background: var(--surface-2); overflow:hidden; }
+.l-bar > span { display:block; height:100%; border-radius:999px; background: var(--primary); transition: width .4s ease; }
+.l-bar.thick { height:9px; }
+.l-bar.on-dark { background: rgba(255,255,255,.28); }
+.l-bar.on-dark > span { background:#fff; }
+
+/* ---------- balance card ---------- */
+/* The points figure, as a quiet card rather than a coloured slab — the design
+   keeps colour for actions and lets the number carry the weight. */
+.l-balance { background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
+  padding:18px; box-shadow: var(--shadow-card); }
+.l-balance .v { font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1.05;
+  font-variant-numeric:tabular-nums; margin-top:6px; }
+.l-balance .v small { font-size:.62em; font-weight:700; letter-spacing:0; margin-left:2px; }
+.l-balance .link { display:inline-flex; align-items:center; gap:5px; margin-top:12px;
+  font-size:13.5px; font-weight:700; color: var(--primary); text-decoration:none; }
+
+/* ---------- home: shop card ---------- */
+.l-shopcard { background: var(--card); border:1px solid var(--line); border-radius: var(--radius);
+  padding:12px; box-shadow: var(--shadow-card); }
+.l-shopcard .cover { border-radius:12px; overflow:hidden; aspect-ratio:16/9; background: var(--surface-2);
+  display:grid; place-items:center; }
+.l-shopcard .cover img { width:100%; height:100%; object-fit:cover; display:block; }
+.l-shopcard .brandmark { width:40px; height:40px; border-radius:12px; flex:none; display:grid; place-items:center;
+  background: var(--primary); color: var(--on-primary); font-weight:700; font-size:14px; overflow:hidden; }
+.l-shopcard .brandmark img { width:100%; height:100%; object-fit:cover; }
+
+/* ---------- reward / voucher rows with a photo ---------- */
+.l-vrow { display:flex; align-items:center; gap:12px; background: var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:10px; text-decoration:none; color: var(--ink); box-shadow: var(--shadow-sm);
+  transition: border-color .15s; }
+a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+.l-vrow + .l-vrow { margin-top:10px; }
+.l-vrow .thumb { width:56px; height:56px; border-radius:11px; flex:none; overflow:hidden;
+  background: var(--primary-soft); display:grid; place-items:center; font-size:24px; }
+.l-vrow .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.l-vrow .bd { flex:1; min-width:0; }
+.l-vrow .tt { font-weight:700; font-size:14.5px; line-height:1.3; }
+.l-vrow .mt { font-size:12px; color: var(--ink-2); margin-top:3px; }
+.l-vrow .code { font-size:11.5px; font-weight:700; color: var(--primary); margin-top:3px; letter-spacing:.04em; }
+.l-vrow.dim { opacity:.62; }
+
+/* Wide reward image on a detail screen. Without a photo the same box is mostly
+   empty tint, so the emoji fallback gets a shallower band instead. */
+.l-hero { aspect-ratio:16/10; border-radius: var(--radius); overflow:hidden; background: var(--primary-soft);
+  display:grid; place-items:center; font-size:56px; }
+.l-hero.no-art { aspect-ratio:16/5; font-size:40px; }
+.l-hero img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* ---------- horizontal carousel ---------- */
+.l-carousel { display:flex; gap:12px; overflow-x:auto; padding:2px 20px 8px; margin:0 -20px;
+  scroll-snap-type:x mandatory; scroll-padding-left:20px; -webkit-overflow-scrolling:touch; }
+.l-carousel > * { scroll-snap-align:start; }
 .l-carousel::-webkit-scrollbar { display:none; }
-.l-offer { flex:0 0 calc(50% - 6px); scroll-snap-align:start; border-radius:18px; padding:16px; color:#fff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%); box-shadow: var(--shadow); min-height:132px; }
-.l-offer .big { font-family:var(--font-display); font-size:25px; line-height:1.1; margin:2px 0; }
+/* A reward tile inside the carousel: photo on top, title, cost, redeem button. */
+.l-offer { flex:0 0 152px; background: var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:10px; box-shadow: var(--shadow-sm); text-decoration:none; color: var(--ink);
+  display:flex; flex-direction:column; gap:8px; transition: border-color .15s; }
+.l-offer:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+.l-offer .ph { aspect-ratio:4/3; border-radius:10px; overflow:hidden; background: var(--primary-soft);
+  display:grid; place-items:center; font-size:30px; }
+.l-offer .ph img { width:100%; height:100%; object-fit:cover; display:block; }
+.l-offer .tt { font-size:13.5px; font-weight:700; line-height:1.3; }
+.l-offer.dim { opacity:.6; }
+.l-dots { display:flex; gap:6px; justify-content:center; margin-top:10px; }
+.l-dot { width:6px; height:6px; border-radius:50%; background: var(--line); border:none; padding:0; cursor:pointer; transition:.2s; }
+.l-dot.active { background: var(--primary); width:16px; border-radius:999px; }
 
-/* carousel dots */
-.l-dots { display:flex; gap:6px; justify-content:center; margin-top:12px; }
-.l-dot { width:7px; height:7px; border-radius:50%; background:var(--line); border:none; padding:0; cursor:pointer; transition:.2s; }
-.l-dot.active { background:var(--primary); width:18px; border-radius:999px; }
+/* ---------- quick actions grid ---------- */
+.l-quick { display:grid; gap:10px; }
+.l-quick a { display:flex; flex-direction:column; align-items:center; gap:7px; padding:14px 5px;
+  border-radius:14px; background: var(--card); border:1px solid var(--line); text-decoration:none;
+  color: var(--ink); font-size:11.5px; font-weight:600; line-height:1.2; text-align:center;
+  min-width:0; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .12s; }
+.l-quick a:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--line)); transform: translateY(-1px); }
+.l-quick .ic { width:38px; height:38px; border-radius:12px; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); }
 
-/* checklist */
-.l-check { display:flex; align-items:center; gap:12px; padding:12px 4px; border-bottom:1px solid var(--line); }
-.l-check:last-child { border-bottom:none; }
-.l-check .box { width:22px; height:22px; border-radius:7px; border:2px solid var(--line); flex:none; }
-.l-check.done .box { background: var(--primary); border-color: var(--primary); }
+/* ---------- empty state ---------- */
+.l-empty { text-align:center; padding:44px 24px; background: var(--card); border:1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-card); }
+.l-empty .ic { width:64px; height:64px; margin:0 auto 14px; border-radius:50%; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); font-size:28px; }
+.l-empty .tt { font-weight:700; font-size:16px; }
+.l-empty .mt { color: var(--ink-2); font-size:13.5px; margin-top:5px; line-height:1.5; }
 
-/* bottom tab bar — full-width fixed bar, items centred inside */
-.l-tabbar { position:fixed; bottom:0; left:0; right:0; width:100%; z-index:50;
-  background:#fff; border-top:1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom); box-shadow:0 -2px 12px rgba(40,24,12,.05); }
-.l-tabbar-inner { max-width:480px; margin:0 auto; display:grid; grid-template-columns:repeat(5,1fr);
-  align-items:center; padding:8px 10px; }
-.l-tabbar a { display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;
-  color: var(--ink-2); text-decoration:none; font-size:10.5px; font-weight:600; }
+/* ---------- centred result screens (earned / redeemed / unlocked) ---------- */
+.l-result { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:22px; }
+.l-result .halo { width:96px; height:96px; border-radius:50%; display:grid; place-items:center;
+  background: var(--good-soft); color: var(--good); margin-bottom:16px;
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--good) 8%, transparent); }
+.l-result .halo.brand { background: var(--primary-soft); color: var(--primary);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--primary) 7%, transparent); }
+.l-result .halo.warn { background: var(--warn-soft); color: var(--warn);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--warn) 7%, transparent); }
+.l-result h1 { font-size:24px; font-weight:700; letter-spacing:-.022em; line-height:1.2; margin-top:12px; }
+.l-result p { color: var(--ink-2); font-size:14px; line-height:1.5; margin-top:8px; max-width:300px; }
+
+/* A key/value receipt block. */
+.l-kv { display:flex; align-items:baseline; justify-content:space-between; gap:14px; padding:9px 0;
+  border-bottom:1px solid var(--line-soft); font-size:13.5px; }
+.l-kv:last-child { border-bottom:none; }
+.l-kv .k { color: var(--ink-2); flex:none; }
+.l-kv .v { font-weight:700; text-align:right; min-width:0; overflow-wrap:anywhere; }
+/* Before → after balance. */
+.l-delta { display:flex; align-items:center; gap:12px; background: var(--primary-soft); border-radius:12px; padding:12px 14px; }
+.l-delta > div { flex:1; min-width:0; }
+.l-delta .k { font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color: var(--ink-2); font-weight:600; }
+.l-delta .v { font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; margin-top:2px; }
+.l-delta .v.hi { color: var(--primary); }
+
+/* ---------- notes / callouts ---------- */
+.l-note { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:12px;
+  font-size:12.5px; line-height:1.5; background: var(--surface-2); color: var(--ink-2); }
+.l-note svg, .l-note .ic { flex:none; margin-top:1px; }
+.l-note strong { color: var(--ink); }
+.l-note.amber { background: var(--amber-soft); color: var(--amber); }
+.l-note.amber strong { color: var(--amber); }
+.l-note.warn { background: var(--warn-soft);  color: var(--warn); }
+.l-note.warn strong { color: var(--warn); }
+.l-note.brand { background: var(--primary-soft); color: var(--primary-ink); }
+.l-note.brand strong { color: var(--primary-ink); }
+
+/* ---------- QR panel ---------- */
+/* The code a member shows across the counter. Notches on the sides make it read
+   as a detachable stub, like the voucher it stands for. */
+.l-qrpanel { position:relative; background: var(--card); border:1px solid var(--line);
+  border-radius: var(--radius); padding:22px; text-align:center; box-shadow: var(--shadow-card); }
+.l-qrpanel .frame { display:inline-block; padding:14px; background:#fff; border-radius:14px;
+  border:1px solid var(--line-soft); line-height:0; }
+.l-qrpanel .frame svg { display:block; }
+.l-qrpanel .notch { position:absolute; top:50%; width:18px; height:18px; border-radius:50%;
+  background: var(--surface); border:1px solid var(--line); transform:translateY(-50%); }
+.l-qrpanel .notch.l { left:-10px; border-right-color:transparent; }
+.l-qrpanel .notch.r { right:-10px; border-left-color:transparent; }
+/* The fallback code a cashier types in. Sized to the screen rather than fixed:
+   a longer token than the usual ten digits would otherwise run off the card. */
+.l-qrpanel .staffcode { font-size:clamp(19px, 6.4vw, 27px); font-weight:700; letter-spacing:.12em;
+  font-variant-numeric:tabular-nums; margin-top:5px; overflow-wrap:anywhere; }
+
+/* Countdown chip next to a code that rotates. */
+.l-countdown[hidden] { display:none; }
+.l-countdown { display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:999px;
+  background: var(--surface-2); color: var(--ink-2); font-size:12.5px; font-weight:600; }
+.l-countdown strong { color: var(--ink); font-variant-numeric:tabular-nums; }
+
+/* ---------- dark scanner screens ---------- */
+.l-dark { background: var(--scanner-bg); color:#fff; }
+.l-darkbar { display:flex; align-items:center; gap:12px; padding:16px 20px;
+  background: var(--scanner-bg); color:#fff; }
+.l-darkbar .t { font-size:16px; font-weight:700; flex:1; text-align:center; }
+.l-darkbar .l-iconbtn { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.2); color:#fff; }
+.l-darkbar .l-iconbtn:hover { background: rgba(255,255,255,.24); color:#fff; }
+.l-viewfinder { position:relative; background:#0B0B0D; display:grid; place-items:center; overflow:hidden;
+  min-height:330px; color:#fff; text-align:center; }
+.l-viewfinder video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.l-viewfinder .inner { position:relative; z-index:2; padding:28px 30px; max-width:300px; }
+/* Four corner brackets rather than a full box — the design's framing device.
+   They belong around a live camera image, so while the "turn on camera" prompt
+   is still up they would just box in the copy: fade them until the controller
+   hides that overlay. */
+.l-reticle { position:absolute; inset:14% 14%; z-index:1; pointer-events:none;
+  opacity:0; transition:opacity .2s; }
+.l-viewfinder:has([data-qrnav-target="overlay"][style*="display: none"]) .l-reticle { opacity:1; }
+.l-reticle i { position:absolute; width:30px; height:30px; border:3px solid rgba(255,255,255,.9); }
+.l-reticle i:nth-child(1) { top:0; left:0; border-right:none; border-bottom:none; border-radius:6px 0 0 0; }
+.l-reticle i:nth-child(2) { top:0; right:0; border-left:none;  border-bottom:none; border-radius:0 6px 0 0; }
+.l-reticle i:nth-child(3) { bottom:0; left:0; border-right:none; border-top:none; border-radius:0 0 0 6px; }
+.l-reticle i:nth-child(4) { bottom:0; right:0; border-left:none; border-top:none; border-radius:0 0 6px 0; }
+/* Floating "recognised outlet" toast over the camera. */
+.l-recognised[hidden] { display:none; }
+.l-recognised { position:absolute; left:50%; bottom:22px; transform:translateX(-50%); z-index:3;
+  display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:14px;
+  background: rgba(20,16,12,.82); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  color:#fff; text-align:left; white-space:nowrap; }
+
+/* ---------- stamp card ---------- */
+.l-stamp-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:14px; }
+.l-stamp-dot { aspect-ratio:1; border-radius:50%; display:grid; place-items:center;
+  border:1.5px solid var(--line); background: var(--surface-2); color: var(--ink-2);
+  font-weight:700; font-size:14px; }
+/* A collected stamp is history — keep it soft so the eye lands on the empty
+   slots, i.e. what the customer still has to do. Behind @supports so a browser
+   without color-mix keeps a solid dot instead of a primary tick on primary. */
+.l-stamp-dot.filled { background: var(--primary); border-color: var(--primary); color: var(--on-primary);
+  animation: stampPop .3s ease-out; }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+.l-stamp-dot.filled { background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+    border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    color: var(--primary); }
+}
+.l-stamp-dot.reward { border-style:dashed; border-color: var(--primary); color: var(--primary); background: var(--card); }
+@keyframes stampPop { 0%{ transform:scale(.4); } 70%{ transform:scale(1.15); } 100%{ transform:scale(1); } }
+
+/* ---------- missions ---------- */
+.l-mission { background: var(--card); border:1px solid var(--line); border-radius:14px; padding:14px;
+  box-shadow: var(--shadow-sm); }
+.l-mission + .l-mission { margin-top:10px; }
+.l-mission .top { display:flex; gap:12px; align-items:flex-start; }
+.l-mission .ic { width:36px; height:36px; border-radius:11px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); font-size:17px; }
+.l-mission .shop { font-size:11.5px; font-weight:700; color: var(--primary); line-height:1.3; }
+.l-mission .kind { font-size:11.5px; color: var(--ink-2); }
+.l-mission .tt { font-weight:700; font-size:15px; margin-top:10px; letter-spacing:-.01em; }
+.l-mission .ds { font-size:13px; color: var(--ink-2); margin-top:3px; line-height:1.45; }
+.l-mission .ft { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.l-mission .pts { font-size:13px; font-weight:700; color: var(--good); }
+.l-mission .act { margin-left:auto; font-size:13px; font-weight:700; color: var(--primary); text-decoration:none; }
+.l-mission.done { opacity:.6; }
+.l-mission.done .tt { text-decoration:line-through; }
+
+/* ---------- badges ---------- */
+.l-badge-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.l-badge { background: var(--card); border:1px solid var(--line); border-radius:14px; padding:14px;
+  box-shadow: var(--shadow-sm); text-decoration:none; color: var(--ink); display:block; }
+.l-badge .ic { width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+  background: var(--surface-2); color: var(--ink-2); font-size:20px; }
+.l-badge .nm { font-weight:700; font-size:14px; margin-top:11px; letter-spacing:-.01em; }
+.l-badge .rq { font-size:12px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
+.l-badge .ft { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:11px; }
+.l-badge.earned { border-color: color-mix(in srgb, var(--primary) 45%, var(--line)); }
+.l-badge.earned .ic { background: var(--primary); color: var(--on-primary); }
+.l-badge .prog { font-size:12px; font-weight:700; color: var(--ink-2); font-variant-numeric:tabular-nums; }
+
+/* ---------- tier ---------- */
+/* Hexagonal tier crest — the design's one decorative shape. */
+.l-crest { width:104px; height:114px; margin:0 auto; display:grid; place-items:center; color:#fff;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(160deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 62%, #000)); }
+.l-crest .nm { font-size:13px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+.l-benefit { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line-soft); font-size:14px; }
+.l-benefit:last-child { border-bottom:none; }
+.l-benefit .ic { color: var(--primary); flex:none; display:grid; place-items:center; }
+.l-benefit .v { margin-left:auto; font-weight:700; color: var(--primary); flex:none; }
+
+/* ---------- lucky wheel ---------- */
+.l-wheel-wrap { position:relative; width:270px; height:270px; margin:8px auto 0; }
+.l-wheel { width:100%; height:100%; border-radius:50%; transition: transform 5s cubic-bezier(.12,.78,.22,1);
+  border:8px solid var(--card); box-sizing:border-box; box-shadow: var(--shadow-lg);
+  /* force a clean circular raster while rotating (removes square GPU-tile artifacts on mobile) */
+  clip-path: circle(50%); -webkit-backface-visibility:hidden; backface-visibility:hidden; will-change:transform; }
+.l-wheel-pointer { position:absolute; top:-10px; left:50%; transform:translateX(-50%); z-index:3;
+  width:0; height:0; border-left:11px solid transparent; border-right:11px solid transparent;
+  border-top:17px solid var(--primary); filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+.l-wheel-hub { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:54px; height:54px;
+  border-radius:50%; background: var(--card); box-shadow: var(--shadow); display:grid; place-items:center;
+  color: var(--primary); z-index:2; }
+
+/* ---------- referral quick-share ---------- */
+.l-share { display:flex; gap:14px; }
+.l-share > * { flex:1; display:flex; flex-direction:column; align-items:center; gap:7px;
+  background:none; border:none; cursor:pointer; font-family:inherit; font-size:11.5px; font-weight:600;
+  color: var(--ink-2); text-decoration:none; padding:0; }
+.l-share .ic { width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
+  background: var(--card); border:1px solid var(--line); color: var(--primary); box-shadow: var(--shadow-sm);
+  transition: border-color .15s, transform .12s; }
+.l-share > *:hover .ic { border-color: var(--primary); transform: translateY(-2px); }
+
+/* ---------- forms ---------- */
+.pwa-app .l-field { width:100%; padding:14px 15px; border-radius:13px; border:1px solid var(--line);
+  background: var(--card); font-size:16px; color: var(--ink); font-family:inherit; }
+.pwa-app .l-field::placeholder { color: var(--ink-2); }
+.pwa-app .l-field:focus { outline:none; border-color: var(--primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent); }
+.pwa-app .l-label { display:block; font-size:13px; font-weight:600; color: var(--ink-2); margin-bottom:7px; }
+/* Filled field for the sign-in screens: on a page with no cards, an outlined
+   box floats; a soft fill gives the input somewhere to sit. */
+.pwa-app .l-field.soft { background: var(--surface-2); border-color: transparent; padding:16px; }
+.pwa-app .l-field.soft:focus { background: var(--card); border-color: var(--primary); }
+
+/* Sign-in / verify screens — no tab bar, one column, footer pinned low. */
+.l-auth { display:flex; flex-direction:column; min-height:100dvh;
+  padding-top: calc(52px + env(safe-area-inset-top)); }
+.l-auth .brandmark { width:74px; height:74px; border-radius:22px; margin:0 auto 18px;
+  display:grid; place-items:center; font-size:26px; box-shadow: var(--shadow-card); overflow:hidden; }
+.l-auth .shopname { font-size:26px; font-weight:700; letter-spacing:-.028em; color: var(--primary); text-align:center; }
+.l-auth .tagline  { font-size:14px; color: var(--ink-2); text-align:center; margin-top:6px; line-height:1.45; }
+.l-auth .lead     { font-size:21px; font-weight:700; letter-spacing:-.022em; }
+.l-auth .sub      { font-size:14px; color: var(--ink-2); margin-top:4px; }
+.l-auth .legal    { margin-top:auto; padding-top:36px; text-align:center; font-size:12px;
+  line-height:1.65; color: var(--ink-2); }
+/* One-time-code entry: wide tracking, centred. */
+.l-otp { text-align:center; font-size:30px; font-weight:700; letter-spacing:.3em; padding:16px 10px; text-indent:.3em; }
+
+/* ---------- bottom tab bar ---------- */
+/* Floating pill bar. The scan action is a larger circle sitting INSIDE the bar,
+   centred — not a FAB lifted above it — and inactive tabs stay ink, not grey,
+   so only the current tab carries the brand colour. */
+.l-tabbar { position:fixed; left:0; right:0; bottom:0; z-index:50; padding:0 16px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom)); pointer-events:none; }
+.l-tabbar-inner { pointer-events:auto; max-width:448px; margin:0 auto; display:grid;
+  grid-template-columns:repeat(5,1fr); align-items:center; height:64px; padding:0 8px;
+  background: var(--card); border:1px solid var(--line); border-radius:999px;
+  box-shadow: 0 6px 24px rgba(40,24,12,.12), 0 2px 6px rgba(40,24,12,.06); }
+.l-tabbar a { display:flex; flex-direction:column; align-items:center; gap:4px;
+  color: var(--ink); text-decoration:none; font-size:12px; font-weight:600; line-height:1; }
 .l-tabbar a.active { color: var(--primary); }
-/* Scan button: the primary action — larger, and peeking just slightly above
-   the bar's top edge so it stands out from the flat tabs (a subtle FAB). */
-.l-tabbar .scan-fab { justify-self:center; align-self:start; margin-top:-12px; z-index:1;
-  background: var(--primary); color: var(--on-primary);
-  width:62px; height:62px; border-radius:20px; display:grid; place-items:center;
-  box-shadow:0 8px 20px color-mix(in srgb,var(--primary) 42%,transparent); }
+.l-tabbar .scan-fab { justify-self:center; align-self:center; gap:0;
+  background: var(--primary); color: var(--on-primary); width:48px; height:48px; border-radius:50%;
+  display:grid; place-items:center;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 42%, transparent); }
+.l-tabbar .scan-fab:hover { background: color-mix(in srgb, var(--primary) 88%, #000); color: var(--on-primary); }
 
 /* ===================== SCROLLBARS (subtle) ===================== */
 * { scrollbar-width: thin; scrollbar-color: rgba(120,120,130,.3) transparent; }
@@ -552,11 +965,6 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
   background:rgba(0,0,0,.5); color:#fff; font-size:12px; }
 .l-bannerlib-item .del:hover { background:var(--warn); }
 
-/* ---- wallet tabs ---- */
-.l-wtabs { display:flex; gap:6px; background:var(--surface-2); padding:5px; border-radius:14px; margin-bottom:16px; }
-.l-wtabs button { flex:1; border:none; background:transparent; padding:9px 8px; border-radius:10px; font-size:13px; font-weight:600; color:var(--ink-2); cursor:pointer; }
-.l-wtabs button.active { background:#fff; color:var(--ink); box-shadow:var(--shadow); }
-
 /* ---- ticket-style voucher card ---- */
 .l-ticket { position:relative; display:flex; background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); text-decoration:none; color:var(--ink); }
 .l-ticket .stub { width:108px; flex:none; background:linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:14px 10px; }
@@ -570,50 +978,6 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-ticket .state.active  { background:var(--good-soft, #DEEBE1); color:var(--good); }
 .l-ticket .state.used    { background:var(--surface-2); color:var(--ink-2); }
 .l-ticket .state.expired { background:#F3DDD7; color:var(--warn); }
-
-/* ---- stamp card ---- */
-.l-stamp-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:14px; }
-.l-stamp-dot { aspect-ratio:1; border-radius:50%; border:2px dashed var(--line); display:grid; place-items:center;
-  color:var(--ink-2); font-weight:700; font-size:14px; }
-/* A collected stamp is history — keep it quiet so the eye lands on the empty
-   slots, i.e. what the customer still has to do. Solid primary on every filled
-   dot made a nearly-full card read as a wall of colour.
-   The soft look needs color-mix; behind @supports so a browser without it keeps
-   the old solid dot (its auto-fallback would put a primary ✓ on a primary fill,
-   i.e. an invisible tick) . */
-.l-stamp-dot.filled { background:var(--primary); border-style:solid; border-color:var(--primary);
-  color:var(--on-primary, #fff); animation:stampPop .3s ease-out; }
-@supports (color: color-mix(in srgb, red 50%, blue)) {
-  .l-stamp-dot.filled { background:color-mix(in srgb, var(--primary) 13%, var(--surface));
-    border-color:color-mix(in srgb, var(--primary) 30%, transparent);
-    color:color-mix(in srgb, var(--primary) 70%, var(--ink-2)); }
-}
-.l-stamp-dot.reward { border-color:var(--primary-2); color:var(--primary-2); }
-@keyframes stampPop { 0%{ transform:scale(0.4); } 70%{ transform:scale(1.15); } 100%{ transform:scale(1); } }
-
-/* ---- missions ---- */
-.l-mission { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); }
-.l-mission:last-child { border-bottom:none; }
-.l-mission .ic { width:44px; height:44px; border-radius:14px; background:var(--surface-2); display:grid; place-items:center; font-size:22px; flex:none; }
-.l-bar { height:7px; border-radius:999px; background:var(--surface-2); overflow:hidden; margin-top:6px; }
-.l-bar > span { display:block; height:100%; background:var(--primary); border-radius:999px; }
-
-/* ---- badges ---- */
-.l-badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-.l-badge { text-align:center; padding:16px 8px; border-radius:16px; background:#fff; border:1px solid var(--line); }
-.l-badge .ic { font-size:34px; }
-.l-badge.locked { opacity:.45; filter:grayscale(1); }
-.l-badge .nm { font-size:12px; font-weight:600; margin-top:6px; }
-
-/* ---- lucky wheel ---- */
-.l-wheel-wrap { position:relative; width:280px; height:280px; margin:10px auto; border-radius:50%; box-shadow:var(--shadow-lg); }
-.l-wheel { width:100%; height:100%; border-radius:50%; transition:transform 5s cubic-bezier(.12,.78,.22,1);
-  border:8px solid #fff; box-sizing:border-box;
-  /* force a clean circular raster while rotating (removes square GPU-tile artifacts on mobile/PWA) */
-  clip-path: circle(50%); -webkit-backface-visibility:hidden; backface-visibility:hidden; will-change:transform; }
-.l-wheel-pointer { position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:30px; z-index:2; filter:drop-shadow(0 2px 3px rgba(0,0,0,.3)); }
-.l-wheel-hub { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:56px; height:56px;
-  border-radius:50%; background:#fff; box-shadow:var(--shadow); display:grid; place-items:center; font-weight:800; color:var(--primary); z-index:2; }
 
 /* Hide scrollbars in the customer app (keep scrolling functional) */
 .pwa-app, .pwa-app * { scrollbar-width: none; -ms-overflow-style: none; }
@@ -689,3 +1053,193 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-editrow[open] { background: color-mix(in srgb, var(--primary) 7%, transparent);
   box-shadow: inset 3px 0 0 var(--primary); padding-bottom:6px; }
 .l-editrow[open] > summary .l-chip { background: var(--primary); color: var(--on-primary); }
+
+/* =====================================================================
+   MEMBER — components the buyer design file uses that the set above
+   did not yet cover. Kept at the end so they override the basics.
+   ===================================================================== */
+
+/* ---------- bottom sheet ---------- */
+/* Member QR and the redeem confirmation both arrive as a sheet over a dimmed
+   page rather than as a new screen. */
+.l-sheetwrap[hidden] { display:none; }
+.l-sheetwrap { position:fixed; inset:0; z-index:2400; display:flex; flex-direction:column;
+  justify-content:flex-end; background:rgba(24,16,10,.5); }
+.l-sheetwrap .scrim { flex:1; border:none; background:transparent; cursor:default; }
+.l-sheet { background: var(--surface); border-radius:26px 26px 0 0; padding:10px 20px calc(26px + env(safe-area-inset-bottom));
+  max-height:92dvh; overflow-y:auto; box-shadow:0 -12px 40px rgba(20,12,8,.28); animation: sheetUp .26s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sheetUp { from { transform: translateY(14%); opacity:.6 } to { transform:none; opacity:1 } }
+.l-sheet .handle { width:40px; height:4px; border-radius:999px; background: var(--line); margin:0 auto 16px; }
+
+/* ---------- compact 2-up cards (home: play & collect, missions) ---------- */
+.l-duo { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.l-mini { background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px;
+  box-shadow: var(--shadow-sm); display:flex; flex-direction:column; gap:10px; min-width:0;
+  text-decoration:none; color: var(--ink); }
+.l-mini .hd { display:flex; align-items:flex-start; gap:10px; }
+.l-mini .ic { width:40px; height:40px; border-radius:12px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); font-size:18px; }
+.l-mini .ic.count { background: var(--primary); color: var(--on-primary); border-radius:50%;
+  width:32px; height:32px; font-weight:700; font-size:14px; }
+.l-mini .tt { font-weight:700; font-size:14px; line-height:1.25; }
+.l-mini .mt { font-size:12px; color: var(--ink-2); margin-top:2px; line-height:1.35; }
+.l-mini .ft { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; }
+
+/* ---------- shop detail ---------- */
+.l-shophero { aspect-ratio:390/200; background: var(--surface-2); position:relative; overflow:hidden;
+  display:grid; place-items:center; }
+.l-shophero img { width:100%; height:100%; object-fit:cover; display:block; }
+.l-shophero .cap { position:absolute; inset:auto 0 0 0; padding:16px 20px; color:#fff;
+  background:linear-gradient(transparent, rgba(0,0,0,.6)); font-size:22px; font-weight:700; letter-spacing:-.02em; }
+/* Address / hours / distance: icon chip then one line of fact. */
+.l-inforow { display:flex; align-items:center; gap:12px; padding:6px 0; font-size:13.5px; color: var(--ink); }
+.l-inforow .ic { width:28px; height:28px; border-radius:9px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); }
+.l-inforow a { color:inherit; text-decoration:none; }
+/* Chip sets: menu highlights, amenities, review highlights. */
+.l-chipset { display:flex; flex-wrap:wrap; gap:8px; }
+.l-chipset > * { background: var(--primary-soft); color: var(--primary-ink); border-radius:999px;
+  padding:7px 14px; font-size:13px; font-weight:600; }
+/* Full-width outlined action rows (Call shop / Get directions / Send message). */
+.l-action { display:flex; align-items:center; gap:12px; width:100%; padding:13px 16px; border-radius:12px;
+  background: var(--card); border:1px solid var(--line); color: var(--ink); text-decoration:none;
+  font-size:14.5px; font-weight:600; box-shadow: var(--shadow-sm); }
+.l-action:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--line)); color: var(--primary); }
+.l-action svg { flex:none; color: var(--primary); }
+
+/* ---------- six-box OTP ---------- */
+.l-otpboxes { position:relative; }
+.l-otpboxes .boxes { display:flex; gap:8px; pointer-events:none; }
+.l-otpboxes .boxes span { flex:1; height:58px; border-radius:13px; background: var(--surface-2);
+  border:1.5px solid transparent; display:grid; place-items:center;
+  font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; color: var(--ink); }
+.l-otpboxes .boxes span.on { border-color: var(--primary); background: var(--card); }
+/* The real input sits on top, invisible, so the keyboard and autofill work. */
+.l-otpboxes input { position:absolute; inset:0; width:100%; height:100%; opacity:0; border:none;
+  background:transparent; font-size:22px; letter-spacing:2em; text-indent:1em; cursor:pointer; }
+
+/* ---------- stamp card (design's 5-per-row circles) ---------- */
+.l-stamps { display:grid; grid-template-columns:repeat(5,1fr); gap:12px 14px; }
+.l-stamps .s { aspect-ratio:1; border-radius:50%; display:grid; place-items:center;
+  border:1.5px solid var(--line); background: var(--surface-2); color: var(--ink-2);
+  font-weight:700; font-size:14px; }
+.l-stamps .s.on { border-color: color-mix(in srgb, var(--primary) 45%, transparent); color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface)); animation: stampPop .3s ease-out; }
+.l-stamps .s.goal { border-style:dashed; border-color: var(--primary); color: var(--primary);
+  background: var(--card); transform:scale(1.08); }
+
+/* ---------- tier crest (design draws it at 140) ---------- */
+.l-crest.lg { width:140px; height:140px; }
+
+/* ---------- benefit rows with a trailing value ---------- */
+.l-benefit .ic { width:36px; height:32px; }
+
+/* ---------- mission card (design has no progress bar) ---------- */
+.l-mission .cnt { margin-left:auto; flex:none; }
+.l-mission .act.btn { padding:6px 14px; border-radius:999px; background: var(--primary);
+  color: var(--on-primary); font-size:13px; font-weight:700; }
+.l-mission .act.btn:hover { background: color-mix(in srgb, var(--primary) 88%, #000); }
+
+/* ---------- speech bubble (stamp card mascot) ---------- */
+.l-bubble { position:relative; flex:1; min-width:0; background: var(--card); border:1px solid var(--line);
+  border-radius:14px; padding:12px 14px; font-size:13px; line-height:1.45; box-shadow: var(--shadow-sm); }
+.l-bubble::before { content:""; position:absolute; left:-7px; top:22px; width:12px; height:12px;
+  background: var(--card); border-left:1px solid var(--line); border-bottom:1px solid var(--line);
+  transform:rotate(45deg); }
+
+/* ---------- dotted tear line (promo voucher) ---------- */
+.l-tear { height:1px; background:repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px); }
+
+/* Selectable tag chip (review tags, edit-profile preferences). The checkbox
+   inside does the work; this is only the paint. */
+.l-tag { cursor:pointer; background: var(--surface-2); color: var(--ink-2); border-radius:999px;
+  padding:7px 14px; font-size:13px; font-weight:600; border:1.5px solid transparent; transition:.15s; }
+.l-tag:hover { color: var(--ink); }
+.l-tag.on { background: var(--primary-soft); color: var(--primary-ink); border-color: var(--primary); }
+
+/* A button that has to read as a link (resend, inline actions inside a form). */
+.l-linkbtn { background:none; border:none; padding:0; cursor:pointer; font:inherit;
+  font-weight:700; color: var(--primary); text-decoration:underline; }
+
+/* Label and input as one control (sign-in): the design puts the field name
+   inside the box rather than stacking a label above it. */
+.l-inlinefield { display:flex; align-items:center; gap:12px; width:100%; padding:15px 16px;
+  border-radius:13px; background: var(--surface-2); border:1.5px solid transparent; cursor:text; }
+.l-inlinefield:focus-within { background: var(--card); border-color: var(--primary); }
+.l-inlinefield .lb { flex:none; font-size:15px; font-weight:700; color: var(--ink); }
+.l-inlinefield input { flex:1; min-width:0; border:none; background:transparent; outline:none;
+  font-family:inherit; font-size:16px; color: var(--ink); }
+.l-inlinefield input::placeholder { color: var(--ink-2); font-weight:400; }
+
+/* =====================================================================
+   MERCHANT — dashboard components from the admin design.
+   Prefixed .m- so nothing here can reach the customer app.
+   ===================================================================== */
+
+/* Metric cards: label + icon chip, then the figure with a change badge. */
+.m-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+@media (max-width:1100px){ .m-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px){ .m-metrics { grid-template-columns:1fr; } }
+.m-metric { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px;
+  box-shadow: var(--shadow); min-width:0; }
+.m-metric .hd { display:flex; align-items:center; gap:10px; }
+.m-metric .k { flex:1; min-width:0; font-size:12.5px; font-weight:600; color: var(--ink-2); }
+.m-metric .ic { width:28px; height:28px; border-radius:9px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); }
+.m-metric .row { display:flex; align-items:baseline; gap:10px; margin-top:10px; }
+.m-metric .v { font-size:25px; font-weight:700; letter-spacing:-.03em; font-variant-numeric:tabular-nums;
+  min-width:0; overflow-wrap:anywhere; }
+.m-badge { flex:none; font-size:11.5px; font-weight:700; padding:2px 8px; border-radius:999px;
+  background: var(--surface-2); color: var(--ink-2); }
+.m-badge.up   { background: var(--good-soft); color: var(--good); }
+.m-badge.down { background: var(--warn-soft); color: var(--warn); }
+
+/* Section heading shared by the analytics and operations panels. */
+.m-sec { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.m-sec h3 { font-size:17px; font-weight:700; letter-spacing:-.015em; }
+.m-sec .sub { font-size:12.5px; color: var(--ink-2); margin-top:3px; }
+.m-sec .act { font-size:13px; font-weight:600; color: var(--primary); text-decoration:none; flex:none; }
+
+/* Tabs under the page title. */
+.m-subnav { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.m-subnav a { padding:8px 14px; border-radius:999px; font-size:13.5px; font-weight:600;
+  color: var(--ink-2); text-decoration:none; }
+.m-subnav a:hover { color: var(--ink); background: var(--surface-2); }
+.m-subnav a.active { background: var(--primary); color: var(--on-primary); }
+.m-subnav .note { margin-left:auto; font-size:12px; color: var(--ink-2); }
+
+/* Data table. */
+.m-table { width:100%; border-collapse:collapse; }
+.m-table th { text-align:left; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color: var(--ink-2); font-weight:700; padding:0 12px 10px; border-bottom:1px solid var(--line); }
+.m-table td { padding:13px 12px; border-bottom:1px solid var(--line-soft); font-size:13.5px; vertical-align:middle; }
+.m-table tr:last-child td { border-bottom:none; }
+.m-table th:last-child, .m-table td:last-child { text-align:right; }
+.m-who { display:flex; align-items:center; gap:10px; min-width:0; }
+.m-who .av { width:32px; height:32px; border-radius:50%; flex:none; display:grid; place-items:center;
+  background: var(--surface-2); color: var(--ink-2); font-size:12px; font-weight:700; }
+.m-who .nm { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.m-who .sub { font-size:12px; color: var(--ink-2); }
+.m-num { font-variant-numeric:tabular-nums; font-weight:600; }
+
+/* Alert rows and quick links in the right-hand column. */
+.m-alert { display:flex; align-items:center; gap:12px; padding:10px 0; text-decoration:none; color: var(--ink); }
+.m-alert + .m-alert { border-top:1px solid var(--line-soft); }
+.m-alert .ic { width:30px; height:30px; border-radius:9px; flex:none; display:grid; place-items:center;
+  background: var(--warn-soft); color: var(--warn); }
+.m-alert .bd { flex:1; min-width:0; }
+.m-alert .tt { font-size:13.5px; font-weight:600; }
+.m-alert .mt { font-size:12px; color: var(--ink-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.m-quick { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.m-quick a { display:block; padding:14px; border-radius:13px; border:1px solid var(--line);
+  background: var(--surface); text-decoration:none; color: var(--ink); transition: border-color .15s; }
+.m-quick a:hover { border-color: var(--primary); }
+.m-quick .hd { display:flex; align-items:center; justify-content:space-between; }
+.m-quick .ic { width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary); }
+.m-quick .tt { font-weight:700; font-size:14px; margin-top:10px; }
+.m-quick .mt { font-size:12px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
+
+/* Two-column operational row: table left, actions right. */
+.m-ops { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:16px; align-items:start; }
+@media (max-width:1000px){ .m-ops { grid-template-columns:minmax(0,1fr); } }

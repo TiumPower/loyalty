@@ -1,109 +1,147 @@
-<% content_for :title, "Về quán" %>
+<% content_for :title, t("customer.shop.title") %>
 <% content_for :tab, "" %>
-<% stars = ->(n) { "★" * n.round + "☆" * (5 - n.round) } %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, data: { controller: "goback", action: "goback#back" }, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;">Về quán</div>
+<% main = @outlets.first %>
+
+<header class="l-subhead" style="padding-bottom:8px;">
+  <%= link_to member_root_path, class: "l-iconbtn",
+        data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t" style="font-size:18px;"><%= current_workspace.name %></div></div>
+  <div class="sp">
+    <% if @avg.to_f.positive? %><span class="l-pill"><%= @avg %> ★</span><% end %>
+  </div>
 </header>
 
-<%# Renders one review row; shows an edit affordance when it's the member's own. %>
-<% review_row = ->(r) do %>
-  <div class="l-tile" style="margin-bottom:10px;">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <%= member_avatar(r.member, klass: "avatar", style: "width:36px;height:36px;border-radius:11px;background:var(--surface-2);color:var(--ink);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;") %>
-      <div style="flex:1; min-width:0;">
-        <div style="font-weight:600; font-size:14px;"><%= r.member&.display_name %><% if r.member_id == current_member.id %> <span style="color:var(--ink-2); font-weight:400;">· bạn</span><% end %></div>
-        <div style="color:var(--primary-2,#E08A3C); font-size:13px; letter-spacing:1px;"><%= stars.call(r.stars) %></div>
-      </div>
-      <% if r.member_id == current_member.id %>
-        <%= link_to member_edit_review_path(r), style: "flex:none; color:var(--primary-ink); text-decoration:none; font-size:16px;", title: "Sửa" do %>✎<% end %>
-      <% end %>
-      <div style="font-size:11px; color:var(--ink-2);"><%= l(r.created_at.to_date, format: :short) %></div>
-    </div>
-    <% if r.comment.present? %><div style="font-size:14px; margin-top:8px;"><%= r.comment %></div><% end %>
+<div class="l-screen flush">
+  <div class="l-shophero">
+    <%= shop_cover(current_workspace) %>
+    <div class="cap"><%= current_workspace.name %></div>
+  </div>
 
-    <%# Phản hồi của quán — cho khách thấy quán có lắng nghe %>
-    <% if r.replied? %>
-      <div style="margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--surface-2);
-                  border-left:3px solid var(--primary);">
-        <div style="font-size:12px; font-weight:700; color:var(--primary-ink);">
-          <%= t("customer.review_reply.from_shop", shop: current_workspace.name) %>
-          <span style="font-weight:400; color:var(--ink-2);"> · <%= l(r.replied_at.to_date, format: :short) %></span>
-        </div>
-        <div style="font-size:13.5px; margin-top:4px;"><%= r.reply_body %></div>
+  <div style="padding:0 20px;">
+    <%# ---- the facts: where it is and how to reach it ---- %>
+    <div style="padding:16px 0;">
+      <% if main&.address.present? %>
+        <div class="l-inforow"><span class="ic"><%= ui_icon(:pin, size: 14) %></span><span><%= main.address %></span></div>
+      <% end %>
+      <% if @outlets.size > 1 %>
+        <div class="l-inforow"><span class="ic"><%= ui_icon(:navigate, size: 14) %></span><span><%= t("customer.shop.n_outlets", n: @outlets.size) %></span></div>
+      <% end %>
+      <% if main&.phone.present? %>
+        <div class="l-inforow"><span class="ic"><%= ui_icon(:phone, size: 14) %></span><span><%= main.phone %></span></div>
+      <% end %>
+    </div>
+
+    <% if current_workspace.branding_value("tagline").present? %>
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em;"><%= t("customer.shop.about") %></h3>
+      <p style="font-size:14px; color:var(--ink-2); line-height:1.6; margin-top:8px;"><%= current_workspace.branding_value("tagline") %></p>
+    <% end %>
+
+    <%# The design shows one address. A shop with several branches needs each of
+        them tappable, so they get their own chip set. %>
+    <% if @outlets.size > 1 %>
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:24px;"><%= t("customer.shop.outlets") %></h3>
+      <div class="l-chipset" style="margin-top:10px;">
+        <% @outlets.each do |o| %>
+          <%= link_to o.name, "https://maps.google.com/?q=#{CGI.escape("#{o.name} #{o.address}")}",
+                target: "_blank", rel: "noopener", style: "text-decoration:none;" %>
+        <% end %>
       </div>
     <% end %>
-  </div>
-<% end %>
 
-<div class="l-screen" data-controller="tabs" data-tabs-active-class-value="active" data-tabs-active-value="all">
-  <%# ---- Shop info ---- %>
-  <div class="l-tile" style="display:flex; gap:14px; align-items:center; margin-bottom:14px;">
-    <%= workspace_avatar(current_workspace, klass: "avatar", style: "width:56px;height:56px;border-radius:16px;font-size:20px;flex:none;") %>
-    <div style="min-width:0;">
-      <div style="font-weight:700; font-size:18px;"><%= current_workspace.name %></div>
-      <% if current_workspace.branding_value("tagline").present? %>
-        <div style="color:var(--ink-2); font-size:13px;"><%= current_workspace.branding_value("tagline") %></div>
+    <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:24px;"><%= t("customer.shop.contact") %></h3>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+      <% if main&.phone.present? %>
+        <%= link_to "tel:#{main.phone.gsub(/\s+/, '')}", class: "l-action" do %>
+          <%= ui_icon(:phone, size: 18) %><span><%= t("customer.shop.call_shop") %></span>
+        <% end %>
+      <% end %>
+      <% if main&.address.present? %>
+        <%= link_to "https://maps.google.com/?q=#{CGI.escape("#{main.name} #{main.address}")}",
+              target: "_blank", rel: "noopener", class: "l-action" do %>
+          <%= ui_icon(:navigate, size: 18) %><span><%= t("customer.shop.directions_cta") %></span>
+        <% end %>
+      <% end %>
+      <%= link_to member_new_review_path, class: "l-action" do %>
+        <%= ui_icon(:mail, size: 18) %><span><%= t("customer.shop.send_message") %></span>
       <% end %>
     </div>
-  </div>
 
-  <%# ---- Rating summary ---- %>
-  <div class="l-tile" style="text-align:center; margin-bottom:14px;">
-    <div class="l-num" style="font-size:44px; line-height:1;"><%= @avg %></div>
-    <div style="color:var(--primary-2,#E08A3C); font-size:20px; letter-spacing:2px;"><%= stars.call(@avg) %></div>
-    <div style="color:var(--ink-2); font-size:13px; margin-top:4px;"><%= @count %> đánh giá</div>
-  </div>
+    <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:26px;"><%= t("customer.shop.reviews") %></h3>
+    <div class="l-tile" style="margin-top:12px;">
+      <div style="display:flex; align-items:flex-start; gap:20px;">
+        <div style="flex:none; text-align:center;">
+          <div style="font-size:36px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
+          <span class="l-pill amber" style="margin-top:8px;"><%= @avg %> ★</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <% 5.downto(1) do |n| %>
+            <% pct = @count.positive? ? (@dist[n] * 100.0 / @count).round : 0 %>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+              <span style="font-size:11.5px; color:var(--ink-2); width:8px; flex:none;"><%= n %></span>
+              <span class="l-bar" style="flex:1; height:6px;"><span style="width:<%= pct %>%;"></span></span>
+              <span style="font-size:11px; color:var(--ink-2); width:30px; text-align:right; flex:none;"><%= pct %>%</span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <% if @highlights.present? %>
+        <div style="height:1px; background:var(--line-soft); margin:14px 0;"></div>
+        <div class="l-chipset"><% @highlights.each { |h| %><span><%= h %></span><% } %></div>
+      <% end %>
+    </div>
 
-  <%# ---- Branches ---- %>
-  <% if @outlets.any? %>
-    <div class="l-section-h"><h3>Chi nhánh</h3></div>
-    <div class="l-tile" style="margin-bottom:14px; padding:6px 16px;">
-      <% @outlets.each do |o| %>
-        <div style="padding:10px 0; border-bottom:1px solid var(--line);">
-          <div style="font-weight:600;">🏬 <%= o.name %></div>
-          <%# The address and phone were plain text, so a customer looking up the
-              shop had to copy them out by hand. Make them do their obvious job. %>
-          <% if o.address.present? %>
-            <%= link_to "https://maps.google.com/?q=#{CGI.escape("#{o.name} #{o.address}")}",
-                  target: "_blank", rel: "noopener",
-                  style: "display:block; font-size:13px; color:var(--primary); margin-top:2px; text-decoration:none;" do %>
-              📍 <%= o.address %> <span style="color:var(--ink-2);">· Chỉ đường ›</span>
+    <%# One list, newest first, as the design shows. A review of the member's own
+        is flagged inline and editable rather than hidden behind a second tab. %>
+    <div style="margin-top:14px;">
+      <% if @ratings.empty? %>
+        <div class="l-empty">
+          <div class="ic"><%= ui_icon(:star, size: 26) %></div>
+          <div class="tt"><%= t("customer.shop.no_reviews") %></div>
+        </div>
+      <% else %>
+        <% @ratings.first(@shown).each do |r| %>
+          <% mine = r.member_id == current_member.id %>
+          <div class="l-tile" style="margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <%= member_avatar(r.member, klass: "", style: "width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;") %>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:14px;">
+                  <%= r.member&.display_name %><% if mine %><span style="color:var(--ink-2); font-weight:400;"> · <%= t("customer.shop.you") %></span><% end %>
+                </div>
+                <div style="font-size:11.5px; color:var(--ink-2); margin-top:2px;"><%= t("customer.notifications.ago", time: time_ago_in_words(r.created_at)) %></div>
+              </div>
+              <% if mine %>
+                <%= link_to member_edit_review_path(r), class: "l-iconbtn sm", title: t("customer.shop.edit_review") do %>
+                  <%= ui_icon(:edit, size: 14) %>
+                <% end %>
+              <% end %>
+              <span class="l-pill amber" style="flex:none;"><%= r.stars %> ★</span>
+            </div>
+            <% if r.comment.present? %>
+              <div style="font-size:13.5px; margin-top:9px; line-height:1.55;"><%= r.comment %></div>
             <% end %>
-          <% end %>
-          <% if o.phone.present? %>
-            <%= link_to "📞 #{o.phone}", "tel:#{o.phone.gsub(/\s+/, '')}",
-                  style: "display:block; font-size:13px; color:var(--primary); text-decoration:none;" %>
-          <% end %>
-        </div>
+            <% if r.replied? %>
+              <div style="margin-top:10px; padding:11px 13px; border-radius:12px; background:var(--surface-2); border-left:3px solid var(--primary);">
+                <div style="font-size:12px; font-weight:700; color:var(--primary);">
+                  <%= t("customer.review_reply.from_shop", shop: current_workspace.name) %>
+                  <span style="font-weight:400; color:var(--ink-2);"> · <%= l(r.replied_at.to_date, format: :short) %></span>
+                </div>
+                <div style="font-size:13px; margin-top:4px; line-height:1.5;"><%= r.reply_body %></div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @ratings.size > @shown %>
+          <%= link_to t("customer.shop.more_reviews"), member_shop_about_path(all: 1),
+                class: "l-btn l-btn-ghost l-btn-block", style: "margin-bottom:12px;" %>
+        <% end %>
       <% end %>
     </div>
-  <% end %>
 
-  <%# ---- Feedback wall with All / Yours filter ---- %>
-  <div class="l-section-h"><h3>Đánh giá của khách</h3></div>
-  <%= link_to "＋ Viết đánh giá", member_new_review_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-bottom:12px;" %>
-  <div class="l-wtabs" style="margin-bottom:12px;">
-    <button data-tabs-target="tab" data-name="all"  data-action="tabs#select">Tất cả · <%= @count %></button>
-    <button data-tabs-target="tab" data-name="mine" data-action="tabs#select">Của bạn · <%= @my_count %></button>
-  </div>
-
-  <div data-tabs-target="panel" data-name="all">
-    <% if @ratings.empty? %>
-      <div class="l-tile" style="text-align:center; padding:30px 20px; color:var(--ink-2);">Chưa có đánh giá nào — hãy là người đầu tiên!</div>
-    <% else %>
-      <% @ratings.each { |r| review_row.call(r) } %>
-    <% end %>
-  </div>
-
-  <div data-tabs-target="panel" data-name="mine" hidden>
-    <% if @mine.empty? %>
-      <div class="l-tile" style="text-align:center; padding:24px 20px; color:var(--ink-2);">
-        Bạn chưa có đánh giá nào.<br>
-        <%= link_to "Viết đánh giá", member_new_review_path, class: "l-btn l-btn-primary", style: "margin-top:12px; display:inline-flex;" %>
-      </div>
-    <% else %>
-      <% @mine.each { |r| review_row.call(r) } %>
+    <%= link_to member_new_review_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:4px;" do %>
+      <%= ui_icon(:edit, size: 16) %><%= t("customer.review.new_title") %>
     <% end %>
   </div>
 </div>

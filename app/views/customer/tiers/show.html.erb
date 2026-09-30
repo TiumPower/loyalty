@@ -1,45 +1,85 @@
 <% content_for :title, t("customer.tiers.title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.tiers.journey") %></div>
+<header class="l-subhead">
+  <%= link_to member_profile_path, class: "l-iconbtn",
+        data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.tiers.your_tier") %></div></div>
+  <div class="sp"><span class="l-pill brand"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span></div>
 </header>
 
-<div class="l-screen">
-  <%# ---- Progress to next tier ---- %>
-  <div class="l-card" style="--tier-from: <%= @current&.gradient_from || '#B08D57' %>; --tier-to: <%= @current&.gradient_to || '#7A5C3A' %>;">
-    <div class="k"><%= t("customer.tiers.current") %></div>
-    <div class="pts" style="font-size:34px;"><%= @current&.name %></div>
-    <% if @member.next_tier %>
-      <div style="margin-top:14px;">
-        <div style="height:8px; border-radius:999px; background:rgba(255,255,255,.25); overflow:hidden;">
-          <div style="height:100%; width:<%= @member.tier_progress_pct %>%; background:#fff; border-radius:999px;"></div>
-        </div>
-        <div class="meta" style="margin-top:8px;"><%= t("customer.tiers.to_next_html", n: number_with_delimiter(@member.points_to_next), tier: @member.next_tier.name) %></div>
+<div class="l-screen" style="text-align:center;">
+  <%# ---- the crest ---- %>
+  <div class="l-crest lg" style="background: <%= @current&.gradient_css || 'linear-gradient(160deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>;">
+    <%= ui_icon(:star, size: 24, stroke: 2) %>
+    <div class="nm"><%= @current&.name %></div>
+  </div>
+  <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>
+  <div style="font-size:13.5px; color:var(--ink-2); margin-top:5px;"><%= t("customer.tiers.earned_this_period", n: number_with_delimiter(@member.points_balance)) %></div>
+
+  <%# ---- how far to the next one ---- %>
+  <% if @member.next_tier %>
+    <div style="margin-top:24px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;">
+        <span style="color:var(--primary);"><%= @current&.name %></span>
+        <span style="color:var(--ink-2);"><%= @member.next_tier.name %></span>
       </div>
-    <% else %>
-      <div class="meta" style="margin-top:12px;"><%= t("customer.tiers.top") %></div>
-    <% end %>
+      <div class="l-bar thick" style="margin-top:8px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+      <div style="font-size:12.5px; color:var(--ink-2); margin-top:8px;">
+        <%= t("customer.tiers.to_next_short", n: number_with_delimiter(@member.points_to_next), tier: @member.next_tier.name) %>
+      </div>
+    </div>
+  <% else %>
+    <div class="l-pill good" style="margin-top:20px;"><%= t("customer.tiers.top") %></div>
+  <% end %>
+
+  <%# ---- what the current tier gets you ---- %>
+  <% if @current %>
+    <div style="text-align:left; margin-top:26px;">
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em;"><%= t("customer.tiers.your_benefits") %></h3>
+      <div style="margin-top:8px;">
+        <% tier_benefit_rows(@current).each do |icon, label, value| %>
+          <div class="l-benefit">
+            <span class="ic"><%= ui_icon(icon, size: 17) %></span>
+            <span><%= label %></span>
+            <% if value %><span class="v"><%= value %></span><% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ---- the ladder ---- %>
+  <div style="text-align:left; margin-top:26px;">
+    <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em;"><%= t("customer.tiers.tiers_benefits") %></h3>
+    <div style="margin-top:10px;">
+      <% @tiers.each do |tier| %>
+        <% is_current = tier.key == @current&.key %>
+        <% reached = @member.points_balance >= tier.threshold_points.to_i %>
+        <div class="l-row" style="<%= 'border-color:var(--primary);' if is_current %>">
+          <span class="ic" style="background:<%= tier.gradient_css %>; color:#fff;">
+            <%= reached ? ui_icon(:check, size: 17, stroke: 2.6) : ui_icon(:lock, size: 16) %>
+          </span>
+          <div class="bd">
+            <div class="tt">
+              <%= tier.name %>
+              <% if is_current %><span class="l-pill brand" style="margin-left:6px;"><%= t("customer.tiers.current_chip") %></span><% end %>
+            </div>
+            <div class="mt"><%= t("customer.tiers.from_points", n: number_with_delimiter(tier.threshold_points), m: tier.multiplier) %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
 
-  <%# ---- All tiers & benefits ---- %>
-  <div class="l-section-h"><h3><%= t("customer.tiers.tiers_benefits") %></h3></div>
-  <% @tiers.each do |t| %>
-    <% is_current = t.key == @current&.key %>
-    <div class="l-tile" style="margin-bottom:12px; <%= 'border:2px solid var(--primary);' if is_current %>">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <span style="width:40px; height:40px; border-radius:12px; background:<%= t.gradient_css %>; flex:none;"></span>
-        <div style="flex:1;">
-          <div style="font-weight:700;"><%= t.name %> <% if is_current %><span class="l-chip l-chip-brand" style="margin-left:4px;"><%= I18n.t("customer.tiers.current_chip") %></span><% end %></div>
-          <div style="font-size:12px; color:var(--ink-2);"><%= I18n.t("customer.tiers.from_points", n: number_with_delimiter(t.threshold_points), m: t.multiplier) %></div>
-        </div>
-      </div>
-      <% benefits = t.benefits.presence || default_benefits(t) %>
-      <ul style="margin-top:10px; padding-left:2px; list-style:none; display:flex; flex-direction:column; gap:6px;">
-        <% benefits.each do |b| %>
-          <li style="display:flex; gap:8px; font-size:13px; color:var(--ink-2);"><span style="color:var(--primary);">✓</span><%= b %></li>
-        <% end %>
-      </ul>
-    </div>
+  <%# Badges are a collection of tier moments, so they hang off this screen —
+      the design gives them no other entry point. %>
+  <% if current_workspace.program.gamification_enabled %>
+    <%= link_to member_badges_path, class: "l-action", style: "margin-top:18px;" do %>
+      <%= ui_icon(:trophy, size: 18) %>
+      <span style="flex:1; min-width:0; text-align:left;"><%= t("customer.badges.title") %></span>
+      <%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %>
+    <% end %>
   <% end %>
 </div>

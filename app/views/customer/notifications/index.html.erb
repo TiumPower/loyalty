@@ -1,40 +1,51 @@
 <% content_for :title, t("customer.notifications.title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.notifications.title") %></div>
+<header class="l-subhead">
+  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <%# Opening the inbox already marks what it shows as read, so there is no
+      "mark all" control — the dot just tells you what arrived since last time. %>
+  <div style="min-width:0;"><div class="t"><%= t("customer.notifications.title") %></div></div>
 </header>
 
 <div class="l-screen">
   <% if @notifications.empty? %>
-    <div class="l-tile" style="text-align:center; padding:40px 20px;">
-      <div style="font-size:40px;">🔔</div>
-      <p style="font-weight:600; margin-top:8px;"><%= t("customer.notifications.empty") %></p>
-      <p style="color:var(--ink-2); font-size:13px;"><%= t("customer.notifications.empty_sub") %></p>
+    <div class="l-empty">
+      <div class="ic"><%= ui_icon(:bell, size: 26) %></div>
+      <div class="tt"><%= t("customer.notifications.empty") %></div>
+      <div class="mt"><%= t("customer.notifications.empty_sub") %></div>
     </div>
   <% else %>
     <% @notifications.each do |n| %>
       <% inner = capture do %>
-        <div style="width:42px; height:42px; border-radius:14px; background:var(--surface-2); display:grid; place-items:center; font-size:20px; flex:none;"><%= n.display_icon %></div>
-        <div style="flex:1; min-width:0;">
-          <div style="font-weight:700;"><%= n.title %></div>
-          <div style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= n.body %></div>
-          <div style="font-size:11px; color:var(--ink-3, var(--ink-2)); margin-top:6px;"><%= t("customer.notifications.ago", time: time_ago_in_words(n.created_at)) %></div>
+        <%# An unread item carries a dot rather than a coloured left edge: the
+            design keeps the card shape identical so the list stays calm. %>
+        <span class="ic <%= 'muted' if n.read? %>" style="position:relative;">
+          <%= n.display_icon %>
+          <% unless n.read? %>
+            <span style="position:absolute; top:-3px; left:-3px; width:9px; height:9px; border-radius:50%; background:var(--warn); border:2px solid var(--card);"></span>
+          <% end %>
+        </span>
+        <div class="bd">
+          <div style="display:flex; align-items:baseline; gap:10px;">
+            <div class="tt" style="flex:1; min-width:0;"><%= n.title %></div>
+            <span style="flex:none; font-size:11.5px; color:var(--ink-2);"><%= t("customer.notifications.ago", time: time_ago_in_words(n.created_at)) %></span>
+          </div>
+          <div class="mt"><%= n.body %></div>
         </div>
-        <% if n.deep_link.present? %><span style="align-self:center; color:var(--ink-2); flex:none;">›</span><% end %>
       <% end %>
-      <% base = "display:flex; gap:12px; margin-bottom:10px; #{'border-left:3px solid var(--primary);' unless n.read?}" %>
       <% if n.deep_link.present? %>
-        <%= link_to inner, n.deep_link, class: "l-tile", style: "#{base} text-decoration:none; color:inherit;" %>
+        <%= link_to inner, n.deep_link, class: "l-row", style: "align-items:flex-start; margin-top:10px;" %>
       <% else %>
-        <%= content_tag :div, inner, class: "l-tile", style: base %>
+        <%= content_tag :div, inner, class: "l-row", style: "align-items:flex-start; margin-top:10px;" %>
       <% end %>
     <% end %>
     <%# The inbox was capped at one page with no way back, so anything older
         than the limit was simply unreachable. %>
     <% if @has_more %>
       <%= link_to t("customer.notifications.load_more"), member_notifications_path(page: @page + 1),
-            class: "l-btn l-btn-ghost l-btn-block", style: "margin-top:4px;" %>
+            class: "l-btn l-btn-outline l-btn-block", style: "margin-top:16px;" %>
     <% end %>
   <% end %>
 </div>

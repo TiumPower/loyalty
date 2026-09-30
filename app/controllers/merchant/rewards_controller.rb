@@ -102,7 +102,7 @@ module Merchant
     end
 
     def reward_params
-      p = params.require(:reward).permit(:title, :description, :kind, :icon, :cost_points,
+      p = params.require(:reward).permit(:title, :description, :kind, :icon, :image, :remove_image, :cost_points,
                                          :value, :value_unit, :terms, :stock, :valid_days, :active,
                                          :starts_at, :ends_at, :expires_at)
       p[:schedule] = build_schedule

@@ -1,0 +1,45 @@
+<%# One mission, as the design draws it: who it is for and what kind, then the
+    task, then the reward and the single action that moves it on. No progress
+    bar — the count chip in the header carries that. %>
+<% done = mp.completed? %>
+<% target = m.goal.to_i %>
+<div class="l-mission <%= 'done' if done %>">
+  <div class="top">
+    <span class="ic"><%= mission_icon(m, size: 18) %></span>
+    <div style="min-width:0;">
+      <div class="shop"><%= current_workspace.name %></div>
+      <div class="kind"><%= t("customer.missions.period_#{m.period}") %></div>
+    </div>
+    <span class="cnt">
+      <% if m.photo_proof? %>
+        <span class="l-pill good"><%= t("customer.missions.evidence") %></span>
+      <% elsif m.mission_type == "spend" %>
+        <span class="l-pill"><%= number_to_human(mp.progress, units: { thousand: "K", million: "Tr" }, format: "%n%u") %>/<%= number_to_human(target, units: { thousand: "K", million: "Tr" }, format: "%n%u") %></span>
+      <% else %>
+        <span class="l-pill"><%= [mp.progress.to_i, target].min %>/<%= target %></span>
+      <% end %>
+    </span>
+  </div>
+
+  <div class="tt"><%= m.title %></div>
+  <% goal_text = mission_goal_text(m, shop: current_workspace.name) %>
+  <% if goal_text.present? %><div class="ds"><%= goal_text %></div><% end %>
+
+  <div class="ft">
+    <span class="pts"><%= t("customer.common.points_plus", n: m.reward_points) %></span>
+    <% unless done %>
+      <% if m.mission_type == "checkin" %>
+        <%= link_to t("customer.common.checkin"), member_scan_path, class: "act btn" %>
+      <% elsif m.photo_proof? %>
+        <% if mp.pending? %>
+          <span class="l-pill amber" style="margin-left:auto;"><%= t("customer.missions.pending_review") %></span>
+        <% else %>
+          <%= link_to (mp.rejected? ? t("customer.missions.resubmit") : t("customer.missions.submit_proof")),
+                member_new_mission_submission_path(m), class: "act btn" %>
+        <% end %>
+      <% elsif m.mission_type == "refer" %>
+        <%= link_to t("customer.missions.refer"), member_refer_path, class: "act btn" %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,17 +1,40 @@
 <% content_for :title, t("customer.claim_success.title") %>
 <% content_for :tab, "" %>
-<div class="l-screen" data-controller="pointburst sfx" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center;">
-  <div style="font-size:72px; animation:none;">🎁</div>
-  <h2 class="l-display" style="font-size:26px; margin-top:8px;"><%= t("customer.claim_success.heading") %></h2>
-  <div class="l-ticket" style="margin:20px 0; width:100%; max-width:360px;">
-    <div class="stub"><div class="v"><%= @voucher.reward.value_label %></div><div class="u"><%= @voucher.reward.kind_label %></div></div>
-    <div class="perf"></div>
-    <div class="body" style="text-align:left;">
-      <div style="font-weight:700;"><%= @voucher.reward.display_icon %> <%= @voucher.reward.title %></div>
-      <div style="font-size:12px; color:var(--good); margin-top:4px;"><%= t("customer.claim_success.saved") %></div>
+<div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
+  <div class="l-result">
+    <div class="halo brand"><%= ui_icon(:gift, size: 36) %></div>
+    <span class="l-pill brand" style="margin-top:2px;"><%= t("customer.claim_success.qr_exclusive") %></span>
+    <h1><%= t("customer.claim_success.heading") %></h1>
+    <p><%= t("customer.claim_success.subtitle", shop: current_workspace.name) %></p>
+  </div>
+
+  <div class="l-tile pad-0" style="margin-top:20px;">
+    <div class="l-hero <%= 'no-art' unless @voucher.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@voucher.reward, size: 720, emoji_size: 48) %></div>
+    <div style="padding:14px 16px 16px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11.5px; font-weight:700; color:var(--primary); flex:1; min-width:0;"><%= current_workspace.name %></span>
+        <span class="l-pill good"><%= t("customer.claim_success.saved") %></span>
+      </div>
+      <div style="font-weight:700; font-size:17px; letter-spacing:-.018em; margin-top:6px;"><%= @voucher.reward.title %></div>
+      <% if @voucher.expires_at %>
+        <div style="font-size:13px; color:var(--ink-2); margin-top:5px;"><%= t("customer.common.valid_until", date: l(@voucher.expires_at.to_date, format: :short)) %></div>
+      <% end %>
+      <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; align-items:center; gap:10px;">
+        <div style="flex:1; min-width:0;">
+          <div class="l-eyebrow"><%= t("customer.common.code_label") %></div>
+          <div class="l-mono" style="font-weight:700; font-size:16px; letter-spacing:.06em; margin-top:2px;"><%= @voucher.code %></div>
+        </div>
+        <span class="l-pill good" style="flex:none;"><%= ui_icon(:check, size: 12, stroke: 2.6) %><%= t("customer.claim_success.in_wallet") %></span>
+      </div>
     </div>
   </div>
-  <p style="color:var(--ink-2); font-size:13px;"><%= t("customer.claim_success.free_note") %></p>
-  <%= link_to t("customer.claim_success.view_in_wallet"), member_wallet_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:18px; max-width:360px;" %>
-  <%= link_to t("customer.common.scan_other"), member_scan_path, style: "margin-top:12px; color:var(--ink-2); font-size:13px; text-decoration:none;" %>
+
+  <div class="l-note" style="margin-top:12px;"><%= ui_icon(:coins, size: 16) %><span><%= t("customer.claim_success.free_note") %></span></div>
+
+  <div style="display:flex; flex-direction:column; gap:10px; margin-top:18px;">
+    <%= link_to member_vouchers_path, class: "l-btn l-btn-primary l-btn-block" do %>
+      <%= ui_icon(:ticket, size: 17) %><%= t("customer.claim_success.view_in_wallet") %>
+    <% end %>
+    <%= link_to t("customer.common.home_back"), member_root_path, class: "l-btn l-btn-outline l-btn-block" %>
+  </div>
 </div>

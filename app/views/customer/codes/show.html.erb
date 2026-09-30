@@ -1,51 +1,59 @@
 <% content_for :title, t("customer.my_code.title") %>
 <% content_for :tab, "code" %>
+<% content_for :no_tabbar, true %>
 <% ink = current_workspace.theme_value(:ink).to_s.delete("#") %>
 
-<header class="l-appbar"><div class="nm l-display" style="font-size:22px;"><%= t("customer.my_code.title") %></div>
-  <%= link_to t("customer.my_code.history"), member_history_path, style: "margin-left:auto; color:var(--primary-ink); font-weight:600; font-size:13px; text-decoration:none;" %>
-</header>
-
-<div class="l-screen" style="display:flex; flex-direction:column; align-items:center;"
+<%# The design presents the member's code as a sheet over a dimmed app, not as
+    a page of its own: it is something you hold up for ten seconds and dismiss. %>
+<div class="l-sheetwrap"
      data-controller="mycode"
      data-mycode-token-url-value="<%= member_my_code_token_path %>"
      data-mycode-recent-url-value="<%= member_my_code_recent_path %>"
      data-mycode-since-value="<%= @since %>"
      data-mycode-ttl-value="<%= MemberQr::TTL %>"
      data-mycode-locale-value="<%= I18n.locale %>">
+  <%= link_to "", member_root_path, class: "scrim", "aria-label": t("customer.common.close") %>
 
-  <div class="l-tile" style="text-align:center; padding:26px 26px 20px; width:100%; position:relative; overflow:hidden;">
-    <div style="display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:16px;">
-      <div class="avatar" style="width:38px; height:38px; border-radius:12px; background:<%= @member.tier&.gradient_css || 'var(--primary)' %>; color:#fff; display:grid; place-items:center; font-weight:700;"><%= @member.initials %></div>
-      <div style="text-align:left;">
-        <div style="font-weight:700; line-height:1;"><%= @member.display_name %></div>
-        <%# Shown across the counter on every visit — mask the contact so a cashier
-            reads a member, not someone's email address. %>
-        <div style="color:var(--ink-2); font-size:12px;"><%= @member.tier&.name %> · <%= @member.masked_contact %></div>
-      </div>
+  <div class="l-sheet" style="text-align:center; position:relative;">
+    <div class="handle"></div>
+
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+      <div style="font-size:18px; font-weight:700; letter-spacing:-.018em;"><%= t("customer.my_code.title") %></div>
+      <% if @member.tier %><span class="l-pill dark"><%= t("customer.home.tier_badge", name: @member.tier.name) %></span><% end %>
     </div>
 
-    <div data-mycode-target="qr" style="display:inline-block; padding:14px; background:#fff; border-radius:16px;">
-      <%= qr_svg(@token, color: ink, size: 210) %>
+    <div data-mycode-target="qr" style="display:inline-block; padding:16px; background:#fff; border-radius:18px;
+         border:1px solid var(--line-soft); margin-top:18px; line-height:0;">
+      <%= qr_svg(@token, color: ink, size: 188) %>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; color:var(--ink-2); font-size:13px;">
-      <span style="width:8px; height:8px; border-radius:50%; background:var(--good); display:inline-block;"></span>
-      <%# Seeded with a literal 45 while the token actually lives MemberQr::TTL
-          seconds, so the first paint showed a number that then jumped. %>
-      <%= t("customer.my_code.refresh_pre") %> <strong data-mycode-target="count" style="color:var(--ink);"><%= MemberQr::TTL %></strong>s
+    <div style="margin-top:16px;">
+      <span class="l-countdown">
+        <%= ui_icon(:refresh, size: 14) %>
+        <%# Seeded with the real TTL: a literal here made the first paint show a
+            number that then jumped. %>
+        <strong data-mycode-target="count"><%= MemberQr::TTL %></strong>s
+        <%= t("customer.my_code.refresh_post") %>
+      </span>
     </div>
 
-    <%# +X điểm reveal overlay %>
-    <div data-mycode-target="burst" style="display:none; position:absolute; inset:0; background:color-mix(in srgb, var(--primary) 92%, #000); color:#fff; flex-direction:column; align-items:center; justify-content:center;">
-      <div style="font-size:15px; opacity:.85;"><%= t("customer.my_code.you_earned") %></div>
-      <div class="l-num" style="font-size:64px;">+<span data-mycode-target="burstPoints">0</span></div>
-      <div style="opacity:.85;"><%= t("customer.my_code.balance_pre") %> <span data-mycode-target="burstBalance">0</span> <%= t("customer.common.points_word") %></div>
-      <button type="button" data-action="mycode#dismiss" class="l-btn" style="margin-top:22px; background:#fff; color:var(--primary); font-weight:700; padding:12px 40px;"><%= t("customer.my_code.got_it") %></button>
+    <p style="color:var(--ink-2); font-size:13.5px; line-height:1.5; margin:16px auto 0; max-width:290px;">
+      <%= t("customer.my_code.show_to_staff", term: current_workspace.branding_value("customer_term")) %>
+    </p>
+
+    <%= link_to member_scan_path, style: "display:inline-flex; align-items:center; gap:7px; margin-top:18px;
+          font-size:14px; font-weight:700; color:var(--primary); text-decoration:underline;" do %>
+      <%= ui_icon(:scan, size: 16) %><%= t("customer.my_code.scan_shop_qr") %>
+    <% end %>
+
+    <%# +X points reveal, shown in place when the counter picks up an earn. %>
+    <div data-mycode-target="burst" style="display:none; position:absolute; inset:0; z-index:4;
+         background:var(--scanner-bg); color:#fff; border-radius:26px 26px 0 0;
+         flex-direction:column; align-items:center; justify-content:center;">
+      <div style="font-size:14px; opacity:.8;"><%= t("customer.my_code.you_earned") %></div>
+      <div style="font-size:60px; font-weight:700; letter-spacing:-.04em; line-height:1.05; margin-top:4px;">+<span data-mycode-target="burstPoints">0</span></div>
+      <div style="opacity:.8; font-size:14px;"><%= t("customer.my_code.balance_pre") %> <span data-mycode-target="burstBalance">0</span> <%= t("customer.common.points_word") %></div>
+      <button type="button" data-action="mycode#dismiss" class="l-btn" style="margin-top:22px; background:#fff; color:var(--ink); padding:12px 40px;"><%= t("customer.my_code.got_it") %></button>
     </div>
   </div>
-
-  <p style="color:var(--ink-2); font-size:13px; text-align:center; margin-top:16px; max-width:280px;">
-    <%= t("customer.my_code.show_to_staff", term: current_workspace.branding_value("customer_term")) %>
-  </p>
 </div>

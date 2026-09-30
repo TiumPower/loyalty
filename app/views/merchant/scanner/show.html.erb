@@ -1,38 +1,115 @@
 <% content_for :title, t("merchant.nav.scanner") %>
-<% content_for :title_en, "COUNTER SCANNER" %>
+<% content_for :title_en, "COUNTER OPERATIONS" %>
+<% sc = ->(k, **o) { t("merchant.scan.#{k}", **o) } %>
 
 <% kiosk = local_assigns.fetch(:kiosk, false) || @kiosk %>
 <% kiosk_param = kiosk ? { kiosk: 1 } : {} %>
-<div style="max-width:560px; margin:0 auto;">
+<%
+  tabs = [["earn", sc.(:tab_earn)], ["redeem", sc.(:tab_redeem)]]
+  tabs << ["pos", sc.(:tab_pos)] if current_program.scan_member?
+%>
+
+<%# Kiosk keeps the single narrow column it was built for — a phone propped at
+    the till has no room for a side panel. The desk view gets the design's
+    two-column workspace. %>
+<div style="<%= kiosk ? 'max-width:560px; margin:0 auto;' : '' %>">
+  <% unless kiosk %>
+    <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="flex:1; min-width:220px;">
+        <h2 class="l-display" style="font-size:22px;"><%= sc.(:counter_title) %></h2>
+        <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= sc.(:counter_sub) %></p>
+      </div>
+      <% if current_outlet %>
+        <span class="m-badge up" style="font-size:12px; padding:5px 12px;"><%= current_outlet.name %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Which branch the money is attributed to — wrong here means wrong in every
+      report afterwards, so it stays visible rather than tucked in a menu. %>
   <% if selectable_outlets.size > 1 %>
     <%= form_with url: merchant_scanner_path, method: :get, data: { turbo: false } do %>
       <% if kiosk %><input type="hidden" name="kiosk" value="1"><% end %>
       <input type="hidden" name="tab" value="<%= @tab %>">
-      <label class="l-label"><%= t("merchant.scan.selling_branch") %></label>
-      <select name="outlet" class="l-field" style="margin-bottom:16px;" onchange="this.form.requestSubmit()">
+      <label class="l-label"><%= sc.(:selling_branch) %></label>
+      <select name="outlet" class="l-field" style="margin-bottom:16px; max-width:360px;" onchange="this.form.requestSubmit()">
         <% selectable_outlets.each do |o| %>
           <option value="<%= o.id %>" <%= "selected" if current_outlet&.id == o.id %>><%= o.name %></option>
         <% end %>
       </select>
     <% end %>
-  <% elsif current_outlet %>
-    <div style="margin-bottom:14px; font-size:13px; color:var(--ink-2);"><%= t("merchant.scan.branch_prefix") %>: <strong style="color:var(--ink);"><%= current_outlet.name %></strong></div>
+  <% elsif current_outlet && kiosk %>
+    <div style="margin-bottom:14px; font-size:13px; color:var(--ink-2);"><%= sc.(:branch_prefix) %>: <strong style="color:var(--ink);"><%= current_outlet.name %></strong></div>
   <% end %>
 
-  <div style="display:flex; gap:8px; margin-bottom:16px;">
-    <%= link_to t("merchant.scan.tab_earn"), merchant_scanner_path(kiosk_param.merge(tab: "earn")),
-          class: "l-chip #{'l-chip-brand' if @tab == 'earn'}", data: { turbo_frame: "scan_tool" } %>
-    <%= link_to t("merchant.scan.tab_redeem"), merchant_scanner_path(kiosk_param.merge(tab: "redeem")),
-          class: "l-chip #{'l-chip-brand' if @tab == 'redeem'}", data: { turbo_frame: "scan_tool" } %>
-    <% if current_program.scan_member? %>
-      <%= link_to t("merchant.scan.tab_pos"), merchant_scanner_path(kiosk_param.merge(tab: "pos")),
-            class: "l-chip #{'l-chip-brand' if @tab == 'pos'}", data: { turbo_frame: "scan_tool" } %>
+  <div class="m-subnav" style="margin-bottom:16px;">
+    <% tabs.each do |key, label| %>
+      <%= link_to label, merchant_scanner_path(kiosk_param.merge(tab: key)),
+            class: ("active" if @tab == key), data: { turbo_frame: "scan_tool" } %>
     <% end %>
   </div>
 
-  <div class="l-panel">
-    <%= turbo_frame_tag "scan_tool" do %>
-      <%= render "merchant/#{@tab}/search" %>
-    <% end %>
-  </div>
+  <% if kiosk %>
+    <div class="l-panel">
+      <%= turbo_frame_tag "scan_tool" do %><%= render "merchant/#{@tab}/search" %><% end %>
+    </div>
+  <% else %>
+    <div class="m-ops">
+      <div class="l-panel">
+        <%= turbo_frame_tag "scan_tool" do %><%= render "merchant/#{@tab}/search" %><% end %>
+      </div>
+
+      <div>
+        <%# ---- What this counter has done today ---- %>
+        <div class="l-panel">
+          <h3 style="font-size:16px; font-weight:700;"><%= sc.(:today_title) %></h3>
+          <p style="font-size:12.5px; color:var(--ink-2); margin-top:3px;"><%= sc.(:today_sub) %></p>
+          <div style="display:flex; gap:20px; margin-top:14px;">
+            <div>
+              <div class="l-eyebrow"><%= t("merchant.transactions.earned") %></div>
+              <div style="font-size:20px; font-weight:700; color:var(--good); font-variant-numeric:tabular-nums;">+<%= number_with_delimiter(@today_earned.to_i) %></div>
+            </div>
+            <div>
+              <div class="l-eyebrow"><%= t("merchant.transactions.spent") %></div>
+              <div style="font-size:20px; font-weight:700; font-variant-numeric:tabular-nums;"><%= @today_spent.to_i.zero? ? "0" : "−#{number_with_delimiter(@today_spent)}" %></div>
+            </div>
+            <div>
+              <div class="l-eyebrow"><%= t("merchant.transactions.total") %></div>
+              <div style="font-size:20px; font-weight:700; font-variant-numeric:tabular-nums;"><%= number_with_delimiter(@today_count.to_i) %></div>
+            </div>
+          </div>
+
+          <% if @today_recent.present? %>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--line-soft);">
+              <% @today_recent.each do |t| %>
+                <div style="display:flex; align-items:center; gap:10px; padding:7px 0; font-size:13px;">
+                  <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= t.member&.display_name %></span>
+                  <span class="m-num" style="flex:none; color:<%= t.credit? ? 'var(--good)' : 'var(--warn)' %>;">
+                    <%= t.credit? ? "+" : "−" %><%= number_with_delimiter(t.amount.abs) %>
+                  </span>
+                  <span style="flex:none; color:var(--ink-2); font-size:12px;"><%= t.created_at.strftime("%H:%M") %></span>
+                </div>
+              <% end %>
+            </div>
+            <%= link_to t("merchant.dashboard.view_all"), merchant_transactions_path,
+                  style: "display:inline-block; margin-top:10px; font-size:13px; font-weight:600; color:var(--primary); text-decoration:none;" %>
+          <% end %>
+        </div>
+
+        <%# ---- How each tool works, so a new cashier is not guessing ---- %>
+        <div class="l-panel" style="margin-top:16px;">
+          <h3 style="font-size:16px; font-weight:700;"><%= sc.(:how_title) %></h3>
+          <p style="font-size:12.5px; color:var(--ink-2); margin-top:3px;"><%= sc.(:how_sub) %></p>
+          <ol style="margin:14px 0 0; padding-left:18px; font-size:13px; line-height:1.7; color:var(--ink-2);">
+            <li><%= sc.("how_#{@tab}_1") %></li>
+            <li><%= sc.("how_#{@tab}_2") %></li>
+            <li><%= sc.("how_#{@tab}_3") %></li>
+          </ol>
+          <div class="l-note" style="margin-top:14px;">
+            <%= ui_icon(:shield, size: 16) %><span><%= sc.("safeguard_#{@tab}") %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>

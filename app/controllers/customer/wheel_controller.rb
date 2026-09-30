@@ -7,6 +7,10 @@ module Customer
     def show
       @member = current_member
       @free   = @wheel.free_spin_available?(@member)
+      # "Recent winners" — real spins across the shop, so the wheel reads as
+      # something people actually win on.
+      @recent = SpinLog.where(workspace: current_workspace).where.not(result_kind: "none")
+                       .order(created_at: :desc).includes(:voucher).limit(5).to_a
     end
 
     def spin

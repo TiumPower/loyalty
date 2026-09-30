@@ -1,57 +1,142 @@
 <% content_for :title, @reward.title %>
 <% content_for :tab, "wallet" %>
-<% enough = @member.points_balance >= @reward.cost_points.to_i %>
-<header class="l-appbar">
-  <%= link_to "←", member_wallet_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:20px;"><%= t("customer.reward_detail.title") %></div>
+<%
+  cost   = @reward.cost_points.to_i
+  enough = @member.points_balance >= cost
+  open   = @reward.redeem_open?
+%>
+
+<header class="l-subhead">
+  <%= link_to member_wallet_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.reward_detail.title") %></div>
+  </div>
+  <div class="sp">
+    <span class="l-pill brand"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span>
+  </div>
 </header>
 
-<div class="l-screen">
-  <div class="l-ticket" style="margin-bottom:16px;">
-    <div class="stub"><div class="v"><%= @reward.value_label %></div><div class="u"><%= @reward.kind_label %></div></div>
-    <div class="perf"></div>
-    <div class="body">
-      <div style="font-weight:700; font-size:17px;"><%= @reward.display_icon %> <%= @reward.title %></div>
-      <div style="font-size:13px; color:var(--ink-2); margin-top:6px;"><%= @reward.description %></div>
+<div class="l-screen" data-controller="sheet">
+  <div class="l-hero <%= 'no-art' unless @reward&.image&.attached? %>"><%= reward_art(@reward, size: 720, emoji_size: 56) %></div>
+
+  <div style="display:flex; align-items:center; gap:10px; margin-top:16px;">
+    <span class="l-eyebrow" style="flex:1; min-width:0;"><%= current_workspace.name %></span>
+    <% if open %>
+      <span class="l-pill good"><%= t("customer.wallet.state_available") %></span>
+    <% else %>
+      <span class="l-pill amber"><%= ui_icon(:clock, size: 12) %><%= @reward.redeem_window_hint %></span>
+    <% end %>
+  </div>
+
+  <h1 style="font-size:23px; font-weight:700; letter-spacing:-.025em; margin-top:6px; line-height:1.2;"><%= @reward.title %></h1>
+  <% if @reward.description.present? %>
+    <p style="color:var(--ink-2); font-size:14px; line-height:1.55; margin-top:8px;"><%= @reward.description %></p>
+  <% end %>
+
+  <%# ---- What it costs, and what is left afterwards. The design puts this
+        above the fold so the decision is made before the button is pressed. ---- %>
+  <div class="l-tile" style="margin-top:18px;">
+    <div style="display:flex; align-items:flex-start; gap:14px;">
+      <div style="flex:1; min-width:0;">
+        <div class="l-eyebrow"><%= t("customer.reward_detail.cost") %></div>
+        <div style="font-size:22px; font-weight:700; letter-spacing:-.025em; margin-top:4px; color:var(--primary); font-variant-numeric:tabular-nums;">
+          <%= t("customer.common.points_count", n: number_with_delimiter(cost)) %>
+        </div>
+      </div>
+      <div style="text-align:right; flex:none;">
+        <div class="l-eyebrow"><%= t("customer.reward_detail.balance_after") %></div>
+        <div style="font-size:22px; font-weight:700; letter-spacing:-.025em; margin-top:4px; font-variant-numeric:tabular-nums; color:<%= enough ? 'var(--ink)' : 'var(--warn)' %>;">
+          <%= number_with_delimiter(@member.points_balance - cost) %>
+        </div>
+      </div>
     </div>
+    <% unless enough %>
+      <div class="l-bar" style="margin-top:14px;"><span style="width:<%= cost.positive? ? [(@member.points_balance * 100.0 / cost), 100].min.round : 100 %>%;"></span></div>
+      <div style="font-size:12.5px; color:var(--ink-2); margin-top:7px;">
+        <%= t("customer.reward_detail.short_by", n: number_with_delimiter(cost - @member.points_balance)) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ---- Small print a member needs before spending, not after. ---- %>
+  <div class="l-rows" style="margin-top:12px;">
+    <% if @reward.valid_days.to_i.positive? %>
+      <div>
+        <span class="ic"><%= ui_icon(:clock, size: 18) %></span>
+        <span><%= t("customer.reward_detail.valid_days", n: @reward.valid_days) %></span>
+        <span class="tr"><%= l(@reward.valid_days.to_i.days.from_now.to_date, format: :short) %></span>
+      </div>
+    <% end %>
+    <% if @reward.remaining %>
+      <div>
+        <span class="ic"><%= ui_icon(:tag, size: 18) %></span>
+        <span><%= t("customer.reward_detail.stock") %></span>
+        <span class="tr"><%= t("customer.wallet.remaining", n: @reward.remaining) %></span>
+      </div>
+    <% end %>
+    <% if @reward.schedule_summary.present? %>
+      <div>
+        <span class="ic"><%= ui_icon(:history, size: 18) %></span>
+        <span><%= t("customer.reward_detail.window") %></span>
+        <span class="tr"><%= @reward.schedule_summary %></span>
+      </div>
+    <% end %>
   </div>
 
   <% if @reward.terms.present? %>
-    <div class="l-tile" style="margin-bottom:16px;">
-      <div class="l-eyebrow"><%= t("customer.reward_detail.terms") %></div>
-      <div style="font-size:13px; color:var(--ink-2); margin-top:6px;"><%= simple_format @reward.terms %></div>
+    <div class="l-note" style="margin-top:12px;">
+      <%= ui_icon(:shield, size: 16) %>
+      <div><%= simple_format @reward.terms, {}, sanitize: true, wrapper_tag: "span" %></div>
     </div>
   <% end %>
 
-  <%# How long the voucher lasts was only revealed AFTER the points were spent.
-      A customer choosing between rewards needs it beforehand. %>
-  <% if @reward.valid_days.to_i.positive? %>
-    <div class="l-tile" style="margin-bottom:16px; display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-2);">
-      <span style="font-size:17px;">⏳</span>
-      <span>Sau khi đổi, ưu đãi có hiệu lực <strong style="color:var(--ink);"><%= @reward.valid_days %> ngày</strong>
-        (đến <strong style="color:var(--ink);"><%= l(@reward.valid_days.to_i.days.from_now.to_date, format: :short) %></strong>).</span>
-    </div>
-  <% end %>
-
-  <div class="l-tile" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-    <div><div class="l-eyebrow"><%= t("customer.reward_detail.cost") %></div><div class="l-num" style="font-size:24px;"><%= t("customer.common.points_count", n: number_with_delimiter(@reward.cost_points)) %></div></div>
-    <div style="text-align:right;"><div class="l-eyebrow"><%= t("customer.reward_detail.your_points") %></div><div class="l-num" style="font-size:20px; color:<%= enough ? 'var(--good)' : 'var(--warn)' %>;"><%= number_with_delimiter(@member.points_balance) %></div></div>
+  <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+    <% if !open %>
+      <button class="l-btn l-btn-block" disabled>
+        <%= ui_icon(:clock, size: 16) %><%= @reward.redeem_window_hint %>
+      </button>
+    <% elsif enough %>
+      <%# The design confirms in a sheet over the page rather than a dialog, so
+          the cost and the balance after it stay on screen while deciding. %>
+      <button type="button" class="l-btn l-btn-primary l-btn-block" data-action="sheet#open">
+        <%= ui_icon(:gift, size: 17) %><%= t("customer.reward_detail.redeem_now", n: number_with_delimiter(cost)) %>
+      </button>
+    <% else %>
+      <button class="l-btn l-btn-block" disabled><%= t("customer.reward_detail.short_by", n: number_with_delimiter(cost - @member.points_balance)) %></button>
+    <% end %>
+    <%= link_to t("customer.reward_detail.not_now"), member_wallet_path, class: "l-btn l-btn-outline l-btn-block" %>
   </div>
 
-  <% if !@reward.redeem_open? %>
-    <button class="l-btn l-btn-block" disabled style="background:var(--surface-2); color:var(--ink-2);">
-      🕑 <%= @reward.redeem_window_hint %>
-    </button>
-    <% if @reward.schedule_summary.present? && @reward.redeem_state != :ended %>
-      <p style="text-align:center; font-size:12px; color:var(--ink-2); margin-top:8px;"><%= t("customer.reward_detail.window_only", win: @reward.schedule_summary) %></p>
-    <% end %>
-  <% elsif enough %>
-    <%= button_to t("customer.reward_detail.redeem_now", n: number_with_delimiter(@reward.cost_points)), member_redeem_reward_path(@reward),
-          method: :post, class: "l-btn l-btn-primary l-btn-block",
-          form: { data: { turbo_confirm: t("customer.reward_detail.confirm", title: @reward.title, n: number_with_delimiter(@reward.cost_points)) } } %>
-  <% else %>
-    <button class="l-btn l-btn-block" disabled style="background:var(--surface-2); color:var(--ink-2);">
-      <%= t("customer.reward_detail.short_by", n: number_with_delimiter(@reward.cost_points - @member.points_balance)) %>
-    </button>
-  <% end %>
+<% if open && enough %>
+  <div class="l-sheetwrap" data-sheet-target="panel" hidden>
+    <button type="button" class="scrim" data-action="sheet#close" aria-label="<%= t("customer.common.close") %>"></button>
+    <div class="l-sheet" style="text-align:center;">
+      <div class="handle"></div>
+      <div style="width:64px; height:64px; margin:6px auto 0; border-radius:50%; background:var(--primary-soft);
+                  color:var(--primary); display:grid; place-items:center;"><%= ui_icon(:gift, size: 28) %></div>
+      <div style="font-size:19px; font-weight:700; letter-spacing:-.02em; margin-top:14px;"><%= t("customer.reward_detail.confirm_title") %></div>
+      <p style="font-size:13.5px; color:var(--ink-2); line-height:1.55; margin:8px auto 0; max-width:300px;">
+        <%= t("customer.reward_detail.confirm_body", n: number_with_delimiter(cost), title: @reward.title) %>
+      </p>
+      <div class="l-delta" style="margin-top:18px; text-align:left;">
+        <div>
+          <div class="k"><%= t("customer.pos.before") %></div>
+          <div class="v"><%= number_with_delimiter(@member.points_balance) %></div>
+        </div>
+        <span style="flex:none; color:var(--ink-2);"><%= ui_icon(:arrow_right, size: 18) %></span>
+        <div style="text-align:right;">
+          <div class="k"><%= t("customer.reward_detail.balance_after") %></div>
+          <div class="v hi"><%= number_with_delimiter(@member.points_balance - cost) %></div>
+        </div>
+      </div>
+      <%= button_to t("customer.reward_detail.confirm_cta"), member_redeem_reward_path(@reward),
+            method: :post, class: "l-btn l-btn-primary l-btn-block", form: { style: "margin-top:18px;" } %>
+      <button type="button" class="l-btn l-btn-outline l-btn-block" style="margin-top:10px;" data-action="sheet#close">
+        <%= t("customer.reward_detail.not_now") %>
+      </button>
+    </div>
+  </div>
+<% end %>
 </div>

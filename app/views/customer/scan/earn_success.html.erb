@@ -1,9 +1,46 @@
 <% content_for :title, t("customer.earn_success.title") %>
 <% content_for :tab, "" %>
-<div class="l-screen" data-controller="pointburst sfx" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center;">
-  <div style="width:84px; height:84px; border-radius:50%; background:var(--good); color:#fff; display:grid; place-items:center; font-size:42px;">✓</div>
-  <h2 class="l-display" style="font-size:24px; margin-top:14px;"><%= t("customer.earn_success.heading") %></h2>
-  <div class="l-num" style="font-size:56px; color:var(--primary-ink);">+<%= number_with_delimiter(@result.points) %></div>
-  <p style="color:var(--ink-2);"><%= t("customer.earn_success.bill_balance_html", amount: number_with_delimiter(@charge.amount), bal: number_with_delimiter(current_member.points_balance)) %></p>
-  <%= link_to t("customer.common.home_back"), member_root_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:20px; max-width:360px;" %>
+<div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
+  <div class="l-result">
+    <div class="halo"><%= ui_icon(:sparkles, size: 38) %></div>
+    <span class="l-pill good" style="margin-top:2px;"><%= t("customer.earn_success.verified") %></span>
+    <h1><%= t("customer.earn_success.heading_points", n: number_with_delimiter(@result.points)) %></h1>
+    <p><%= t("customer.earn_success.subtitle", shop: current_workspace.name) %></p>
+  </div>
+
+  <div class="l-tile" style="margin-top:22px;">
+    <div style="display:flex; align-items:center; gap:11px;">
+      <%= workspace_avatar(current_workspace, klass: "", style: "width:40px; height:40px; border-radius:12px; flex:none; font-size:14px;") %>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:14.5px;"><%= current_workspace.name %></div>
+        <div style="font-size:12px; color:var(--ink-2); margin-top:2px;"><%= l(Time.current, format: :short) %></div>
+      </div>
+      <span class="l-pill good" style="flex:none;">+<%= number_with_delimiter(@result.points) %></span>
+    </div>
+    <div style="margin-top:12px; padding-top:4px; border-top:1px solid var(--line-soft);">
+      <div class="l-kv"><span class="k"><%= t("customer.earn_success.bill") %></span><span class="v"><%= number_with_delimiter(@charge.amount) %>đ</span></div>
+    </div>
+    <div class="l-delta" style="margin-top:10px;">
+      <div>
+        <div class="k"><%= t("customer.earn_success.new_balance") %></div>
+      </div>
+      <div style="text-align:right;"><div class="v hi"><%= t("customer.common.points_count", n: number_with_delimiter(current_member.points_balance)) %></div></div>
+    </div>
+  </div>
+
+  <%# How much closer this purchase brought them — the design's "tier hint". %>
+  <% if current_member.next_tier %>
+    <div class="l-note brand" style="margin-top:12px;">
+      <%= ui_icon(:medal, size: 17) %>
+      <span>
+        <strong><%= t("customer.tiers.to_next_short", n: number_with_delimiter(current_member.points_to_next), tier: current_member.next_tier.name) %></strong><br>
+        <%= t("customer.earn_success.tier_unlocks", tier: current_member.next_tier.name, n: number_with_delimiter(current_member.next_tier.threshold_points)) %>
+      </span>
+    </div>
+  <% end %>
+
+  <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+    <%= link_to t("customer.common.home_back"), member_root_path, class: "l-btn l-btn-primary l-btn-block" %>
+    <%= link_to t("customer.home.view_history"), member_history_path, class: "l-btn l-btn-outline l-btn-block" %>
+  </div>
 </div>

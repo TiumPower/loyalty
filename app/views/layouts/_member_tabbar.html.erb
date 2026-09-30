@@ -1,20 +1,27 @@
-<% key = content_for(:tab).to_s.strip.presence %>
+<% key  = content_for(:tab).to_s.strip.presence %>
+<% prog = current_workspace.program %>
+<%# Five slots, centred on the scan action, as in the design file. The fourth
+    slot is Missions where the shop runs them; a shop with gamification off
+    would get a tab that leads nowhere, so it falls back to point history. %>
+<% fourth = prog.gamification_enabled ? [member_missions_path, :award, t("customer.nav.missions"), "missions"]
+                                      : [member_history_path,  :history, t("customer.nav.history"), "history"] %>
 <nav class="l-tabbar">
  <div class="l-tabbar-inner">
   <%= link_to member_root_path, class: ("active" if key == "home") do %>
     <%= ui_icon(:home, size: 22) %><span><%= t("customer.nav.home") %></span>
   <% end %>
   <%= link_to member_wallet_path, class: ("active" if key == "wallet") do %>
-    <%= ui_icon(:gift, size: 22) %><span><%= t("customer.nav.wallet") %></span>
+    <%= ui_icon(:wallet_cards, size: 22) %><span><%= t("customer.nav.wallet") %></span>
   <% end %>
-  <%= link_to member_scan_path, class: "scan-fab", "aria-label": t("customer.nav.scan") do %>
-    <%= ui_icon(:scan, size: 34) %>
+  <%# The counter action: show my code, and from there open the camera. %>
+  <%= link_to member_my_code_path, class: "scan-fab", "aria-label": t("customer.nav.scan") do %>
+    <%= ui_icon(:qrcode, size: 22) %>
   <% end %>
-  <%= link_to member_my_code_path, class: ("active" if key == "code") do %>
-    <%= ui_icon(:qrcode, size: 22) %><span><%= t("customer.nav.my_code") %></span>
+  <%= link_to fourth[0], class: ("active" if key == fourth[3]) do %>
+    <%= ui_icon(fourth[1], size: 22) %><span><%= fourth[2] %></span>
   <% end %>
   <%= link_to member_profile_path, class: ("active" if key == "me") do %>
-    <%= ui_icon(:user, size: 22) %><span><%= t("customer.nav.me") %></span>
+    <%= ui_icon(:user_circle, size: 22) %><span><%= t("customer.nav.me") %></span>
   <% end %>
  </div>
 </nav>

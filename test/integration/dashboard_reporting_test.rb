@@ -37,7 +37,11 @@ class DashboardReportingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "tỷ lệ đổi 20%", response.body            # 100 of 500
     refute_match "tỷ lệ đổi 80%", response.body            # 100 + 300 expired
-    assert_match "300 điểm hết hạn", response.body         # reported on its own
+    # Expired points get their own metric card rather than being folded into
+    # redemptions; the label and the figure live in separate elements now.
+    expired_card = response.body[/<div class="m-metric">(?:(?!<\/div>\s*<div class="m-metric">).)*?Điểm hết hạn.*?<\/div>\s*<\/div>/m]
+    assert expired_card, "expected an expired-points metric card"
+    assert_match "300", expired_card
   end
 
   # created_at is stored as naive UTC. Bucketing the growth chart with a plain

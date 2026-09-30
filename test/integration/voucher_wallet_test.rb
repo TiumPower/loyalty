@@ -91,33 +91,40 @@ class VoucherWalletTest < ActionDispatch::IntegrationTest
     assert_equal "active", v.reload.state
   end
 
-  # The "Đã đổi" tab listed every voucher the member had ever held, newest
+  # The voucher list showed every voucher the member had ever held, newest
   # first, so the two they can actually use sat wherever they happened to fall
   # among a year of used and expired ones — under a tab badge promising "2".
-  test "the owned tab puts usable vouchers first" do
+  # (This list is its own screen now; the wallet keeps the catalogue.)
+  test "the voucher list puts usable vouchers first" do
     old_used = voucher(state: "used", created_at: 2.days.ago)
     old_exp  = voucher(expires_at: 3.days.ago, created_at: 1.day.ago)
     usable   = voucher(created_at: 10.days.ago)
 
     sign_in_member!
-    get "/w/#{@ws.slug}/wallet"
+    # Each state has its own tab, so check the order within the live list and
+    # that the finished ones are filed under theirs.
+    get "/w/#{@ws.slug}/vouchers?tab=available"
     assert_response :success
+    assert_match usable.code, response.body
+    refute_match old_used.code, response.body
 
-    body = response.body
-    assert body.index(usable.code) < body.index(old_used.code), "usable before used"
-    assert body.index(usable.code) < body.index(old_exp.code), "usable before expired"
+    get "/w/#{@ws.slug}/vouchers?tab=used"
+    assert_match old_used.code, response.body
+
+    get "/w/#{@ws.slug}/vouchers?tab=expired"
+    assert_match old_exp.code, response.body
   end
 
   # Capping the list by recency would have hidden a long-dated voucher the
   # member can still use behind a wall of newer, finished ones.
   test "a usable voucher is never dropped by the history cap" do
     old_usable = voucher(created_at: 3.years.ago, expires_at: 60.days.from_now)
-    (Customer::WalletController::MAX_VOUCHERS + 10).times do |i|
+    (Customer::VouchersController::MAX_VOUCHERS + 10).times do |i|
       voucher(state: "used", created_at: i.hours.ago, used_at: i.hours.ago)
     end
 
     sign_in_member!
-    get "/w/#{@ws.slug}/wallet"
+    get "/w/#{@ws.slug}/vouchers?tab=available"
     assert_response :success
     assert_match old_usable.code, response.body
     assert_equal old_usable.code,

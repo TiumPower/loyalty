@@ -28,6 +28,26 @@ class Badge < ApplicationRecord
     end
   end
 
+  # How far along `member` is, as [done, target]. The badge grid and the badge
+  # page both show "18/25" rather than a bare lock, so the criteria have to
+  # report a number, not just a yes/no.
+  def progress_for(member)
+    target = threshold.to_i
+    case criteria_type
+    when "first_purchase"
+      [member.purchases.not_voided.limit(1).count, 1]
+    when "purchases_count"
+      [[member.purchases.not_voided.count, target].min, target]
+    when "points_total"
+      [[member.lifetime_points.to_i, target].min, target]
+    when "night_owl"
+      done = member.purchases.not_voided.where("EXTRACT(hour FROM created_at) >= ?", 22).count
+      [[done, target].min, target]
+    else
+      [earned_by?(member) ? 1 : 0, 1]
+    end
+  end
+
   # Does `member` currently satisfy this badge?
   def earned_by?(member)
     case criteria_type

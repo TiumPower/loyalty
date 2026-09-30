@@ -28,7 +28,7 @@ module Merchant
 
     private
 
-    def nav_key = :gamification
+    def nav_key = :games
 
     def badge_params
       params.require(:badge).permit(:name, :description, :icon, :criteria_type, :threshold, :reward_points, :reward_id)

@@ -104,30 +104,145 @@
      saying which, "4.266 điểm đã phát" sitting next to "27.870 chưa dùng" reads
      as a contradiction rather than as two different questions. ---- %>
 <% range_tag = @range[:key] == "all" ? d.(:scope_all) : @range[:label] %>
-<div class="l-kpis">
-  <div class="l-kpi">
-    <div class="k"><%= d.(:members) %> <span class="sc"><%= d.(:scope_all) %></span></div>
-    <div class="v"><%= number_with_delimiter(@members_count) %></div>
-    <div class="d"><%= d.(:active_suffix, n: number_with_delimiter(@active_members)) %></div>
+<%# ---- The design's two metric rows: the business first, then the programme.
+      Each card carries the scope it is measured over, because mixing a range
+      figure with an all-time one in the same row reads as a contradiction. ---- %>
+<div class="m-metrics">
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:revenue) %></span><span class="ic"><%= ui_icon(:coins, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@revenue) %>đ</span><span class="m-badge"><%= range_tag %></span></div>
   </div>
-  <div class="l-kpi">
-    <div class="k"><%= d.(:points_issued) %> <span class="sc"><%= range_tag %></span></div>
-    <div class="v"><%= number_with_delimiter(@points_issued) %></div>
-    <div class="d"><%= d.(:transactions, n: @purchases_count) %></div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:transactions_label) %></span><span class="ic"><%= ui_icon(:receipt, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@purchases_count) %></span><span class="m-badge"><%= range_tag %></span></div>
   </div>
-  <div class="l-kpi">
-    <div class="k"><%= d.(:points_redeemed) %> <span class="sc"><%= range_tag %></span></div>
-    <div class="v"><%= number_with_delimiter(@points_redeemed) %></div>
-    <div class="d"><%= d.(:redemption_rate_suffix, n: @redemption_rate) %></div>
-    <%# Expired points used to be lumped in above, which read as redemptions. %>
-    <% if @points_expired.to_i.positive? %>
-      <div class="d" style="color:var(--ink-2);"><%= d.(:points_expired_suffix, n: number_with_delimiter(@points_expired)) %></div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:members) %></span><span class="ic"><%= ui_icon(:users, size: 15) %></span></div>
+    <div class="row">
+      <span class="v"><%= number_with_delimiter(@members_count) %></span>
+      <span class="m-badge up"><%= d.(:active_suffix, n: number_with_delimiter(@active_members)) %></span>
+    </div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:new_members_label) %></span><span class="ic"><%= ui_icon(:user, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@new_members.to_i) %></span><span class="m-badge"><%= range_tag %></span></div>
+  </div>
+</div>
+
+<div class="m-metrics" style="margin-top:16px;">
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:points_issued) %></span><span class="ic"><%= ui_icon(:sparkles, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@points_issued) %></span><span class="m-badge"><%= range_tag %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:points_redeemed) %></span><span class="ic"><%= ui_icon(:gift, size: 15) %></span></div>
+    <div class="row">
+      <span class="v"><%= number_with_delimiter(@points_redeemed) %></span>
+      <span class="m-badge <%= @redemption_rate.to_i >= 30 ? 'up' : '' %>"><%= d.(:redemption_rate_suffix, n: @redemption_rate) %></span>
+    </div>
+  </div>
+  <div class="m-metric">
+    <%# Expired points used to be lumped into redemptions, which read as if
+        customers had spent them. %>
+    <div class="hd"><span class="k"><%= d.(:points_expired_label) %></span><span class="ic"><%= ui_icon(:clock, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@points_expired.to_i) %></span><span class="m-badge"><%= range_tag %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= d.(:outstanding) %></span><span class="ic"><%= ui_icon(:wallet_cards, size: 15) %></span></div>
+    <div class="row">
+      <span class="v"><%= number_with_delimiter(@points_outstanding) %></span>
+      <span class="m-badge"><%= d.(:scope_all) %></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<%# ---- Operational overview: what just happened, and what is waiting on you.
+      The design puts these together at the bottom of the dashboard. ---- %>
+<div class="m-ops" style="margin-top:16px;">
+  <div class="l-panel">
+    <div class="m-sec">
+      <div style="min-width:0;">
+        <h3><%= d.(:recent_tx) %></h3>
+        <div class="sub"><%= d.(:recent_tx_sub) %></div>
+      </div>
+      <%= link_to d.(:view_all), merchant_transactions_path, class: "act" %>
+    </div>
+    <% if @recent_tx.blank? %>
+      <p style="color:var(--ink-2); font-size:13.5px;"><%= d.(:no_tx) %></p>
+    <% else %>
+      <div style="overflow-x:auto;">
+        <table class="m-table">
+          <thead>
+            <tr>
+              <th><%= d.(:col_customer) %></th>
+              <th><%= d.(:col_type) %></th>
+              <th><%= d.(:col_points) %></th>
+              <th><%= d.(:col_time) %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_tx.each do |tx| %>
+              <tr>
+                <td>
+                  <div class="m-who">
+                    <span class="av"><%= tx.member&.initials %></span>
+                    <div style="min-width:0;">
+                      <div class="nm"><%= tx.member&.display_name %></div>
+                      <div class="sub"><%= tx.outlet&.name || current_workspace.name %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="l-chip" style="font-size:11.5px;"><%= tx.title %></span></td>
+                <td class="m-num" style="color:<%= tx.credit? ? 'var(--good)' : 'var(--warn)' %>;">
+                  <%= tx.credit? ? "+" : "" %><%= number_with_delimiter(tx.amount) %>
+                </td>
+                <td style="color:var(--ink-2); white-space:nowrap;"><%= l(tx.created_at, format: :short) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     <% end %>
   </div>
-  <div class="l-kpi">
-    <div class="k"><%= d.(:outstanding) %> <span class="sc"><%= d.(:scope_all) %></span></div>
-    <div class="v"><%= number_with_delimiter(@points_outstanding) %></div>
-    <div class="d" style="color:var(--ink-2);"><%= d.(:outstanding_note) %></div>
+
+  <div>
+    <div class="l-panel">
+      <div class="m-sec" style="margin-bottom:10px;">
+        <h3 style="font-size:16px;"><%= d.(:alerts_title) %></h3>
+        <% if @alert_count.to_i.positive? %><span class="m-badge down"><%= @alert_count %></span><% end %>
+      </div>
+      <% if @open_alerts.blank? %>
+        <p style="color:var(--ink-2); font-size:13.5px;"><%= d.(:alerts_none) %></p>
+      <% else %>
+        <% @open_alerts.each do |a| %>
+          <%= link_to (a.link.presence || merchant_alerts_path), class: "m-alert" do %>
+            <span class="ic"><%= ui_icon(:shield, size: 15) %></span>
+            <div class="bd">
+              <div class="tt"><%= a.title %></div>
+              <div class="mt"><%= a.body %></div>
+            </div>
+            <%= ui_icon(:chevron_right, size: 14, stroke: 2.2) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="l-panel" style="margin-top:16px;">
+      <h3 style="font-size:16px; font-weight:700; margin-bottom:12px;"><%= d.(:quick_links) %></h3>
+      <div class="m-quick">
+        <%= link_to merchant_scanner_path do %>
+          <div class="hd"><span class="ic"><%= ui_icon(:scan, size: 15) %></span><%= ui_icon(:launch, size: 14) %></div>
+          <div class="tt"><%= d.(:ql_counter) %></div>
+          <div class="mt"><%= d.(:ql_counter_sub) %></div>
+        <% end %>
+        <%= link_to merchant_rewards_path do %>
+          <div class="hd"><span class="ic"><%= ui_icon(:gift, size: 15) %></span><%= ui_icon(:launch, size: 14) %></div>
+          <div class="tt"><%= d.(:ql_rewards) %></div>
+          <div class="mt"><%= d.(:ql_rewards_sub) %></div>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>
 

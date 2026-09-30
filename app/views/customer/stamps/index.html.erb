@@ -1,50 +1,84 @@
 <% content_for :title, t("customer.stamps.title") %>
 <% content_for :tab, "" %>
-<header class="l-appbar">
-  <%= link_to "←", member_root_path, style: "font-size:22px; text-decoration:none; color:var(--ink);" %>
-  <div class="nm l-display" style="font-size:22px;"><%= t("customer.stamps.title") %></div>
+<header class="l-subhead">
+  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+    <%= ui_icon(:arrow_left, size: 18) %>
+  <% end %>
+  <div style="min-width:0;">
+    <div class="t"><%= t("customer.stamps.title") %></div>
+    <div class="s"><%= t("customer.stamps.subtitle") %></div>
+  </div>
+  <div class="sp"><span class="l-pill brand"><%= t("customer.common.points_count", n: number_with_delimiter(@member.points_balance)) %></span></div>
 </header>
 
 <div class="l-screen">
   <% if @cards.empty? %>
-    <div class="l-tile" style="text-align:center; padding:40px 20px;">
-      <div style="font-size:40px;">🎟️</div>
-      <p style="font-weight:600; margin-top:8px;"><%= t("customer.stamps.empty") %></p>
+    <div class="l-empty">
+      <div class="ic"><%= ui_icon(:stamp, size: 26) %></div>
+      <div class="tt"><%= t("customer.stamps.empty") %></div>
+      <div class="mt"><%= t("customer.stamps.empty_sub") %></div>
     </div>
   <% else %>
     <% @cards.each do |card| %>
-      <% m = @memberships[card]; count = m.count %>
-      <div class="l-tile" style="margin-bottom:16px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:26px;"><%= card.display_icon %></span>
-          <div style="flex:1;">
-            <div style="font-weight:700;"><%= card.title %></div>
-            <div style="font-size:12px; color:var(--ink-2);"><%= card.description %></div>
-          </div>
-          <span class="l-chip l-chip-brand"><%= count %>/<%= card.target_count %></span>
-        </div>
+      <% m = @memberships[card]; count = m.count; target = card.target_count; left = [target - count, 0].max %>
+      <div class="l-tile" style="margin-bottom:14px;">
+        <div style="font-weight:700; font-size:16px; letter-spacing:-.015em;"><%= card.title %></div>
+        <% if card.description.present? %>
+          <div style="font-size:13px; color:var(--ink-2); margin-top:4px; line-height:1.45;"><%= card.description %></div>
+        <% end %>
 
-        <div class="l-stamp-grid">
-          <% card.target_count.times do |i| %>
-            <% last = i == card.target_count - 1 %>
-            <div class="l-stamp-dot <%= 'filled' if i < count %> <%= 'reward' if last && i >= count %>">
-              <%= last ? (i < count ? "★" : (card.reward&.display_icon || "🎁")) : (i < count ? "✓" : (i + 1)) %>
+        <div class="l-stamps" style="margin-top:16px;">
+          <% target.times do |i| %>
+            <% last = i == target - 1 %>
+            <div class="s <%= 'on' if i < count %> <%= 'goal' if last && i >= count %>">
+              <% if i < count %><span style="font-size:17px;"><%= card.display_icon %></span>
+              <% elsif last %><%= ui_icon(:gift, size: 16) %>
+              <% else %><%= i + 1 %><% end %>
             </div>
           <% end %>
+        </div>
+
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:18px;">
+          <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.stamps.progress") %></div>
+          <div style="font-size:26px; font-weight:700; letter-spacing:-.03em; line-height:1; font-variant-numeric:tabular-nums;">
+            <%= count %><span style="color:var(--ink-2); font-size:.6em;"> / <%= target %></span>
+          </div>
         </div>
 
         <% if card.reward %>
-          <p style="font-size:12px; color:var(--ink-2); margin-top:12px;"><%= t("customer.stamps.complete_to_get_html", reward: card.reward.title) %><% if m.completed_count.positive? %><%= t("customer.stamps.redeemed_times", n: m.completed_count) %><% end %></p>
-          <%# Card full but the prize ran out: the stamps are kept, so say so —
-              otherwise a full card that pays out nothing looks broken. %>
-          <% if m.held_for_stock? %>
-            <div style="margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--surface-2); font-size:12.5px; line-height:1.5;">
-              <strong>⏳ <%= t("customer.stamps.held_title") %></strong>
-              <div style="color:var(--ink-2); margin-top:2px;"><%= t("customer.stamps.held_body", reward: card.reward.title) %></div>
+          <div style="height:1px; background:var(--line-soft); margin:14px 0;"></div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:48px; height:48px; border-radius:12px; flex:none; overflow:hidden; background:var(--primary-soft); display:grid; place-items:center; font-size:20px;">
+              <%= reward_art(card.reward, size: 140, emoji_size: 20) %>
             </div>
-          <% end %>
+            <div style="min-width:0;">
+              <div class="l-eyebrow"><%= t("customer.stamps.your_reward") %></div>
+              <div style="font-weight:700; font-size:14.5px; margin-top:2px;"><%= card.reward.title %></div>
+            </div>
+          </div>
+        <% end %>
+
+        <%# Card full but the prize ran out: the stamps are kept, so say so —
+            otherwise a full card that pays out nothing looks broken. %>
+        <% if m.held_for_stock? %>
+          <div class="l-note amber" style="margin-top:12px;">
+            <%= ui_icon(:clock, size: 16) %>
+            <span><strong><%= t("customer.stamps.held_title") %></strong><br><%= t("customer.stamps.held_body", reward: card.reward.title) %></span>
+          </div>
+        <% end %>
+        <% if m.completed_count.positive? %>
+          <div style="font-size:12.5px; color:var(--ink-2); margin-top:10px;"><%= t("customer.stamps.redeemed_times", n: m.completed_count) %></div>
         <% end %>
       </div>
+
+      <%# The design's nudge: a small character with one encouraging line. %>
+      <% if left.positive? %>
+        <div style="display:flex; align-items:flex-start; gap:12px; margin:-4px 0 20px;">
+          <div style="width:52px; height:52px; border-radius:50%; flex:none; background:var(--primary-soft);
+                      display:grid; place-items:center; font-size:26px;"><%= card.display_icon %></div>
+          <div class="l-bubble"><%= t("customer.stamps.almost_there", n: left) %></div>
+        </div>
+      <% end %>
     <% end %>
   <% end %>
 </div>

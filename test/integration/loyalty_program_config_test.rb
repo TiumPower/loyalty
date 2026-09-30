@@ -44,8 +44,12 @@ class LoyaltyProgramConfigTest < ActionDispatch::IntegrationTest
     patch merchant_loyalty_program_path, params: { loyalty_program: { tier_cycle_months: 0 } }
     assert_response :unprocessable_entity
     assert_equal 12, @program.reload.tier_cycle_months
-    # …and the page has to say why, with the tier grid still on it.
+    # …and the page has to say why.
     assert_match "Chu kỳ xét hạng", response.body
+    # Tiers live on their own screen now; the refused save must not have
+    # disturbed them.
+    get merchant_tiers_path
+    assert_response :success
     assert_match "Kim Cương", response.body
 
     ActsAsTenant.with_tenant(@ws) do
