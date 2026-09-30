@@ -42,21 +42,25 @@
     <div style="margin-bottom:14px; font-size:13px; color:var(--ink-2);"><%= sc.(:branch_prefix) %>: <strong style="color:var(--ink);"><%= current_outlet.name %></strong></div>
   <% end %>
 
-  <div class="m-subnav" style="margin-bottom:16px;">
+  <%# The tabs load into the frame below, so the strip is never re-rendered:
+      `subnav#pick` moves the highlight, and the frame advances the URL so a
+      reload comes back to the same tool rather than to Earn. %>
+  <div class="m-subnav" style="margin-bottom:16px;" data-controller="subnav">
     <% tabs.each do |key, label| %>
       <%= link_to label, merchant_scanner_path(kiosk_param.merge(tab: key)),
-            class: ("active" if @tab == key), data: { turbo_frame: "scan_tool" } %>
+            class: ("active" if @tab == key),
+            data: { turbo_frame: "scan_tool", action: "subnav#pick" } %>
     <% end %>
   </div>
 
   <% if kiosk %>
     <div class="l-panel">
-      <%= turbo_frame_tag "scan_tool" do %><%= render "merchant/#{@tab}/search" %><% end %>
+      <%= turbo_frame_tag "scan_tool", data: { turbo_action: "advance" } do %><%= render "merchant/#{@tab}/search" %><% end %>
     </div>
   <% else %>
     <div class="m-ops">
       <div class="l-panel">
-        <%= turbo_frame_tag "scan_tool" do %><%= render "merchant/#{@tab}/search" %><% end %>
+        <%= turbo_frame_tag "scan_tool", data: { turbo_action: "advance" } do %><%= render "merchant/#{@tab}/search" %><% end %>
       </div>
 
       <div>
