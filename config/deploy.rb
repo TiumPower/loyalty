@@ -66,6 +66,17 @@ namespace :deploy do
     end
   end
 
+  desc "Tra toạ độ cho chi nhánh từ địa chỉ (cap production deploy:geocode [FORCE=1])"
+  task :geocode do
+    on roles(:app) do
+      within current_path do
+        with rails_env: fetch(:rails_env), force: ENV["FORCE"].to_s do
+          execute :rake, "loyalty:geocode"
+        end
+      end
+    end
+  end
+
   desc "Chép tệp Active Storage từ đĩa lên DigitalOcean Spaces (cap production deploy:to_spaces)"
   task :to_spaces do
     on roles(:app) do
