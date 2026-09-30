@@ -99,7 +99,8 @@ module Merchant
     end
 
     def outlet_params
-      params.require(:outlet).permit(:name, :code, :address, :phone, :active)
+      params.require(:outlet).permit(:name, :code, :address, :phone, :active,
+                                     open_hours: [:open, :close])
     end
   end
 end

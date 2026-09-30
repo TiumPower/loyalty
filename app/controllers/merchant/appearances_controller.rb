@@ -59,6 +59,10 @@ module Merchant
         # The shop name shows on the customer's home screen, in the installed
         # app and in every notification, but could only be set at signup.
         @workspace.name = params[:name].to_s.strip if params.key?(:name)
+        # Both are sanitised by the model: the chips post whatever is in the DOM
+        # and the highlights arrive as one comma-separated string.
+        @workspace.amenities = params[:amenities] if params.key?(:amenities)
+        @workspace.menu_highlights = params[:menu_highlights] if params.key?(:menu_highlights)
         # Check the upload BEFORE attaching. Attaching first and letting the
         # model validation fail leaves an unsaved blob on the record, and
         # re-rendering this page then raises "Cannot get a signed_id for a new

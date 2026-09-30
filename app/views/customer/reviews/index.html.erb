@@ -28,6 +28,18 @@
       <% if @outlets.size > 1 %>
         <div class="l-inforow"><span class="ic"><%= ui_icon(:navigate, size: 14) %></span><span><%= t("customer.shop.n_outlets", n: @outlets.size) %></span></div>
       <% end %>
+      <%# Open or closed, and until when — drawn only when the branch has said. %>
+      <% if (state = shop_open_state(main)) %>
+        <div class="l-inforow">
+          <span class="ic"><%= ui_icon(:clock, size: 14) %></span>
+          <span>
+            <strong style="color:<%= state[:open] ? 'var(--good)' : 'var(--warn)' %>;">
+              <%= state[:open] ? t("customer.shop.open") : t("customer.shop.closed") %>
+            </strong>
+            · <%= state[:label] %>
+          </span>
+        </div>
+      <% end %>
       <% if main&.phone.present? %>
         <div class="l-inforow"><span class="ic"><%= ui_icon(:phone, size: 14) %></span><span><%= main.phone %></span></div>
       <% end %>
@@ -36,6 +48,29 @@
     <% if current_workspace.branding_value("tagline").present? %>
       <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em;"><%= t("customer.shop.about") %></h3>
       <p style="font-size:14px; color:var(--ink-2); line-height:1.6; margin-top:8px;"><%= current_workspace.branding_value("tagline") %></p>
+    <% end %>
+
+    <%# What the shop is known for, in its own words. %>
+    <% if current_workspace.menu_highlights.any? %>
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:24px;"><%= t("customer.shop.menu_highlights") %></h3>
+      <div class="l-chipset" style="margin-top:10px;">
+        <% current_workspace.menu_highlights.each do |item| %>
+          <span class="l-tag"><%= item %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Things worth knowing before you walk over: Wi-Fi, a socket, a seat. %>
+    <% if current_workspace.amenity_list.any? %>
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:24px;"><%= t("customer.shop.amenities") %></h3>
+      <div class="l-amenities">
+        <% current_workspace.amenity_list.each do |key| %>
+          <div>
+            <span class="ic"><%= ui_icon(amenity_icon(key), size: 15) %></span>
+            <span><%= t("merchant.amenities.#{key}") %></span>
+          </div>
+        <% end %>
+      </div>
     <% end %>
 
     <%# The design shows one address. A shop with several branches needs each of

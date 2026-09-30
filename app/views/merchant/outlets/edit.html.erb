@@ -3,6 +3,11 @@
 <% merchant_back merchant_outlet_path(@outlet) %>
 <div class="l-panel" style="max-width:480px;">
   <%= form_with model: @outlet, url: merchant_outlet_path(@outlet), method: :patch do |f| %>
+    <% if @outlet.errors.any? %>
+      <div class="l-note warn" style="margin-bottom:12px;">
+        <%= ui_icon(:shield, size: 16) %><span><%= @outlet.errors.full_messages.to_sentence %></span>
+      </div>
+    <% end %>
     <label class="l-label"><%= t("merchant.outlets.name") %></label>
     <%= f.text_field :name, class: "l-field" %>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
@@ -11,6 +16,16 @@
     </div>
     <label class="l-label" style="margin-top:12px;"><%= t("merchant.outlets.address") %></label>
     <%= f.text_field :address, class: "l-field" %>
+
+    <%# Opening hours. The customer app shows "Mở tới 22:00" from this, and
+        shows nothing at all while it is blank rather than guessing. %>
+    <label class="l-label" style="margin-top:12px;"><%= t("merchant.outlets.hours") %></label>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <input type="time" name="outlet[open_hours][open]" value="<%= @outlet.opens_at %>" class="l-field" style="max-width:150px;">
+      <span style="color:var(--ink-2); font-size:13px;"><%= t("merchant.outlets.hours_to") %></span>
+      <input type="time" name="outlet[open_hours][close]" value="<%= @outlet.closes_at %>" class="l-field" style="max-width:150px;">
+    </div>
+    <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= t("merchant.outlets.hours_hint") %></p>
     <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px;">
       <%= f.check_box :active %> <%= t("merchant.outlets.active") %>
     </label>

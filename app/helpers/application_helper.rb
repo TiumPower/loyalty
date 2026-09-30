@@ -217,19 +217,15 @@ module ApplicationHelper
     TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :star
   end
 
-  # Whether the shop is open right now, or nil when it has never said.
-  #
-  # `settings["open_hours"]` is {"open" => "07:00", "close" => "22:00"}; a shop
-  # that has not filled it in gets no badge rather than a cheerful guess.
-  def shop_open_state(ws)
-    hours = ws&.settings&.dig("open_hours")
-    from, to = hours&.values_at("open", "close")
-    return nil if from.blank? || to.blank?
-    now = Time.zone.now.strftime("%H:%M")
-    # A window that wraps past midnight (22:00–02:00) is open on either side of it.
-    open = to > from ? (now >= from && now < to) : (now >= from || now < to)
+  # Whether a branch is open right now, or nil when it has never said. Hours
+  # live on the outlet (a chain's branches keep different ones); a branch that
+  # has not filled them in gets no badge rather than a cheerful guess.
+  def shop_open_state(outlet)
+    return nil unless outlet.respond_to?(:hours?) && outlet.hours?
+    open = outlet.open_at?
     { open: open,
-      label: open ? t("customer.home.open_until", time: to) : t("customer.home.closed_until", time: from) }
+      label: open ? t("customer.home.open_until", time: outlet.closes_at)
+                  : t("customer.home.closed_until", time: outlet.opens_at) }
   end
 
   # Which build the customer is looking at. Capistrano names each release after
@@ -241,4 +237,14 @@ module ApplicationHelper
       dir.match?(/\A\d{14}\z/) ? "v#{dir[0, 8]}.#{dir[8, 4]}" : "dev"
     end
   end
+
+  # Icon per amenity. Keys are Workspace::AMENITIES; anything unknown gets a
+  # tick, which still reads as "yes, this place has that".
+  AMENITY_ICONS = {
+    "wifi" => :globe, "power_outlets" => :flame, "takeaway" => :store,
+    "indoor_seating" => :home, "outdoor_seating" => :pin, "card_payment" => :wallet_cards,
+    "parking" => :navigate, "air_con" => :sparkles, "pet_friendly" => :star,
+    "kid_friendly" => :users
+  }.freeze
+  def amenity_icon(key) = AMENITY_ICONS.fetch(key.to_s, :check)
 end

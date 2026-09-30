@@ -93,6 +93,38 @@
           <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= ap.(:shop_name_hint) %></p>
         </div>
 
+        <%# What the shop offers. Both land on the customer app's shop page, which
+            had neither — the design shows both and the app had nowhere to put
+            them. %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= ap.(:sec_offer) %></div>
+            <div class="s"><%= ap.(:sec_offer_sub) %></div>
+          </div>
+
+          <label class="l-label"><%= ap.(:menu_highlights) %></label>
+          <%= text_area_tag :menu_highlights, ws.menu_highlights.join(", "), class: "l-field", rows: 2,
+                placeholder: ap.(:menu_highlights_ph) %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;">
+            <%= ap.(:menu_highlights_hint, n: Workspace::MAX_HIGHLIGHTS) %>
+          </p>
+
+          <label class="l-label" style="margin-top:16px;"><%= ap.(:amenities) %></label>
+          <%# Unticking every chip must post an empty list, not nothing at all,
+              or the last one could never be removed. %>
+          <input type="hidden" name="amenities[]" value="">
+          <div class="l-chipset" data-controller="tagpick">
+            <% picked = ws.amenity_list %>
+            <% Workspace::AMENITIES.each do |key| %>
+              <label class="l-tag <%= 'on' if picked.include?(key) %>" data-tagpick-target="tag">
+                <input type="checkbox" name="amenities[]" value="<%= key %>" <%= "checked" if picked.include?(key) %>
+                       data-action="tagpick#toggle" hidden>
+                <%= t("merchant.amenities.#{key}") %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
         <div class="m-section">
           <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
             <div style="flex:1; min-width:0;">

@@ -329,6 +329,34 @@ class Workspace < ApplicationRecord
     (branding_value("logo_text") || name).to_s.split.map { |w| w[0] }.first(2).join.upcase
   end
 
+  # ---- What the shop offers ----------------------------------------------
+  #
+  # The customer app's shop page shows both, as in the design. Amenities are a
+  # fixed vocabulary so they can carry an icon and be translated; menu
+  # highlights are the shop's own words, so they are free text.
+  AMENITIES = %w[wifi power_outlets takeaway indoor_seating outdoor_seating
+                 card_payment parking air_con pet_friendly kid_friendly].freeze
+  MAX_HIGHLIGHTS    = 8
+  MAX_HIGHLIGHT_LEN = 40
+
+  # Only keys we know about — the checkboxes post whatever is in the DOM.
+  def amenity_list = Array(settings["amenities"]).map(&:to_s) & AMENITIES
+
+  def amenities=(list)
+    self.settings = settings.merge("amenities" => (Array(list).map(&:to_s) & AMENITIES))
+  end
+
+  def menu_highlights = Array(settings["menu_highlights"]).map(&:to_s).reject(&:blank?)
+
+  # Accepts either a list or one comma/newline separated string, which is how
+  # the merchant form sends it.
+  def menu_highlights=(value)
+    list = value.is_a?(Array) ? value : value.to_s.split(/[,\n]/)
+    cleaned = list.map { |v| v.to_s.strip.first(MAX_HIGHLIGHT_LEN) }
+                  .reject(&:blank?).uniq.first(MAX_HIGHLIGHTS)
+    self.settings = settings.merge("menu_highlights" => cleaned)
+  end
+
   private
 
   # A shop owner's natural instinct is to type their shop's name here, which the

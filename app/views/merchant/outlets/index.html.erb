@@ -148,6 +148,12 @@
           </div>
           <label class="l-label" style="margin-top:12px;"><%= o.(:address) %></label>
           <%= f.text_field :address, class: "l-field" %>
+          <label class="l-label" style="margin-top:12px;"><%= o.(:hours) %></label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="time" name="outlet[open_hours][open]" class="l-field" style="max-width:150px;">
+            <span style="color:var(--ink-2); font-size:13px;"><%= o.(:hours_to) %></span>
+            <input type="time" name="outlet[open_hours][close]" class="l-field" style="max-width:150px;">
+          </div>
           <%= f.hidden_field :active, value: true %>
           <div style="display:flex; gap:10px; margin-top:18px;">
             <%= f.submit o.(:add), class: "l-btn l-btn-primary" %>

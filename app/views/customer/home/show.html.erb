@@ -31,7 +31,7 @@
               no opening hours to read: this badge was a constant, so it told a
               customer standing outside a closed shop at 3am that it was open.
               It comes back with the opening-hours field on the outlet. %>
-          <% if (state = shop_open_state(current_workspace)) %>
+          <% if (state = shop_open_state(current_workspace.outlets.active.first)) %>
             <span class="l-pill <%= state[:open] ? 'good' : '' %>"><%= state[:label] %></span>
           <% end %>
         </div>

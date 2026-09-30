@@ -18,6 +18,45 @@ class Outlet < ApplicationRecord
   def destroyable? = history_count.zero?
 
   validates :name, presence: true
+  validate  :open_hours_look_like_times
 
   scope :active, -> { where(active: true) }
+
+  # ---- Opening hours -----------------------------------------------------
+  #
+  # One window a day, as "07:00"/"22:00" in settings["open_hours"]. A branch
+  # that has not said gets no "open now" badge in the customer app rather than
+  # a cheerful guess — the badge used to be a constant and told customers the
+  # shop was open at three in the morning.
+  HHMM = /\A([01]\d|2[0-3]):[0-5]\d\z/
+
+  def opens_at  = settings.dig("open_hours", "open").presence
+  def closes_at = settings.dig("open_hours", "close").presence
+  def hours?    = opens_at.present? && closes_at.present?
+
+  def open_hours=(pair)
+    # The form sends ActionController::Parameters; a console or a test sends a Hash.
+    pair = pair.respond_to?(:to_unsafe_h) ? pair.to_unsafe_h : pair.to_h
+    from, to = pair.values_at("open", "close").map { |v| v.to_s.strip }
+    self.settings = settings.merge(
+      "open_hours" => (from.blank? && to.blank? ? nil : { "open" => from, "close" => to })
+    ).compact
+  end
+
+  # Whether the branch is open at `at`. A window that wraps past midnight
+  # (22:00–02:00) is open on either side of it.
+  def open_at?(at = Time.zone.now)
+    return nil unless hours?
+    now = at.strftime("%H:%M")
+    closes_at > opens_at ? (now >= opens_at && now < closes_at) : (now >= opens_at || now < closes_at)
+  end
+
+  private
+
+  def open_hours_look_like_times
+    return unless settings.is_a?(Hash) && settings["open_hours"].present?
+    [opens_at, closes_at].each do |v|
+      errors.add(:base, :invalid_hours) unless v.to_s.match?(HHMM)
+    end
+  end
 end
