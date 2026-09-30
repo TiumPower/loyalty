@@ -15,21 +15,23 @@
   <%# ---- Search + filters ---- %>
   <% if filtering || @rewards.any? %>
     <%= form_with url: merchant_rewards_path, method: :get, data: { turbo: false } do %>
-      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+      <%# Same toolbar as the other directories, so a filter row looks and sits
+          the same on every list screen. %>
+      <div class="m-filters" style="border:1px solid var(--line); border-radius:16px; background:#fff; margin-bottom:16px;">
         <input type="search" name="q" value="<%= @q %>" placeholder="<%= t('merchant.rewards.search_ph') %>"
-               class="l-field" style="flex:1; min-width:200px;">
-        <select name="kind" class="l-field" style="max-width:180px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.rewards.kind') %>">
+               class="l-field grow" aria-label="<%= t('merchant.rewards.search_ph') %>">
+        <select name="kind" class="l-field" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.rewards.kind') %>">
           <option value=""><%= t('merchant.rewards.all_kinds') %></option>
           <option value="voucher"  <%= 'selected' if @kind == 'voucher' %>>🎟️ Voucher</option>
           <option value="gift"     <%= 'selected' if @kind == 'gift' %>>🎁 <%= t('merchant.rewards.kind_gift') %></option>
           <option value="discount" <%= 'selected' if @kind == 'discount' %>>🏷️ <%= t('merchant.rewards.kind_discount') %></option>
         </select>
-        <select name="status" class="l-field" style="max-width:170px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.rewards.all_status') %>">
+        <select name="status" class="l-field" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.rewards.all_status') %>">
           <option value=""><%= t('merchant.rewards.all_status') %></option>
           <option value="active"   <%= 'selected' if @status == 'active' %>><%= t('merchant.rewards.status_active') %></option>
           <option value="inactive" <%= 'selected' if @status == 'inactive' %>><%= t('merchant.rewards.status_inactive') %></option>
         </select>
-        <%= submit_tag "🔍", class: "l-btn l-btn-soft", style: "flex:none;" %>
+        <%= submit_tag t("merchant.campaigns.filter_apply"), class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" %>
       </div>
     <% end %>
   <% end %>

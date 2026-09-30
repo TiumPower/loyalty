@@ -4,7 +4,8 @@
 
 <%# ---- Filters ---- %>
 <%= form_with url: merchant_transactions_path, method: :get, data: { turbo: false } do %>
-  <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+  <%# Same toolbar shape as every other list screen. %>
+  <div class="m-filters" style="border:1px solid var(--line); border-radius:16px; background:#fff; margin-bottom:16px;">
     <input type="search" name="q" value="<%= @q %>" placeholder="<%= tx.(:search_ph) %>"
            class="l-field" style="flex:1; min-width:220px;">
 
@@ -38,7 +39,7 @@
       <% end %>
     </select>
 
-    <%= submit_tag "🔍 #{t('merchant.transactions.search_btn')}", class: "l-btn l-btn-primary", style: "flex:none; padding:9px 18px;" %>
+    <%= submit_tag t("merchant.transactions.search_btn"), class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" %>
   </div>
 
   <%# Custom range date inputs — only shown when the preset is "Tùy chọn" %>

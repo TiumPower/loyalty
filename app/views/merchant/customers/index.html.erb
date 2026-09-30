@@ -2,7 +2,8 @@
 <% content_for :title_en, "CUSTOMERS" %>
 
 <%= form_with url: merchant_customers_path, method: :get, data: { turbo: false } do %>
-  <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+  <%# Same toolbar shape as every other list screen. %>
+  <div class="m-filters" style="border:1px solid var(--line); border-radius:16px; background:#fff; margin-bottom:16px;">
     <select name="segment" class="l-field" style="max-width:260px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.nav.customers') %>">
       <% MemberSegments::PRESETS.each do |key, meta| %>
         <option value="<%= key %>" <%= 'selected' if @segment == key %>>
@@ -10,7 +11,7 @@
         </option>
       <% end %>
     </select>
-    <input type="search" name="q" value="<%= @q %>" placeholder="<%= t('merchant.segments.search_ph') %>" class="l-field" style="flex:1; min-width:200px;">
+    <input type="search" name="q" value="<%= @q %>" placeholder="<%= t('merchant.segments.search_ph') %>" class="l-field grow" aria-label="<%= t('merchant.segments.search_ph') %>">
     <% if @branches.present? %>
       <select name="outlet" class="l-field" style="max-width:220px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.customers.branch_filter') %>">
         <option value=""><%= t('merchant.customers.branch_all') %></option>
@@ -24,7 +25,7 @@
       <option value="points" <%= 'selected' if @sort == 'points' %>><%= t('merchant.segments.sort_points') %></option>
       <option value="spend"  <%= 'selected' if @sort == 'spend' %>><%= t('merchant.segments.sort_spend') %></option>
     </select>
-    <%= submit_tag "🔍 #{t('merchant.transactions.search_btn')}", class: "l-btn l-btn-primary", style: "flex:none; padding:9px 18px;" %>
+    <%= submit_tag t("merchant.transactions.search_btn"), class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" %>
     <% filtered = @applied_outlet.present? || @q.present? || @tier.present? %>
     <% if @segment != "all" || filtered %>
       <%= link_to t("merchant.customers.send_group"), new_merchant_broadcast_path(@compose_params),
