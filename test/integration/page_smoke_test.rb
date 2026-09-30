@@ -27,6 +27,8 @@ class PageSmokeTest < ActionDispatch::IntegrationTest
     /merchant/billing /merchant/checkin_qr /merchant/quick_login_qr
     /merchant/scanner /merchant/scan-home
     /merchant/mission_submissions
+    /merchant/tiers /merchant/segments
+    /merchant/stamp-cards /merchant/missions-setup /merchant/games-badges
   ].freeze
 
   MERCHANT_PAGES.each do |path|
