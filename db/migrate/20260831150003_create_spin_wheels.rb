@@ -19,6 +19,6 @@ class CreateSpinWheels < ActiveRecord::Migration[7.2]
       t.references :voucher, null: true, foreign_key: true
       t.timestamps
     end
-    add_index :spin_logs, [:member_id, :created_at]
+    add_index :spin_logs, [ :member_id, :created_at ]
   end
 end

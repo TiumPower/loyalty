@@ -10,7 +10,7 @@ class MissionProgress < ApplicationRecord
              foreign_key: :reviewed_by_id
   has_one_attached :photo
 
-  validates :member_id, uniqueness: { scope: [:mission_id, :period_key] }
+  validates :member_id, uniqueness: { scope: [ :mission_id, :period_key ] }
 
   scope :pending_review,   -> { where(approval_status: "pending") }
   scope :approved_reviews, -> { where(approval_status: "approved") }
@@ -21,7 +21,7 @@ class MissionProgress < ApplicationRecord
   def pending?   = approval_status == "pending"
   def approved?  = approval_status == "approved"
   def rejected?  = approval_status == "rejected"
-  def pct        = mission.goal.to_i.zero? ? 0 : [(progress.to_f / mission.goal * 100).round, 100].min
+  def pct        = mission.goal.to_i.zero? ? 0 : [ (progress.to_f / mission.goal * 100).round, 100 ].min
 
   # Advance progress; award points once when the goal is reached.
   def advance!(by = 1, outlet: nil)
@@ -69,7 +69,7 @@ class MissionProgress < ApplicationRecord
 
   # Reject a submission → member may resubmit. No points, no completion.
   def reject!(reviewer: nil, reason: nil)
-    merged_note = [note.presence, reason.presence].compact.join(" · ")
+    merged_note = [ note.presence, reason.presence ].compact.join(" · ")
     update!(approval_status: "rejected", reviewed_at: Time.current,
             reviewed_by_id: reviewer&.id, note: merged_note.presence)
   end

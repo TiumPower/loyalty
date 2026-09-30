@@ -21,6 +21,6 @@ class CreateRewards < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :rewards, [:workspace_id, :active, :position]
+    add_index :rewards, [ :workspace_id, :active, :position ]
   end
 end

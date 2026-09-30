@@ -7,7 +7,7 @@ module Customer
 
     def index
       @member = current_member
-      @page = [params[:page].to_i, 1].max
+      @page = [ params[:page].to_i, 1 ].max
       # Every row read its branch off its own association, so a full page cost
       # thirty queries on top of the page.
       @transactions = @member.point_transactions.recent.includes(:outlet)

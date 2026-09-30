@@ -17,6 +17,6 @@ class CreatePromoCodes < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :promo_codes, [:workspace_id, :token], unique: true
+    add_index :promo_codes, [ :workspace_id, :token ], unique: true
   end
 end

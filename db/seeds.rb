@@ -175,10 +175,10 @@ ActsAsTenant.without_tenant do
           ws.missions.create!(title: "Chi tiêu 100.000đ hôm nay", icon: "💳", mission_type: "spend", period: "daily", goal: 100000, reward_points: 30, position: 2)
         end
         if ws.badges.empty?
-          [["newbie", "Người mới", "Mua hàng lần đầu", "🌱", "first_purchase", 1],
-           ["regular", "Khách quen", "Mua đủ 10 lần", "☕", "purchases_count", 10],
-           ["collector", "Cao thủ điểm", "Tích luỹ 5.000 điểm", "💎", "points_total", 5000],
-           ["nightowl", "Cú đêm", "Mua sau 22h", "🦉", "night_owl", 1]].each_with_index do |(k, n, d, ic, ct, th), i|
+          [ [ "newbie", "Người mới", "Mua hàng lần đầu", "🌱", "first_purchase", 1 ],
+           [ "regular", "Khách quen", "Mua đủ 10 lần", "☕", "purchases_count", 10 ],
+           [ "collector", "Cao thủ điểm", "Tích luỹ 5.000 điểm", "💎", "points_total", 5000 ],
+           [ "nightowl", "Cú đêm", "Mua sau 22h", "🦉", "night_owl", 1 ] ].each_with_index do |(k, n, d, ic, ct, th), i|
             ws.badges.create!(key: k, name: n, description: d, icon: ic, criteria_type: ct, threshold: th, position: i)
           end
         end
@@ -220,9 +220,9 @@ ActsAsTenant.without_tenant do
         member.save!
 
         if member.point_transactions.empty?
-          target = [120, 850, 2400, 3300, 6200, 15000][n] || rand(100..8000)
+          target = [ 120, 850, 2400, 3300, 6200, 15000 ][n] || rand(100..8000)
           # split into 2–4 earns over the last ~90 days
-          chunks = [target / 3, target / 3, target - 2 * (target / 3)].reject(&:zero?)
+          chunks = [ target / 3, target / 3, target - 2 * (target / 3) ].reject(&:zero?)
           chunks.each_with_index do |pts, i|
             amount = pts * program.earn_per_amount / program.earn_points
             created = Faker::Time.between(from: 90.days.ago, to: 2.days.ago)

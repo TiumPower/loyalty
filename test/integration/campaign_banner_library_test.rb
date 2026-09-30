@@ -133,7 +133,7 @@ class CampaignBannerLibraryTest < ActionDispatch::IntegrationTest
   # Built on the fly so the repo does not carry binary fixtures for this.
   def fixture_upload(name, content_type)
     body = content_type.start_with?("image/") ? png_bytes : "khong phai anh"
-    file = Tempfile.new([File.basename(name, ".*"), File.extname(name)])
+    file = Tempfile.new([ File.basename(name, ".*"), File.extname(name) ])
     file.binmode
     file.write(body)
     file.rewind

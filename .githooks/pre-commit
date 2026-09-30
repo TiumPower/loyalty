@@ -1,0 +1,6 @@
+#!/bin/sh
+# Same check as the CI lint job, on staged Ruby files only.
+# Fix with: bin/rubocop -a   (bypass once: git commit --no-verify)
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.rb' '*.rake' 'Gemfile' 'config.ru')
+[ -z "$files" ] && exit 0
+exec bin/rubocop --force-exclusion $files

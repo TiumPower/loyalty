@@ -27,20 +27,20 @@ class MerchantLoginTest < ActionDispatch::IntegrationTest
   # tells an attacker which shop owners are registered.
   test "login does not reveal whether an email exists" do
     post "/merchant/login", params: { user: { email: "real@shop.vn", password: "wrong" } }
-    known = [response.status, flash[:alert].to_s]
+    known = [ response.status, flash[:alert].to_s ]
 
     post "/merchant/login", params: { user: { email: "nobody@nowhere.vn", password: "wrong" } }
-    assert_equal known, [response.status, flash[:alert].to_s]
+    assert_equal known, [ response.status, flash[:alert].to_s ]
   end
 
   # This one did leak: a known email redirected (303), an unknown one
   # re-rendered the form (422).
   test "password reset does not reveal whether an email exists" do
     post "/merchant/password", params: { user: { email: "real@shop.vn" } }
-    known = [response.status, response.location, flash[:notice].to_s]
+    known = [ response.status, response.location, flash[:notice].to_s ]
 
     post "/merchant/password", params: { user: { email: "nobody@nowhere.vn" } }
-    assert_equal known, [response.status, response.location, flash[:notice].to_s],
+    assert_equal known, [ response.status, response.location, flash[:notice].to_s ],
                  "the response still differs for a registered address"
   end
 

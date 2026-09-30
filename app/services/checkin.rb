@@ -20,9 +20,9 @@ module Checkin
   def decode(token, workspace:)
     data = verifier.verify(token.to_s.strip)
     ok = data.is_a?(Hash) && data["w"].to_i == workspace.id && data["n"].to_s == workspace.checkin_nonce.to_s
-    [ok, (ok ? data["o"] : nil)]
+    [ ok, (ok ? data["o"] : nil) ]
   rescue ActiveSupport::MessageVerifier::InvalidSignature
-    [false, nil]
+    [ false, nil ]
   end
 
   # Complete today's check-in for the member. Returns [status, points_awarded]:
@@ -37,7 +37,7 @@ module Checkin
   # scan means one check-in.
   def check_in!(member, workspace, outlet = nil)
     missions = workspace.missions.active.where(mission_type: "checkin").to_a
-    return [:none, 0] if missions.empty?
+    return [ :none, 0 ] if missions.empty?
 
     points = 0
     status = nil
@@ -59,6 +59,6 @@ module Checkin
     end
 
     member.reload
-    status == :done ? [:done, points] : [:already, 0]
+    status == :done ? [ :done, points ] : [ :already, 0 ]
   end
 end

@@ -12,7 +12,7 @@ module MemberSegments
     "birthday_week" => { label: "Sinh nhật tuần này",      icon: "🎂" },
     "birthday"      => { label: "Sinh nhật tháng này",     icon: "🎉" },
     "at_risk"       => { label: "Sắp rời bỏ (>30 ngày)",   icon: "⚠️" },
-    "at_risk_60"    => { label: "Rời bỏ (>60 ngày)",       icon: "🚶" },
+    "at_risk_60"    => { label: "Rời bỏ (>60 ngày)",       icon: "🚶" }
   }.freeze
 
   def label(key) = I18n.t("merchant.segments.#{key}", default: (PRESETS.dig(key, :label) || "Tất cả khách"))
@@ -40,7 +40,7 @@ module MemberSegments
   # non-empty label — for a filtered custom group with no preset name it composes a
   # temporary one from the active filters (e.g. "Tất cả khách · Gấu Coffee · tìm "lê"").
   def audience_label(segment:, outlet: nil, q: nil, tier: nil)
-    parts = [label(PRESETS.key?(segment) ? segment : "all")]
+    parts = [ label(PRESETS.key?(segment) ? segment : "all") ]
     parts << outlet.name if outlet.respond_to?(:name) && outlet.name.present?
     parts << "hạng #{tier.to_s.capitalize}" if tier.present?
     term = q.to_s.strip

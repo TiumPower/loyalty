@@ -1,8 +1,8 @@
 module Merchant
   class CustomersController < BaseController
-    before_action :set_member, only: [:show, :adjust, :destroy]
-    before_action :require_manager!, only: [:adjust]
-    before_action :require_owner!, only: [:destroy]
+    before_action :set_member, only: [ :show, :adjust, :destroy ]
+    before_action :require_manager!, only: [ :adjust ]
+    before_action :require_owner!, only: [ :destroy ]
 
     PER_PAGE = 50
 
@@ -25,7 +25,7 @@ module Merchant
 
       base = MemberSegments.audience(segment: @segment, outlet_id: @applied_outlet&.id, q: @q, tier: @tier)
       @total = base.count # count on the ungrouped scope (sort may GROUP BY for "spend")
-      @page  = [params[:page].to_i, 1].max
+      @page  = [ params[:page].to_i, 1 ].max
       @members  = apply_sort(base, @sort).limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
       @has_more = @total > @page * PER_PAGE
 

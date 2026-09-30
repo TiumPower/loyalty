@@ -35,9 +35,9 @@ namespace :loyalty do
 
         # ---- Outlets (3 branches) -----------------------------------------
         outlets = [
-          ["MAIN", "Gấu Coffee — Thảo Điền", "12 Nguyễn Ư Dĩ, Thảo Điền, TP.Thủ Đức"],
-          ["D1",   "Gấu Coffee — Quận 1",    "45 Lý Tự Trọng, Bến Nghé, Quận 1"],
-          ["GV",   "Gấu Coffee — Gò Vấp",    "88 Quang Trung, Phường 10, Gò Vấp"]
+          [ "MAIN", "Gấu Coffee — Thảo Điền", "12 Nguyễn Ư Dĩ, Thảo Điền, TP.Thủ Đức" ],
+          [ "D1",   "Gấu Coffee — Quận 1",    "45 Lý Tự Trọng, Bến Nghé, Quận 1" ],
+          [ "GV",   "Gấu Coffee — Gò Vấp",    "88 Quang Trung, Phường 10, Gò Vấp" ]
         ].map { |code, nm, addr| Outlet.create!(workspace: ws, code: code, name: nm, address: addr, active: true) }
         main = outlets.first
 
@@ -60,10 +60,10 @@ namespace :loyalty do
         ws.missions.create!(title: "Check-in hôm nay",         icon: "📍", mission_type: "checkin", period: "daily",  goal: 1,      reward_points: 20, position: 0)
         ws.missions.create!(title: "Ghé 3 lần trong tuần",     icon: "🏪", mission_type: "visit",   period: "weekly", goal: 3,      reward_points: 50, position: 1)
         ws.missions.create!(title: "Chi tiêu 100.000đ hôm nay", icon: "💳", mission_type: "spend",   period: "daily",  goal: 100000, reward_points: 30, position: 2)
-        [["newbie","Người mới","Mua hàng lần đầu","🌱","first_purchase",1],
-         ["regular","Khách quen","Mua đủ 10 lần","☕","purchases_count",10],
-         ["collector","Cao thủ điểm","Tích luỹ 5.000 điểm","💎","points_total",5000],
-         ["nightowl","Cú đêm","Mua sau 22h","🦉","night_owl",1]].each_with_index do |(k,n,d,ic,ct,th),i|
+        [ [ "newbie", "Người mới", "Mua hàng lần đầu", "🌱", "first_purchase", 1 ],
+         [ "regular", "Khách quen", "Mua đủ 10 lần", "☕", "purchases_count", 10 ],
+         [ "collector", "Cao thủ điểm", "Tích luỹ 5.000 điểm", "💎", "points_total", 5000 ],
+         [ "nightowl", "Cú đêm", "Mua sau 22h", "🦉", "night_owl", 1 ] ].each_with_index do |(k, n, d, ic, ct, th), i|
           ws.badges.create!(key: k, name: n, description: d, icon: ic, criteria_type: ct, threshold: th, position: i)
         end
 
@@ -89,14 +89,14 @@ namespace :loyalty do
         Membership.find_or_create_by!(user: owner, workspace: ws) { |m| m.role = "owner"; m.outlet = main }
 
         # ---- Members with real ledgers (spread across tiers) --------------
-        targets = [80, 320, 640, 1500, 2300, 3100, 4800, 5600, 7200, 9000, 12500, 16000]
+        targets = [ 80, 320, 640, 1500, 2300, 3100, 4800, 5600, 7200, 9000, 12500, 16000 ]
         members = targets.each_with_index.map do |target, n|
           phone = "09#{format('%08d', ws.id * 1_000_000 + n)}"
           m = Member.create!(workspace: ws, phone: phone, name: Faker::Name.name,
                              birthday: Faker::Date.birthday(min_age: 18, max_age: 55),
                              email: (n.even? ? "khach#{n}@vidu.com" : nil))
           outlet = outlets.sample
-          chunks = [target / 3, target / 3, target - 2 * (target / 3)].reject(&:zero?)
+          chunks = [ target / 3, target / 3, target - 2 * (target / 3) ].reject(&:zero?)
           chunks.each do |pts|
             amt = pts * program.earn_per_amount / program.earn_points
             at  = Faker::Time.between(from: 90.days.ago, to: 1.day.ago)
@@ -123,12 +123,12 @@ namespace :loyalty do
 
         # ---- Ratings (public feedback wall) -------------------------------
         reviews = [
-          [5, "Cà phê ngon, không gian ấm cúng, nhân viên dễ thương!"],
-          [5, "Tích điểm đổi quà tiện lắm, tuần nào cũng ghé."],
-          [4, "Bánh ngọt ổn, chỗ ngồi hơi ít vào giờ cao điểm."],
-          [5, "Thẻ tem mua 9 tặng 1 quá đã 🧋"],
-          [4, "Wifi mạnh, phù hợp làm việc. Sẽ quay lại."],
-          [5, "Chương trình khai trương tặng cà phê free rất hời!"]
+          [ 5, "Cà phê ngon, không gian ấm cúng, nhân viên dễ thương!" ],
+          [ 5, "Tích điểm đổi quà tiện lắm, tuần nào cũng ghé." ],
+          [ 4, "Bánh ngọt ổn, chỗ ngồi hơi ít vào giờ cao điểm." ],
+          [ 5, "Thẻ tem mua 9 tặng 1 quá đã 🧋" ],
+          [ 4, "Wifi mạnh, phù hợp làm việc. Sẽ quay lại." ],
+          [ 5, "Chương trình khai trương tặng cà phê free rất hời!" ]
         ]
         members.first(reviews.size).each_with_index do |m, i|
           st, cm = reviews[i]

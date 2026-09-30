@@ -7,8 +7,8 @@ module Merchant
     def show
       @count   = Rating.count
       @avg     = Rating.average(:stars)&.round(1) || 0
-      @dist    = (1..5).to_h { |s| [s, Rating.where(stars: s).count] }
-      @page    = [params[:page].to_i, 1].max
+      @dist    = (1..5).to_h { |s| [ s, Rating.where(stars: s).count ] }
+      @page    = [ params[:page].to_i, 1 ].max
       @filter  = params[:filter].presence_in(%w[unanswered low]) # quick triage
       scope    = filtered(Rating.recent.includes(:member, :replied_by))
       @count_filtered = scope.count
@@ -28,7 +28,7 @@ module Merchant
       # "Xin lỗi tự động": khách chấm thấp → tặng ngay một ưu đãi để giữ họ lại.
       # Một ưu đãi không dùng được sẽ khiến lời xin lỗi thành tay không.
       if (bad = first_unassignable(params[:low_rating_reward_id],
-                                   keep: [current_workspace.automation(:low_rating)["reward_id"]]))
+                                   keep: [ current_workspace.automation(:low_rating)["reward_id"] ]))
         return redirect_to merchant_feedback_path, alert: reward_unavailable_message(bad)
       end
       settings["automations"] = (settings["automations"] || {}).merge(
@@ -89,7 +89,7 @@ module Merchant
       body  = rating.reply_body.to_s.truncate(140)
       member.notifications.create!(workspace: current_workspace, kind: "promo",
                                    title: title, body: body, icon: "💬", deep_link: "/shop")
-      PushJob.perform_later(current_workspace.id, [member.id], title, body, "/shop") if PushSender.configured?
+      PushJob.perform_later(current_workspace.id, [ member.id ], title, body, "/shop") if PushSender.configured?
     rescue => e
       Rails.logger.error("[Feedback] notify_member: #{e.class} #{e.message}")
     end

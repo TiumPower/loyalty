@@ -43,7 +43,7 @@ class Tier < ApplicationRecord
 
   def next_tier
     workspace.tiers.ordered.select { |t| t.threshold_points > threshold_points }
-             .min_by { |t| [t.threshold_points, t.position] }
+             .min_by { |t| [ t.threshold_points, t.position ] }
   end
 
   private

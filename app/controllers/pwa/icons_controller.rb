@@ -10,7 +10,7 @@ module Pwa
     include TenantResolver
     skip_before_action :set_locale, raise: false
 
-    SIZES = [96, 180, 192, 512].freeze
+    SIZES = [ 96, 180, 192, 512 ].freeze
 
     def show
       ws = resolve_workspace
@@ -20,7 +20,7 @@ module Pwa
       svg = icon_svg(ws)
       # The icon only changes when the shop renames or re-themes, both of which
       # bump updated_at, so it can be cached hard.
-      fresh_when(etag: [ws&.id, ws&.updated_at, params[:format], params[:size]], public: true)
+      fresh_when(etag: [ ws&.id, ws&.updated_at, params[:format], params[:size] ], public: true)
       return if performed?
 
       expires_in 7.days, public: true
@@ -47,7 +47,7 @@ module Pwa
     # break an app install — fall back to the static icon instead of 500ing.
     def rasterize(svg)
       require "mini_magick"
-      Tempfile.create(["icon", ".svg"]) do |f|
+      Tempfile.create([ "icon", ".svg" ]) do |f|
         f.write(svg)
         f.flush
         img = MiniMagick::Image.open(f.path)

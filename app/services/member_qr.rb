@@ -2,7 +2,7 @@
 # The token auto-expires so a screenshot can't be reused later at another till.
 module MemberQr
   TTL = 120 # seconds — long enough for real counter use, short enough a
-            # screenshot can't be reused later.
+  # screenshot can't be reused later.
 
   def self.verifier
     Rails.application.message_verifier("loyalty/member_qr")

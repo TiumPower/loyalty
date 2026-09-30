@@ -30,13 +30,13 @@ module Customer
           candidates = current_workspace.missions.active.ordered
                                         .where(period: %w[daily once]).limit(MISSION_WINDOW).to_a
           rows = MissionProgress.where(member_id: @member.id, mission_id: candidates.map(&:id))
-                                .index_by { |r| [r.mission_id, r.period_key] }
+                                .index_by { |r| [ r.mission_id, r.period_key ] }
           all = candidates.index_with do |m|
-            rows[[m.id, m.current_period_key]] ||
+            rows[[ m.id, m.current_period_key ]] ||
               MissionProgress.new(workspace: current_workspace, member: @member,
                                   mission: m, period_key: m.current_period_key)
           end
-          @missions = candidates.sort_by.with_index { |m, i| [all[m].completed? ? 1 : 0, i] }.first(3)
+          @missions = candidates.sort_by.with_index { |m, i| [ all[m].completed? ? 1 : 0, i ] }.first(3)
           @progress = @missions.index_with { |m| all[m] }
           @has_stamps = current_workspace.stamp_cards.active.exists?
         end

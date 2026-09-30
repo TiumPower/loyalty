@@ -43,7 +43,7 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   test "the wheel cannot give away more of a prize than there is stock" do
     reward = limited_reward(stock: 1)
     wheel = SpinWheel.create!(workspace: @ws, cost_points: 0, daily_free: true,
-      segments: [{ "label" => "Cà phê", "weight" => 1, "kind" => "reward", "reward_id" => reward.id }])
+      segments: [ { "label" => "Cà phê", "weight" => 1, "kind" => "reward", "reward_id" => reward.id } ])
 
     3.times { wheel.spin!(create(:member, workspace: @ws)) }
 
@@ -54,7 +54,7 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   test "losing the stock race costs the customer nothing" do
     reward = limited_reward(stock: 0)
     wheel = SpinWheel.create!(workspace: @ws, cost_points: 0, daily_free: true,
-      segments: [{ "label" => "Cà phê", "weight" => 1, "kind" => "reward", "reward_id" => reward.id }])
+      segments: [ { "label" => "Cà phê", "weight" => 1, "kind" => "reward", "reward_id" => reward.id } ])
 
     result = wheel.spin!(@member)
     assert_nil result[:voucher]
@@ -64,7 +64,7 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   # The cost used to be checked against the cached points_balance column.
   test "a paid spin cannot go through on a stale balance" do
     wheel = SpinWheel.create!(workspace: @ws, cost_points: 100, daily_free: false,
-      segments: [{ "label" => "10", "weight" => 1, "kind" => "points", "value" => 10 }])
+      segments: [ { "label" => "10", "weight" => 1, "kind" => "points", "value" => 10 } ])
     @member.update_columns(points_balance: 500) # cached says 500, the ledger says 0
 
     result = wheel.spin!(@member)
@@ -75,7 +75,7 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   test "a paid spin a customer can afford is charged once" do
     fund(@member, 300)
     wheel = SpinWheel.create!(workspace: @ws, cost_points: 100, daily_free: false,
-      segments: [{ "label" => "none", "weight" => 1, "kind" => "none", "value" => 0 }])
+      segments: [ { "label" => "none", "weight" => 1, "kind" => "none", "value" => 0 } ])
 
     wheel.spin!(@member)
     assert_equal 200, @member.reload.points_balance
@@ -84,7 +84,7 @@ class GamificationPayoutTest < ActiveSupport::TestCase
   test "the daily free spin is free, the next one is not" do
     fund(@member, 300)
     wheel = SpinWheel.create!(workspace: @ws, cost_points: 100, daily_free: true,
-      segments: [{ "label" => "none", "weight" => 1, "kind" => "none", "value" => 0 }])
+      segments: [ { "label" => "none", "weight" => 1, "kind" => "none", "value" => 0 } ])
 
     assert_equal 0, wheel.spin!(@member)[:cost]
     assert_equal 100, wheel.spin!(@member)[:cost]

@@ -134,7 +134,7 @@ class LoyaltyProgramConfigTest < ActionDispatch::IntegrationTest
     t = tier("silver")
     assert_equal 2_500, t.threshold_points
     assert_equal 1.3, t.multiplier.to_f
-    assert_equal ["Giảm 10%", "Ưu tiên chỗ ngồi"], t.benefits
+    assert_equal [ "Giảm 10%", "Ưu tiên chỗ ngồi" ], t.benefits
     assert_equal "#123456", t.gradient_from
   end
 end

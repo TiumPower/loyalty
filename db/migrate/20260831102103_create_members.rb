@@ -32,8 +32,8 @@ class CreateMembers < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :members, [:workspace_id, :phone], unique: true
-    add_index :members, [:workspace_id, :referral_code], unique: true, where: "referral_code IS NOT NULL"
-    add_index :members, [:workspace_id, :tier_key]
+    add_index :members, [ :workspace_id, :phone ], unique: true
+    add_index :members, [ :workspace_id, :referral_code ], unique: true, where: "referral_code IS NOT NULL"
+    add_index :members, [ :workspace_id, :tier_key ]
   end
 end

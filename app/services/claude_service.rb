@@ -15,7 +15,7 @@ class ClaudeService
   OPUS   = "claude-opus-4-8"           # most capable — used for every AI task here
 
   # Models that reject the `temperature` param (newer models deprecated it).
-  NO_TEMPERATURE = [SONNET, OPUS].freeze
+  NO_TEMPERATURE = [ SONNET, OPUS ].freeze
 
   class Error < StandardError; end
 
@@ -43,7 +43,7 @@ class ClaudeService
   def text(content, system: nil)
     body = {
       model: @model, max_tokens: @max_tokens,
-      messages: [{ role: "user", content: content }]
+      messages: [ { role: "user", content: content } ]
     }
     # Some models deprecated `temperature` and 400 if it's sent.
     body[:temperature] = @temperature if @temperature && NO_TEMPERATURE.exclude?(@model)
@@ -55,7 +55,7 @@ class ClaudeService
   # Returns a parsed Hash/Array. Asks the model for JSON and salvages the first
   # {...} / [...] block if it wraps the answer in prose.
   def json(prompt, system: nil)
-    raw = text(prompt, system: [system, "Chỉ trả về JSON hợp lệ, không giải thích."].compact.join("\n"))
+    raw = text(prompt, system: [ system, "Chỉ trả về JSON hợp lệ, không giải thích." ].compact.join("\n"))
     parse_json(raw)
   end
 
@@ -66,7 +66,7 @@ class ClaudeService
                                  data: Base64.strict_encode64(image_bytes) } },
       { type: "text", text: prompt }
     ]
-    raw = text(content, system: [system, "Chỉ trả về JSON hợp lệ, không giải thích."].compact.join("\n"))
+    raw = text(content, system: [ system, "Chỉ trả về JSON hợp lệ, không giải thích." ].compact.join("\n"))
     parse_json(raw)
   end
 
@@ -91,7 +91,7 @@ class ClaudeService
   def connection
     @connection ||= Faraday.new do |f|
       f.request :retry, max: 2, interval: 0.5, backoff_factor: 2,
-                        retry_statuses: [429, 500, 502, 503, 529]
+                        retry_statuses: [ 429, 500, 502, 503, 529 ]
       f.options.timeout = 60
       f.options.open_timeout = 10
     end

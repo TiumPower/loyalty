@@ -19,7 +19,7 @@ module Merchant
       else
         start_d, end_d = ws.first_billing_period
       end
-      amount = ws.prorated_amount(price, [start_d, end_d])
+      amount = ws.prorated_amount(price, [ start_d, end_d ])
       # Pay any invoice that's already due first (re-price to the chosen plan).
       invoice = ws.invoices.pending.order(:period_start).first
       if invoice && (invoice.plan != chosen || invoice.amount != amount)

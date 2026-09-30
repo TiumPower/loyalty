@@ -15,7 +15,7 @@ class ShopIconTest < ActionDispatch::IntegrationTest
 
   test "renders a PNG for home-screen icons" do
     get "/w/#{@ws.slug}/shop-icon-192.png"
-    assert_includes [200, 302], response.status
+    assert_includes [ 200, 302 ], response.status
   end
 
   # The SVG looked right in a browser while the rasterised PNG — the one that
@@ -27,7 +27,7 @@ class ShopIconTest < ActionDispatch::IntegrationTest
     skip "rasterizer unavailable here" unless response.status == 200 && response.media_type == "image/png"
 
     require "mini_magick"
-    Tempfile.create(["icon", ".png"]) do |f|
+    Tempfile.create([ "icon", ".png" ]) do |f|
       f.binmode
       f.write(response.body)
       f.flush

@@ -12,6 +12,6 @@ class CreateOtpChallenges < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :otp_challenges, [:workspace_id, :phone, :purpose]
+    add_index :otp_challenges, [ :workspace_id, :phone, :purpose ]
   end
 end

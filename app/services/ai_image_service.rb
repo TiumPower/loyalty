@@ -46,7 +46,7 @@ class AiImageService
 
   def connection
     @connection ||= Faraday.new do |f|
-      f.request :retry, max: 1, interval: 1.0, retry_statuses: [429, 500, 502, 503]
+      f.request :retry, max: 1, interval: 1.0, retry_statuses: [ 429, 500, 502, 503 ]
       f.options.timeout = 120
       f.options.open_timeout = 10
     end

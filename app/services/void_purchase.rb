@@ -41,7 +41,7 @@ class VoidPurchase
       # every tier, redemption and expiry calculation then ran on a number that
       # cannot exist. The bill is still voided either way, so revenue is
       # corrected; the shortfall is recorded in the ledger note.
-      reversible = [points, locked.points_balance.to_i].min
+      reversible = [ points, locked.points_balance.to_i ].min
       reversible = 0 if reversible.negative?
       @shortfall = points - reversible
 
@@ -85,7 +85,7 @@ class VoidPurchase
     body  = I18n.t("customer.void_notice.body", n: ActiveSupport::NumberHelper.number_to_delimited(points))
     member.notifications.create!(workspace: member.workspace, kind: "adjust",
                                  title: title, body: body, icon: "↩️", deep_link: "/history")
-    PushJob.perform_later(member.workspace_id, [member.id], title, body, "/history") if PushSender.configured?
+    PushJob.perform_later(member.workspace_id, [ member.id ], title, body, "/history") if PushSender.configured?
   rescue => e
     Rails.logger.error("[VoidPurchase] notify: #{e.class} #{e.message}")
   end

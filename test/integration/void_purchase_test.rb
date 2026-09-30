@@ -71,5 +71,4 @@ class VoidPurchaseRequestTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_not foreign.reload.voided?
   end
-
 end

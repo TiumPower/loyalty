@@ -31,7 +31,7 @@ class StaffPermissionsTest < ActionDispatch::IntegrationTest
     "staff roles"           => -> { post "/merchant/staff", params: { email: "x@y.vn", role: "manager" } },
     "the spin wheel"        => -> { patch "/merchant/gamification/wheel", params: { segments: {} } },
     "automations"           => -> { patch "/merchant/automations", params: { automations: {} } },
-    "branding"              => -> { patch "/merchant/appearance", params: { workspace: { name: "X" } } },
+    "branding"              => -> { patch "/merchant/appearance", params: { workspace: { name: "X" } } }
   }.freeze
 
   MANAGER_ONLY.each do |what, request|

@@ -41,7 +41,7 @@ class Voucher < ApplicationRecord
 
   def use_token_seconds_left
     return 0 if redeem_token_expires_at.nil?
-    [(redeem_token_expires_at - Time.current).to_i, 0].max
+    [ (redeem_token_expires_at - Time.current).to_i, 0 ].max
   end
 
   # Permanently redeem the voucher at the counter, exactly once. Returns true

@@ -1,6 +1,6 @@
 module Merchant
   class AppearancesController < BaseController
-    before_action :require_manager!, only: [:update, :suggest_theme]
+    before_action :require_manager!, only: [ :update, :suggest_theme ]
 
     # Built-in theme presets demonstrating dynamic branding on one layout.
     PRESETS = {

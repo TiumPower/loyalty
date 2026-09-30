@@ -26,7 +26,7 @@ class Mission < ApplicationRecord
   validates :mission_type, inclusion: { in: TYPES }
   validates :period, inclusion: { in: PERIODS }
   # Photo-proof missions are single-submission, not incremental counters.
-  validates :goal, inclusion: { in: [1] }, if: :photo_proof?
+  validates :goal, inclusion: { in: [ 1 ] }, if: :photo_proof?
 
   scope :active,  -> { where(active: true) }
   scope :ordered, -> { order(:position, :id) }
@@ -51,7 +51,7 @@ class Mission < ApplicationRecord
   # mission returns just its own network; legacy multi-platform missions fall back
   # to their configured list (all supported when unrestricted).
   def allowed_platforms
-    return [platform] if platform.present?
+    return [ platform ] if platform.present?
     configured = (proof_config.is_a?(Hash) ? proof_config["platforms"] : nil).to_h.keys
     (configured & PROOF_PLATFORMS).presence || PROOF_PLATFORMS
   end

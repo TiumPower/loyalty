@@ -14,7 +14,7 @@ class CreateTiers < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :tiers, [:workspace_id, :key], unique: true
-    add_index :tiers, [:workspace_id, :position]
+    add_index :tiers, [ :workspace_id, :key ], unique: true
+    add_index :tiers, [ :workspace_id, :position ]
   end
 end

@@ -8,6 +8,6 @@ class CreateRatings < ActiveRecord::Migration[7.2]
       t.text :comment
       t.timestamps
     end
-    add_index :ratings, [:workspace_id, :member_id], unique: true
+    add_index :ratings, [ :workspace_id, :member_id ], unique: true
   end
 end

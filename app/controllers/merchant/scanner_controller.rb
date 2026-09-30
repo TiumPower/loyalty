@@ -39,7 +39,7 @@ module Merchant
     def checkin_qr_outlets
       m = current_membership
       return current_workspace.outlets.order(:name).to_a if m&.owner?
-      [m&.outlet].compact
+      [ m&.outlet ].compact
     end
   end
 end

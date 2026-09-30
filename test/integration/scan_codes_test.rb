@@ -28,7 +28,7 @@ class ScanCodesTest < ActionDispatch::IntegrationTest
       stale = Member.find(@member.id)
       assert_nil stale.last_checkin_at
 
-      assert_equal [:done, 20], Checkin.check_in!(@member, @ws, @outlet)
+      assert_equal [ :done, 20 ], Checkin.check_in!(@member, @ws, @outlet)
 
       status, points = Checkin.check_in!(stale, @ws, @outlet)
       assert_equal :already, status
@@ -184,12 +184,12 @@ class ScanCodesTest < ActionDispatch::IntegrationTest
   test "rotating the check-in nonce invalidates the printed poster" do
     ActsAsTenant.with_tenant(@ws) do
       old = Checkin.encode(@ws, @outlet)
-      assert_equal [true, @outlet.id], Checkin.decode(old, workspace: @ws)
+      assert_equal [ true, @outlet.id ], Checkin.decode(old, workspace: @ws)
 
       @ws.rotate_checkin_nonce!
 
-      assert_equal [false, nil], Checkin.decode(old, workspace: @ws.reload)
-      assert_equal [true, @outlet.id], Checkin.decode(Checkin.encode(@ws, @outlet), workspace: @ws)
+      assert_equal [ false, nil ], Checkin.decode(old, workspace: @ws.reload)
+      assert_equal [ true, @outlet.id ], Checkin.decode(Checkin.encode(@ws, @outlet), workspace: @ws)
     end
   end
 end

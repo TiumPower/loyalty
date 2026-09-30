@@ -5,7 +5,7 @@ class ShopPickerTest < ActionDispatch::IntegrationTest
     @user = create(:user)
     @a = create(:workspace, name: "Quán A", subdomain: "quana")
     @b = create(:workspace, name: "Quán B", subdomain: "quanb")
-    [@a, @b].each { |w| ActsAsTenant.with_tenant(w) { Membership.create!(user: @user, workspace: w, role: "owner") } }
+    [ @a, @b ].each { |w| ActsAsTenant.with_tenant(w) { Membership.create!(user: @user, workspace: w, role: "owner") } }
     sign_in @user
   end
 

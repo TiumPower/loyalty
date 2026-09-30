@@ -70,10 +70,10 @@ module Merchant
     def render_token_problem
       return render :used if @token_error == :used
       @error = case @token_error
-               when :stale   then "Mã sử dụng đã hết hiệu lực. Khách vui lòng tạo lại mã."
-               when :expired then "Ưu đãi này đã hết hạn sử dụng."
-               else "Mã không hợp lệ hoặc đã hết hạn."
-               end
+      when :stale   then "Mã sử dụng đã hết hiệu lực. Khách vui lòng tạo lại mã."
+      when :expired then "Ưu đãi này đã hết hạn sử dụng."
+      else "Mã không hợp lệ hoặc đã hết hạn."
+      end
       render :search, status: :unprocessable_entity
     end
   end

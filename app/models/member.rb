@@ -82,17 +82,17 @@ class Member < ApplicationRecord
   # on the wrong tier and told them the wrong next rung.
   def tier_for(points)
     ordered_tiers.select { |t| t.threshold_points <= points }
-                 .max_by { |t| [t.threshold_points, t.position] } || ordered_tiers.first
+                 .max_by { |t| [ t.threshold_points, t.position ] } || ordered_tiers.first
   end
 
   def next_tier
     ordered_tiers.select { |t| t.threshold_points > (tier&.threshold_points || 0) }
-                 .min_by { |t| [t.threshold_points, t.position] }
+                 .min_by { |t| [ t.threshold_points, t.position ] }
   end
 
   def points_to_next
     nt = next_tier
-    nt ? [nt.threshold_points - cycle_points, 0].max : 0
+    nt ? [ nt.threshold_points - cycle_points, 0 ].max : 0
   end
 
   def tier_progress_pct
@@ -132,7 +132,7 @@ class Member < ApplicationRecord
       amt += left
       date = exp if date.nil? || exp < date
     end
-    [amt, date]
+    [ amt, date ]
   end
 
   # Yields [unconsumed_amount, expires_at] for each credit lot, oldest first,
@@ -140,7 +140,7 @@ class Member < ApplicationRecord
   def each_unconsumed_lot
     remaining_debit = point_transactions.debits.sum(:amount).abs
     point_transactions.credits.order(:created_at).pluck(:amount, :expires_at).each do |amount, exp|
-      consume = [amount, remaining_debit].min
+      consume = [ amount, remaining_debit ].min
       remaining_debit -= consume
       left = amount - consume
       yield(left, exp) if left.positive?
@@ -163,9 +163,9 @@ class Member < ApplicationRecord
     if email.present?
       user, _, domain = email.partition("@")
       head = user[0, 2]
-      "#{head}#{'•' * [user.length - 2, 1].max}@#{domain}"
+      "#{head}#{'•' * [ user.length - 2, 1 ].max}@#{domain}"
     elsif phone.present?
-      "#{phone[0, 3]}#{'•' * [phone.length - 5, 1].max}#{phone[-2, 2]}"
+      "#{phone[0, 3]}#{'•' * [ phone.length - 5, 1 ].max}#{phone[-2, 2]}"
     end
   end
 

@@ -72,7 +72,7 @@ namespace :storage do
       blob.service.download(blob.key).bytesize
       ok += 1
     rescue StandardError => e
-      broken << [blob.key, blob.service_name, blob.filename.to_s, "#{e.class}"]
+      broken << [ blob.key, blob.service_name, blob.filename.to_s, "#{e.class}" ]
     end
     puts "Đọc được #{ok} tệp, hỏng #{broken.size}."
     broken.first(20).each { |key, svc, name, err| puts "  ✗ #{key} [#{svc}] #{name} — #{err}" }

@@ -21,7 +21,7 @@ module StaffLogin
     user = User.find_by(id: data["u"])
     ws   = Workspace.find_by(id: data["w"])
     return nil unless user && ws && user.memberships.exists?(workspace_id: ws.id)
-    [user, ws]
+    [ user, ws ]
   rescue ActiveSupport::MessageVerifier::InvalidSignature
     nil # expired tokens also raise InvalidSignature in Rails 7.2
   end

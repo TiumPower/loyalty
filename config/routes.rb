@@ -5,11 +5,11 @@ Rails.application.routes.draw do
              path: "merchant",
              path_names: { sign_in: "login", sign_out: "logout", password: "password" },
              controllers: { sessions: "users/sessions", passwords: "users/passwords" },
-             skip: [:registrations]
+             skip: [ :registrations ]
   devise_for :admin_users,
              path: "admin",
              path_names: { sign_in: "login", sign_out: "logout", password: "password" },
-             skip: [:registrations]
+             skip: [ :registrations ]
   # Member (customer) uses a custom phone+OTP flow; register the Devise mapping
   # for the Warden session helpers but not its routes.
   devise_for :members, skip: :all
@@ -38,7 +38,7 @@ Rails.application.routes.draw do
   # ---- Super Admin (platform ops) : /admin -------------------------------
   namespace :admin do
     root "dashboard#show"
-    resources :workspaces, only: [:index, :new, :create, :show, :update, :destroy] do
+    resources :workspaces, only: [ :index, :new, :create, :show, :update, :destroy ] do
       member do
         patch :approve
         patch :suspend
@@ -47,7 +47,7 @@ Rails.application.routes.draw do
     end
     get "monitoring", to: "monitoring#show"
     get "billing",    to: "billing#show"
-    resources :plans, only: [:index, :update]
+    resources :plans, only: [ :index, :update ]
     get   "account", to: "account#edit",   as: :account
     patch "account", to: "account#update"
     get   "settings", to: "settings#show",   as: :settings
@@ -63,7 +63,7 @@ Rails.application.routes.draw do
     root "dashboard#show"
     get  "choose",            to: "choose#show",              as: :choose
     patch "tiers",            to: "tiers#update",             as: :tiers
-    resource :account, only: [:show, :update], controller: "account"
+    resource :account, only: [ :show, :update ], controller: "account"
     get "quick_login_qr", to: "account#quick_login_qr", as: :quick_login_qr
     get "go/:token",      to: "quick_logins#create",    as: :quick_login
     get  "checkin_qr",        to: "dashboard#checkin_qr",     as: :checkin_qr
@@ -75,41 +75,41 @@ Rails.application.routes.draw do
     patch "onboarding",      to: "onboarding#update"
     post  "onboarding/skip", to: "onboarding#skip",   as: :skip_onboarding
     post "switch_workspace/:id", to: "workspaces#switch", as: :switch_workspace
-    resource :loyalty_program, only: [:show, :update], path: "program"
-    resource :appearance,      only: [:show, :update], path: "appearance" do
+    resource :loyalty_program, only: [ :show, :update ], path: "program"
+    resource :appearance,      only: [ :show, :update ], path: "appearance" do
       post :suggest_theme # AI palette suggestion from the uploaded logo (JSON)
     end
     # No :new — the outlets index carries the "add branch" form inline, and
     # there has never been a new.html.erb, so the route only served an error.
-    resources :outlets, except: [:new] do
+    resources :outlets, except: [ :new ] do
       member { get :checkin_qr }
     end
-    resources :staff, only: [:index, :create, :update, :destroy]
-    resource  :domain, only: [:show, :update], controller: "domains" do
+    resources :staff, only: [ :index, :create, :update, :destroy ]
+    resource  :domain, only: [ :show, :update ], controller: "domains" do
       post :verify
     end
-    resource  :billing, only: [:show], controller: "billing"
+    resource :billing, only: [ :show ], controller: "billing"
     post  "billing/pay",        to: "payments#create", as: :billing_pay
     post  "billing/repay/:id",  to: "payments#repay",  as: :billing_repay
     get   "billing/return",     to: "payments#return", as: :billing_return
     patch "billing/auto_renew", to: "payments#auto_renew", as: :billing_auto_renew
-    resources :customers, only: [:index, :show, :destroy] do
+    resources :customers, only: [ :index, :show, :destroy ] do
       member { post :adjust }
     end
-    resources :transactions, only: [:index]
+    resources :transactions, only: [ :index ]
     # Undo a mis-rung bill (reverses points + revenue; see VoidPurchase).
     post "purchases/:id/void", to: "purchases#void", as: :void_purchase
     # In-app alert inbox for the shop (new reviews, out-of-stock rewards…).
-    resources :alerts, only: [:index]
+    resources :alerts, only: [ :index ]
     get   "feedback", to: "feedback#show",   as: :feedback
     patch "feedback", to: "feedback#update"
     # Trả lời một đánh giá của khách (hiển thị công khai + báo cho khách).
     patch "feedback/:id/reply", to: "feedback#reply", as: :reply_feedback
-    resource :automations, only: [:show, :update], controller: "automations"
+    resource :automations, only: [ :show, :update ], controller: "automations"
     # :destroy cancels a SCHEDULED send that has not gone out yet — see the
     # controller. A sent broadcast is history and stays.
-    resources :broadcasts, only: [:index, :new, :create, :destroy]
-    resources :campaigns, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
+    resources :broadcasts, only: [ :index, :new, :create, :destroy ]
+    resources :campaigns, only: [ :index, :new, :create, :show, :edit, :update, :destroy ] do
       collection do
         post :generate_content # AI content suggestion (title/body), no persisted campaign
         get  :banner_jobs      # JSON poll for the global banner-generation progress bar
@@ -122,7 +122,7 @@ Rails.application.routes.draw do
         patch :upload_banner   # merchant uploads their own banner image
         patch :select_banner   # re-use a banner from the campaign's library
         delete :remove_banner  # drop one banner from the library
-        post  :push    # push the campaign to its audience
+        post :push    # push the campaign to its audience
       end
     end
     # POS transaction QR (member self-scan / §6.2)
@@ -136,26 +136,26 @@ Rails.application.routes.draw do
     # Counter scanner — Xác thực ưu đãi (redeem/verify)
     post "redeem/lookup", to: "redeem#lookup", as: :redeem_lookup
     post "redeem",        to: "redeem#create", as: :redeem
-    resources :rewards, only: [:index, :new, :create, :edit, :update, :destroy] do
+    resources :rewards, only: [ :index, :new, :create, :edit, :update, :destroy ] do
       member { patch :toggle } # bật/tắt phát hành nhanh
     end
     # Gamification management
     get   "gamification",      to: "gamification#show"
     patch "gamification/wheel", to: "gamification#update_wheel", as: :wheel_config
-    resources :stamp_cards, only: [:create, :update, :destroy] do
+    resources :stamp_cards, only: [ :create, :update, :destroy ] do
       # Pause / run straight from the list, without saving the whole card (JSON).
       patch :toggle, on: :member
     end
-    resources :missions,    only: [:create, :update, :destroy] do
+    resources :missions,    only: [ :create, :update, :destroy ] do
       patch :toggle, on: :member # pause / run inline (JSON), same as stamp cards
     end
-    resources :mission_submissions, only: [:index] do
+    resources :mission_submissions, only: [ :index ] do
       member do
         patch :approve
         patch :reject
       end
     end
-    resources :badges,      only: [:create, :update, :destroy]
+    resources :badges,      only: [ :create, :update, :destroy ]
   end
 
   # ---- Customer PWA : shop subdomain / custom domain, or /w/:slug ---------

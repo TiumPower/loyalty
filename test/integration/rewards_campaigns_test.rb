@@ -92,7 +92,7 @@ class CampaignBroadcastTest < ActiveSupport::TestCase
     broadcast = @ws.broadcasts.create!(campaign: @campaign, segment_key: "all",
                                        audience_label: "Tất cả", title: "T", body: "B")
     assert_equal @campaign.id, broadcast.campaign_id
-    assert_equal [broadcast], @campaign.reload.broadcasts.to_a
+    assert_equal [ broadcast ], @campaign.reload.broadcasts.to_a
   end
 
   test "delivering writes one notification per customer and records the count" do

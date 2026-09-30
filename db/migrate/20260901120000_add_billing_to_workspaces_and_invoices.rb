@@ -17,6 +17,6 @@ class AddBillingToWorkspacesAndInvoices < ActiveRecord::Migration[7.2]
       t.timestamps
     end
     add_index :invoices, :payos_order_code, unique: true, where: "payos_order_code IS NOT NULL"
-    add_index :invoices, [:workspace_id, :status]
+    add_index :invoices, [ :workspace_id, :status ]
   end
 end

@@ -89,7 +89,7 @@ module Automations
   def notify(member, title, body, path)
     member.notifications.create!(workspace: member.workspace, kind: "reward",
                                  title: title, body: body, icon: "🎁", deep_link: path)
-    PushJob.perform_later(member.workspace_id, [member.id], title, body, path) if PushSender.configured?
+    PushJob.perform_later(member.workspace_id, [ member.id ], title, body, path) if PushSender.configured?
   rescue => e
     Rails.logger.error("[Automations] notify: #{e.class} #{e.message}")
   end

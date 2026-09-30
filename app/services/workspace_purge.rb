@@ -17,7 +17,7 @@ class WorkspacePurge
       ApplicationRecord.transaction do
         wid = workspace.id
         # Purge Active Storage first so blobs/files don't orphan.
-        purge_attachments("Workspace", [wid])
+        purge_attachments("Workspace", [ wid ])
         member_ids = Member.where(workspace_id: wid).pluck(:id)
         purge_attachments("Member", member_ids) if member_ids.any?
 

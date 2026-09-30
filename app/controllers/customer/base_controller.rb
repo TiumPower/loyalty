@@ -92,7 +92,7 @@ module Customer
       return if member_signed_in? && current_member&.workspace_id == current_workspace&.id
       # Remember where they were headed (e.g. a scanned promo QR) so we can
       # resume it right after login — otherwise a first-time scan is lost.
-      session[:return_to] = request.fullpath if request.get?
+      session[:return_to] = request.fullpath if request.get? || request.head?
       redirect_to member_login_path
     end
 

@@ -2,7 +2,7 @@ module Merchant
   class DashboardController < BaseController
     include DateRangeFilterable
 
-    before_action :require_manager!, only: [:rotate_checkin, :refresh_busy_hour]
+    before_action :require_manager!, only: [ :rotate_checkin, :refresh_busy_hour ]
 
     def show
       return redirect_to merchant_onboarding_path if current_workspace && !current_workspace.onboarded?
@@ -23,7 +23,7 @@ module Merchant
         @points_issued   = in_range(PointTransaction.net_credits).sum(:amount)
         @points_redeemed = in_range(PointTransaction.redemptions).sum(:amount).abs
         @points_expired  = in_range(PointTransaction.expirations).sum(:amount).abs
-        @points_outstanding = [Member.sum(:points_balance), 0].max # unredeemed = a liability (state, not range)
+        @points_outstanding = [ Member.sum(:points_balance), 0 ].max # unredeemed = a liability (state, not range)
         @purchases_count = in_range(Purchase.not_voided).count
         @redemption_rate = @points_issued.zero? ? 0 : (@points_redeemed.to_f / @points_issued * 100).round
         # "Đang hoạt động" has to mean active. This counted lifetime_points > 0 —
@@ -41,7 +41,7 @@ module Merchant
         @revenue         = @retention[:revenue]
         @new_sources     = new_member_sources
         @member_growth   = monthly_member_growth
-        @tier_counts     = @tiers.map { |t| [t, Member.where(tier_key: t.key).count] }
+        @tier_counts     = @tiers.map { |t| [ t, Member.where(tier_key: t.key).count ] }
         @outlet_stats    = build_outlet_stats
         load_busy_hour(nil) # busy-hour panel: all-merchant by default, own branch switcher
         # Check-in QR is per-branch only (see Outlets); the merchant no longer has
@@ -125,10 +125,10 @@ module Merchant
       left = (pu.to_date - Date.current).to_i
       if ws.trial?
         # Trial: nudge for the whole period (info), escalate to warn near the end.
-        return { kind: :trial_over, level: :danger, days: [GRACE_DAYS + left, 0].max } if left < 0
+        return { kind: :trial_over, level: :danger, days: [ GRACE_DAYS + left, 0 ].max } if left < 0
         { kind: :trial, level: (left <= 3 ? :warn : :info), days: left }
       elsif left < 0
-        { kind: :expired, level: :danger, days: [GRACE_DAYS + left, 0].max }
+        { kind: :expired, level: :danger, days: [ GRACE_DAYS + left, 0 ].max }
       elsif left <= 7
         { kind: :expiring, level: :warn, days: left }
       end

@@ -30,7 +30,7 @@ class PageSmokeTest < ActionDispatch::IntegrationTest
   MERCHANT_PAGES.each do |path|
     test "GET #{path} renders" do
       get path
-      assert_includes [200, 302], response.status, "#{path} returned #{response.status}"
+      assert_includes [ 200, 302 ], response.status, "#{path} returned #{response.status}"
     end
   end
 end
@@ -49,7 +49,7 @@ class AdminPageSmokeTest < ActionDispatch::IntegrationTest
   ADMIN_PAGES.each do |path|
     test "GET #{path} renders" do
       get path
-      assert_includes [200, 302], response.status, "#{path} returned #{response.status}"
+      assert_includes [ 200, 302 ], response.status, "#{path} returned #{response.status}"
     end
   end
 

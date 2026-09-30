@@ -4,7 +4,7 @@ module Merchant
   # pending (or that AI was unsure about) lands here for a human decision.
   class MissionSubmissionsController < BaseController
     before_action :require_manager!
-    before_action :set_submission, only: [:approve, :reject]
+    before_action :set_submission, only: [ :approve, :reject ]
 
     def index
       scope = MissionProgress.where(mission_id: photo_mission_ids)

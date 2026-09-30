@@ -6,7 +6,7 @@ module Customer
     PER = 50
 
     def index
-      @page = [params[:page].to_i, 1].max
+      @page = [ params[:page].to_i, 1 ].max
       scope = current_member.notifications.recent
       @notifications = scope.limit(PER).offset((@page - 1) * PER).to_a
       @has_more = scope.count > @page * PER

@@ -23,7 +23,7 @@ module IconsHelper
     trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>),
     menu:    %(<path d="M4 6h16M4 12h16M4 18h16"/>),
     close:   %(<path d="M6 6l12 12M18 6L6 18"/>),
-    lock:    %(<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>),  }.freeze
+    lock:    %(<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>)  }.freeze
 
   # Hand-drawn marketing doodle, drawn client-side by sketch_controller (Rough.js).
   # Decorative only; draws itself in on reveal. Shapes: see RECIPES in that controller.

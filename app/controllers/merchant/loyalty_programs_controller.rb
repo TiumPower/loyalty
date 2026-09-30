@@ -1,6 +1,6 @@
 module Merchant
   class LoyaltyProgramsController < BaseController
-    before_action :require_manager!, only: [:update]
+    before_action :require_manager!, only: [ :update ]
 
     def show
       @program = current_program
@@ -42,8 +42,8 @@ module Merchant
       # Enforce plan gates — can't enable what the plan doesn't allow. Remember
       # which ones the merchant actually asked for so #update can explain itself.
       @blocked_features = []
-      { stamps: [:stamps_enabled, "merchant.program.m_stamps"],
-        gamification: [:gamification_enabled, "merchant.program.m_gami"] }.each do |feature, (key, label)|
+      { stamps: [ :stamps_enabled, "merchant.program.m_stamps" ],
+        gamification: [ :gamification_enabled, "merchant.program.m_gami" ] }.each do |feature, (key, label)|
         next if current_workspace.plan_allows?(feature)
         @blocked_features << t(label) if ActiveModel::Type::Boolean.new.cast(attrs[key])
         attrs[key] = false
