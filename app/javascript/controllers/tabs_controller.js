@@ -33,6 +33,7 @@ export default class extends Controller {
       const on = this.nameOf(t) === name
       matched = matched || on
       t.classList.toggle(this.activeClassValue, on)
+      t.setAttribute("aria-selected", on)
     })
     if (!matched) name = this.nameOf(this.tabTargets[0])
     this.panelTargets.forEach((p) => { p.hidden = this.nameOf(p) !== name })

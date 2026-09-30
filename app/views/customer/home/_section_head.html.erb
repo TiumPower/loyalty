@@ -1,0 +1,6 @@
+<%# locals: (title:, sub: nil, doodle: nil) %>
+<div>
+  <% if doodle %><%= doodle(doodle, klass: "mb-5 h-14 w-auto text-ink") %><% end %>
+  <h2 class="text-3xl leading-[1.12] font-semibold tracking-[-0.02em] text-balance md:text-[40px]"><%= title %></h2>
+  <% if sub %><p class="mt-4 max-w-[52ch] text-[17px] leading-relaxed text-ink-2"><%= sub %></p><% end %>
+</div>

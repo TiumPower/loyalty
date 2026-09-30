@@ -44,7 +44,7 @@ class BillingRenewalJob < ApplicationJob
     data = service.create_payment_link(
       order_code:  invoice.payos_order_code,
       amount:      invoice.amount,
-      description: "Loyalty #{ws.plan}",
+      description: "Quenly #{ws.plan}",
       return_url:  Rails.application.routes.url_helpers.merchant_billing_return_url(
                      code: invoice.payos_order_code, host: "loyalty.tiumpower.com", protocol: "https"),
       cancel_url:  "https://loyalty.tiumpower.com/merchant/billing"

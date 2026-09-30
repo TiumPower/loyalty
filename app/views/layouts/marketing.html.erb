@@ -2,253 +2,101 @@
 <html lang="<%= I18n.locale %>">
   <head>
     <%= render "layouts/head" %>
-    <link rel="icon" href="/icon.png" type="image/png">
+    <%# One family for all marketing type. _head's families are shop theme presets. %>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
     <%# This is the product's sales page and it carried no description and no
         Open Graph tags, so search results showed a scraped snippet and a link
         pasted into Zalo or Messenger — the channels this is actually sold
         through — rendered as a bare URL with no title, image or blurb. %>
-    <% page_title = "Dynamic Loyalty — #{t('landing.hero_eyebrow')}" %>
+    <% page_title = content_for?(:title) ? content_for(:title) : "Quenly" %>
     <% page_desc  = t("landing.hero_sub") %>
     <meta name="description" content="<%= page_desc %>">
     <link rel="canonical" href="<%= request.base_url %><%= request.path %>">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Dynamic Loyalty">
+    <meta property="og:site_name" content="Quenly">
     <meta property="og:locale" content="<%= I18n.locale == :vi ? "vi_VN" : "en_US" %>">
     <meta property="og:title" content="<%= page_title %>">
     <meta property="og:description" content="<%= page_desc %>">
     <meta property="og:url" content="<%= request.base_url %><%= request.path %>">
-    <meta property="og:image" content="<%= request.base_url %>/icon.png">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="<%= request.base_url %>/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= page_title %>">
     <meta name="twitter:description" content="<%= page_desc %>">
-    <meta name="twitter:image" content="<%= request.base_url %>/icon.png">
-    <style>
-      .m{
-        --ink:#2A1B12; --ink-2:#6E5A4B; --cream:#FBF6EF; --cream-2:#F4EADD; --line:#EADBCA;
-        --brown:#8C4A2F; --amber:#E8933C; --gold:#E0B54A; --espresso:#20130C;
-        --fd:"Fraunces",Georgia,serif; --fb:"Plus Jakarta Sans","Be Vietnam Pro",system-ui,sans-serif;
+    <meta name="twitter:image" content="<%= request.base_url %>/og.png">
+    <%# Switch on the hidden start state for section entrances before first paint, so the hero doesn't
+        flash in, vanish, then animate. If inview_controller never connects (script failed), give up
+        after 4s and show everything. %>
+    <script>
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
+        document.documentElement.classList.add("reveal-on")
+        setTimeout(() => { if (!document.documentElement.dataset.inview) document.documentElement.classList.remove("reveal-on") }, 4000)
       }
-      .m *{box-sizing:border-box}
-      .m{margin:0;background:var(--cream);color:var(--ink);font-family:var(--fb);line-height:1.65;-webkit-font-smoothing:antialiased}
-      .m a{color:inherit;text-decoration:none}
-      .m-in{max-width:1120px;margin:0 auto;padding:0 24px}
-      .m h1,.m h2,.m h3{font-family:var(--fd);font-weight:600;line-height:1.08;text-wrap:balance;margin:0}
-      .m .eyebrow{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;color:var(--brown)}
-
-      /* nav */
-      .m-nav{position:sticky;top:0;z-index:50;background:rgba(251,246,239,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-      .m-nav .row{display:flex;align-items:center;gap:20px;height:66px}
-      .m-brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:17px}
-      .m-brand svg{width:34px;height:34px;border-radius:9px;flex:none}
-      .m-brand b{font-family:var(--fd);font-weight:700}
-      .m-brand .d{color:var(--ink-2);font-weight:600}
-      .m-links{display:flex;gap:24px;margin-left:14px;font-size:14.5px;font-weight:500;color:var(--ink-2)}
-      .m-links a:hover{color:var(--ink)}
-      .m-actions{margin-left:auto;display:flex;align-items:center;gap:12px}
-      .m-lang{display:flex;gap:2px;font-size:12px;font-weight:700;background:var(--cream-2);border-radius:999px;padding:3px}
-      .m-lang a{padding:4px 9px;border-radius:999px;color:var(--ink-2)}
-      .m-lang a.on{background:#fff;color:var(--brown);box-shadow:0 1px 2px rgba(0,0,0,.08)}
-      .m-btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;padding:10px 18px;border-radius:12px;transition:.15s;white-space:nowrap}
-      .m-btn.ghost{color:var(--ink)}
-      .m-btn.ghost:hover{background:var(--cream-2)}
-      .m-btn.solid{background:linear-gradient(180deg,var(--brown),#7A3E28);color:#FFF7EE;box-shadow:0 8px 20px rgba(140,74,47,.28)}
-      .m-btn.solid:hover{filter:brightness(1.06);transform:translateY(-1px)}
-      .m-btn.lg{padding:15px 26px;font-size:16px;border-radius:14px}
-      /* Mobile header. The old rule hid .m-links AND .m-btn.ghost, which took
-         the section nav, the hero's secondary CTA and — worse — the LOGIN link
-         with it, so an existing shop owner arriving on a phone had no way to
-         sign in. The section links move to a scrollable strip under the brand
-         row; login stays as a compact text link. */
-      .m-navscroll{display:none;gap:18px;overflow-x:auto;padding:0 0 10px;
-        -webkit-overflow-scrolling:touch;scrollbar-width:none}
-      .m-navscroll::-webkit-scrollbar{display:none}
-      .m-navscroll a{color:var(--ink-2);text-decoration:none;font-size:13.5px;font-weight:600;white-space:nowrap}
-      @media(max-width:760px){
-        .m-nav .row{gap:12px;height:60px}
-        .m-links{display:none}
-        .m-hero .m-btn.ghost{display:none}
-        .m-actions .m-btn.ghost{padding:8px 12px;font-size:13px;border:none;background:none}
-        .m-lang{display:none}
-        .m-navscroll{display:flex}
-      }
-
-      /* hero */
-      .m-hero{position:relative;overflow:hidden;background:
-          radial-gradient(90% 120% at 85% -20%, rgba(232,147,60,.16), transparent 55%),
-          var(--cream)}
-      .m-hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding:72px 0 84px}
-      .m-hero h1{font-size:clamp(34px,5.4vw,58px)}
-      .m-hero p.lead{font-size:clamp(16px,2vw,19px);color:var(--ink-2);margin:20px 0 0;max-width:34ch}
-      .m-cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
-      .m-trust{margin-top:22px;font-size:13px;color:var(--ink-2);font-weight:600;letter-spacing:.01em}
-      @media(max-width:860px){.m-hero .grid{grid-template-columns:1fr;gap:36px;padding:48px 0 60px}}
-
-      /* hero card mockup */
-      .m-visual{position:relative;display:grid;place-items:center}
-      .m-phone{width:300px;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:30px;padding:16px;
-        box-shadow:0 40px 80px -30px rgba(60,34,20,.5);transform:rotate(2deg)}
-      .m-mem{border-radius:20px;padding:22px;color:#fff;position:relative;overflow:hidden;
-        background:linear-gradient(140deg,var(--brown),var(--amber))}
-      .m-mem .bdg{position:absolute;top:16px;right:16px;display:inline-flex;gap:6px;align-items:center;background:var(--gold);color:#3A2A20;font-weight:800;font-size:12px;padding:6px 11px;border-radius:999px}
-      .m-mem .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin-top:26px}
-      .m-mem .pts{font-family:var(--fd);font-weight:700;font-size:44px;line-height:1;margin-top:4px}
-      .m-mem .per{opacity:.9;font-size:12.5px;margin-top:4px}
-      .m-mem .nm{margin-top:22px;font-weight:600;letter-spacing:.04em}
-      .m-chips{display:flex;gap:8px;margin-top:16px}
-      .m-chips span{flex:1;text-align:center;background:var(--cream-2);border-radius:12px;padding:11px 0;font-size:12px;font-weight:600;color:var(--brown)}
-
-      /* sections */
-      section.m-sec{padding:76px 0}
-      .m-sec.alt{background:var(--cream-2)}
-      .m-head{text-align:center;max-width:620px;margin:0 auto 44px}
-      .m-head h2{font-size:clamp(26px,3.6vw,38px);margin-top:10px}
-      .m-head p{color:var(--ink-2);margin:12px 0 0;font-size:16px}
-
-      .m-features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-      @media(max-width:860px){.m-features{grid-template-columns:1fr}}
-      .m-feat{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px}
-      .m-feat .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;color:var(--brown);background:var(--cream-2);margin-bottom:16px}
-      .m-feat h3{font-size:19px}
-      .m-feat p{color:var(--ink-2);font-size:14.5px;margin:7px 0 0}
-
-      .m-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
-      @media(max-width:860px){.m-steps{grid-template-columns:1fr}}
-      .m-step{position:relative;padding-top:16px}
-      .m-step .n{font-family:var(--fd);font-weight:700;font-size:15px;color:#fff;background:var(--brown);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;margin-bottom:14px}
-      .m-step h3{font-size:19px}
-      .m-step p{color:var(--ink-2);font-size:14.5px;margin:7px 0 0}
-
-      /* cta band */
-      .m-band{background:linear-gradient(150deg,var(--espresso),#4A2C1B);color:#FBEFE2;border-radius:28px;padding:56px 40px;text-align:center;margin:0 24px}
-      .m-band h2{font-size:clamp(24px,3.4vw,34px);color:#fff}
-      .m-band p{color:rgba(251,239,226,.8);margin:12px auto 0;max-width:48ch}
-      .m-band .m-cta{justify-content:center;margin-top:26px}
-      .m-band .m-btn.solid{background:linear-gradient(180deg,var(--amber),#D97E2B);box-shadow:0 10px 26px rgba(0,0,0,.3)}
-
-      /* Hero price badge — the headline "<7k/day" hook, up top */
-      .m-heroprice{margin-top:22px;display:inline-flex;flex-direction:column;gap:4px;align-items:flex-start;background:linear-gradient(150deg,var(--espresso),#4A2C1B);color:#FBEFE2;border-radius:18px;padding:16px 22px;box-shadow:0 14px 34px -12px rgba(32,19,12,.55)}
-      .m-heroprice .hp-day{font-family:var(--fd);font-weight:700;font-size:clamp(22px,3vw,30px);line-height:1.05;color:var(--gold)}
-      .m-heroprice .hp-amt{font-size:14px;font-weight:600;color:rgba(251,239,226,.82)}
-      .m-heroprice .hp-amt span{opacity:.8;margin-left:2px}
-
-      /* Price hook band — the "<7k/day" value hero */
-      .m-hook{background:linear-gradient(150deg,var(--espresso),#4A2C1B);color:#FBEFE2;border-radius:28px;padding:44px 40px;text-align:center;margin:0 24px;display:flex;flex-direction:column;align-items:center;gap:6px}
-      .m-hook .eyebrow{color:var(--gold)}
-      .m-hook .amt{font-family:var(--fd);font-weight:700;font-size:clamp(40px,6vw,60px);line-height:1;color:#fff;margin-top:10px}
-      .m-hook .amt small{font-family:var(--fb);font-size:15px;font-weight:600;color:rgba(251,239,226,.7);margin-left:6px}
-      .m-hook .day{font-family:var(--fd);font-weight:700;font-size:clamp(20px,2.6vw,26px);color:var(--amber);margin-top:14px}
-      .m-hook .line{color:rgba(251,239,226,.82);margin-top:6px;max-width:44ch;font-size:15px}
-      .m-hook .m-btn.solid{background:linear-gradient(180deg,var(--amber),#D97E2B);box-shadow:0 10px 26px rgba(0,0,0,.3);margin-top:22px}
-
-      /* stats */
-      .m-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-      @media(max-width:760px){.m-stats{grid-template-columns:repeat(2,1fr)}}
-      .m-stat{text-align:center;padding:8px}
-      .m-stat .v{font-family:var(--fd);font-weight:700;font-size:32px;color:var(--brown)}
-      .m-stat .l{color:var(--ink-2);font-size:13.5px;margin-top:6px}
-
-      /* industries */
-      .m-inds{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-      @media(max-width:860px){.m-inds{grid-template-columns:1fr}}
-      .m-ind{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;border-top:4px solid var(--amber)}
-      .m-ind h3{font-size:20px}
-      .m-ind p{color:var(--ink-2);font-size:14.5px;margin:8px 0 0}
-
-      /* pricing */
-      .m-price{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
-      @media(max-width:860px){.m-price{grid-template-columns:1fr}}
-      .m-plan{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;display:flex;flex-direction:column;gap:14px;position:relative}
-      .m-plan.pop{border-color:var(--brown);box-shadow:0 24px 54px -26px rgba(140,74,47,.55)}
-      @media(min-width:861px){.m-plan.pop{transform:translateY(-8px)}}
-      .m-plan .tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--brown);color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 13px;border-radius:999px;white-space:nowrap}
-      .m-plan .pn{font-family:var(--fd);font-weight:600;font-size:22px}
-      .m-plan .pp{font-family:var(--fd);font-weight:700;font-size:32px;line-height:1;color:var(--ink)}
-      .m-plan .pp small{font-family:var(--fb);font-size:13px;font-weight:600;color:var(--ink-2)}
-      .m-plan ul{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:11px;flex:1}
-      .m-plan li{display:flex;gap:10px;font-size:14px;color:var(--ink-2);align-items:flex-start}
-      .m-plan li svg{flex:none;color:var(--brown);margin-top:1px}
-      .m-plan .m-btn{justify-content:center;width:100%}
-
-      /* faq */
-      .m-faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-      .m-faq details{background:#fff;border:1px solid var(--line);border-radius:16px;padding:2px 20px}
-      .m-faq summary{cursor:pointer;list-style:none;font-weight:600;padding:16px 0;display:flex;justify-content:space-between;align-items:center;gap:16px}
-      .m-faq summary::-webkit-details-marker{display:none}
-      .m-faq summary::after{content:"+";color:var(--brown);font-size:24px;font-weight:400;line-height:1}
-      .m-faq details[open] summary::after{content:"\2013"}
-      .m-faq p{margin:0 0 16px;color:var(--ink-2);font-size:14.5px}
-
-      /* signup / form card */
-      .m-formwrap{padding:44px 0 72px}
-      .m-formcard{max-width:640px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:38px 34px;box-shadow:0 30px 70px -40px rgba(60,34,20,.4)}
-      .m-formcard h1{font-size:30px}
-      .m-formcard .sub{color:var(--ink-2);margin:8px 0 26px;font-size:15px}
-      .m-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-      .m-subwrap{display:flex;align-items:center;gap:6px}
-      .m-subwrap .l-field{text-align:right;min-width:0}
-      .m-subsuffix{color:var(--ink-2);white-space:nowrap}
-      /* On a phone the suffix takes most of the row, so it goes underneath and
-         the owner can actually read the address they are typing. */
-      @media(max-width:560px){
-        .m-subwrap{flex-direction:column;align-items:stretch;gap:4px}
-        .m-subwrap .l-field{text-align:left}
-        .m-subsuffix{font-size:12px}
-      }
-      @media(max-width:560px){.m-grid2{grid-template-columns:1fr}}
-      .m-field{margin-bottom:16px}
-
-      /* footer */
-      .m-foot{border-top:1px solid var(--line);padding:34px 0;color:var(--ink-2);font-size:13.5px}
-      .m-foot .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-      .m-foot .m-brand{font-size:15px}
-    </style>
+    </script>
+    <%= javascript_import_module_tag "marketing" %>
   </head>
-  <body class="m">
-    <header class="m-nav"><div class="m-in row">
-      <a class="m-brand" href="/">
-        <svg viewBox="0 0 512 512" aria-hidden="true"><use href="#dlmark"/></svg>
-        <span><span class="d">Dynamic</span> <b>Loyalty</b></span>
-      </a>
-      <nav class="m-links">
-        <a href="#features"><%= t("landing.nav_features") %></a>
-        <a href="#how"><%= t("landing.nav_how") %></a>
-        <a href="#pricing"><%= t("landing.nav_pricing") %></a>
+  <body class="marketing bg-surface text-ink antialiased">
+    <%# Absolute anchors: this layout also wraps /merchant/signup. %>
+    <% nav = [["/#how", t("landing.nav_how")], ["/#features", t("landing.nav_features")],
+              ["/#pricing", t("landing.nav_pricing")], ["/#faq", t("landing.faq_title")]] %>
+    <header class="l-hdr sticky top-0 z-50 border-b border-line">
+      <nav class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-10 px-4 py-2 sm:px-6 lg:py-3">
+        <a class="flex h-12 items-center" href="/">
+          <%= image_tag "quenly-lockup.png", alt: "Quenly", width: 449, height: 160, class: "h-7 w-auto sm:h-8" %>
+        </a>
+
+        <div class="ms-auto flex items-center gap-2 sm:gap-5 lg:order-3">
+          <a class="l-link hidden text-[15px] font-medium lg:inline" href="/merchant/login"><%= t("landing.nav_login") %></a>
+          <a class="l-btn l-btn-primary min-h-10! px-4! text-sm! sm:px-5!" href="/merchant/signup"><%= t("landing.hero_cta") %></a>
+          <button type="button" class="hs-collapse-toggle -me-2 rounded-lg p-2 text-ink-2 hover:bg-surface-2 lg:hidden"
+                  data-hs-collapse="#m-nav" aria-controls="m-nav" aria-label="Menu">
+            <%= ui_icon(:menu, size: 22, klass: "hs-collapse-open:hidden") %>
+            <%= ui_icon(:close, size: 22, klass: "hidden hs-collapse-open:block") %>
+          </button>
+        </div>
+
+        <div id="m-nav" class="hs-collapse hidden w-full basis-full overflow-hidden transition-[height] duration-300 lg:order-2 lg:block lg:w-auto lg:basis-auto">
+          <div class="flex flex-col py-2 text-[15px] font-medium text-ink-2 lg:flex-row lg:items-center lg:gap-7 lg:py-0">
+            <% nav.each do |href, label| %>
+              <a class="l-link py-2" href="<%= href %>"><%= label %></a>
+            <% end %>
+            <a class="py-2 font-semibold text-ink lg:hidden" href="/merchant/login"><%= t("landing.nav_login") %></a>
+          </div>
+        </div>
       </nav>
-      <div class="m-actions">
-        <span class="m-lang">
-          <%= link_to "VI", set_locale_path(:vi), class: ("on" if I18n.locale == :vi), data: { turbo: false } %>
-          <%= link_to "EN", set_locale_path(:en), class: ("on" if I18n.locale == :en), data: { turbo: false } %>
-        </span>
-        <a class="m-btn ghost" href="/merchant/login"><%= t("landing.nav_login") %></a>
-        <a class="m-btn solid" href="/merchant/signup"><%= t("landing.nav_signup") %></a>
-      </div>
-    </div>
-    <%# Section links for phones, where the inline nav does not fit. %>
-    <div class="m-in"><nav class="m-navscroll">
-      <a href="#features"><%= t("landing.nav_features") %></a>
-      <a href="#how"><%= t("landing.nav_how") %></a>
-      <a href="#pricing"><%= t("landing.nav_pricing") %></a>
-      <a href="#faq"><%= t("landing.faq_title") %></a>
-    </nav></div>
     </header>
 
-    <%# shared logo symbol %>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-      <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C3F27"/><stop offset="1" stop-color="#EA9A3E"/></linearGradient>
-      <g id="dlmark">
-        <rect width="512" height="512" rx="120" fill="url(#tile)"/>
-        <circle cx="256" cy="256" r="150" fill="none" stroke="#fff" stroke-opacity=".34" stroke-width="7"/>
-        <circle cx="362" cy="150" r="19" fill="#F4C752"/>
-        <path d="M256 124 C267 220 292 245 388 256 C292 267 267 292 256 388 C245 292 220 267 124 256 C220 245 245 220 256 124 Z" fill="#fff"/>
-      </g>
-    </defs></svg>
+    <main class="mx-auto max-w-7xl px-4 sm:px-6">
+      <%= yield %>
+    </main>
 
-    <%= yield %>
-
-    <footer class="m-foot"><div class="m-in row">
-      <a class="m-brand" href="/"><svg viewBox="0 0 512 512" width="26" height="26" aria-hidden="true"><use href="#dlmark"/></svg><span><span class="d">Dynamic</span> <b>Loyalty</b></span></a>
-      <span style="margin-left:auto"><%= t("landing.footer_tagline") %></span>
-      <span>© <%= Date.current.year %> Dynamic Loyalty · <%= t("landing.footer_rights") %></span>
-    </div></footer>
+    <footer class="mt-8 border-t border-line">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="grid gap-10 py-14 md:grid-cols-12 md:gap-8">
+          <div class="md:col-span-6">
+            <a class="inline-flex" href="/"><%= image_tag "quenly-lockup.png", alt: "Quenly", width: 449, height: 160, class: "h-11 w-auto" %></a>
+            <p class="mt-4 max-w-[36ch] leading-relaxed text-ink-2"><%= t("landing.footer_tagline") %></p>
+          </div>
+          <ul class="space-y-3 text-[15px] text-ink-2 md:col-span-3">
+            <% nav.each do |href, label| %><li><a class="l-link" href="<%= href %>"><%= label %></a></li><% end %>
+          </ul>
+          <ul class="space-y-3 text-[15px] text-ink-2 md:col-span-3">
+            <li><a class="l-link" href="/merchant/signup"><%= t("landing.hero_cta") %></a></li>
+            <li><a class="l-link" href="/merchant/login"><%= t("landing.nav_login") %></a></li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-3 border-t border-line py-6 text-[13px] text-ink-2 sm:flex-row sm:items-center sm:justify-between">
+          <span>© <%= Date.current.year %> Quenly · <%= t("landing.footer_rights") %></span>
+          <span class="flex gap-4 font-semibold">
+            <%= link_to "VI", set_locale_path(:vi), class: (I18n.locale == :vi ? "text-ink" : "l-link"), data: { turbo: false } %>
+            <%= link_to "EN", set_locale_path(:en), class: (I18n.locale == :en ? "text-ink" : "l-link"), data: { turbo: false } %>
+          </span>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

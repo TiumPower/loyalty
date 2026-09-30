@@ -2,7 +2,7 @@
 <%# "Merchant" was the H1 on a Vietnamese shop owner's login page — product
     jargon where the heading should just say what the page does. %>
 <h1><%= admin ? "Super Admin" : "Đăng nhập" %></h1>
-<p class="sub"><%= admin ? "Đăng nhập vận hành nền tảng" : "Quản lý cửa hàng của bạn trên Dynamic Loyalty" %></p>
+<p class="sub"><%= admin ? "Đăng nhập vận hành nền tảng" : "Quản lý cửa hàng của bạn trên Quenly" %></p>
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { data: { turbo: false } }) do |f| %>
   <div class="field">

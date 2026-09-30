@@ -1,151 +1,324 @@
-<% content_for :title, "Dynamic Loyalty — #{t('landing.hero_eyebrow')}" %>
+<% content_for :title, "Quenly - #{t('landing.hero_eyebrow')}" %>
 
-<%# ---- Hero ---- %>
-<section class="m-hero"><div class="m-in grid">
-  <div class="m-hero-copy">
-    <div class="eyebrow"><%= t("landing.hero_eyebrow") %></div>
-    <h1 style="margin-top:14px;"><%= t("landing.hero_title") %></h1>
-    <p class="lead"><%= t("landing.hero_sub") %></p>
-    <div class="m-heroprice">
-      <div class="hp-day"><%= t("landing.hook_day") %></div>
-      <div class="hp-amt"><%= t("landing.hook_amount") %><span><%= t("landing.hook_per") %></span></div>
+<%# Rubber-stamp mark, reused by the hero card and the closing section. The
+    displacement filter roughens the edge the way ink does on paper. %>
+<svg width="0" height="0" class="absolute" aria-hidden="true">
+  <filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+  <symbol id="stamp" viewBox="0 0 64 64">
+    <g filter="url(#ink)">
+      <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="3.2"/>
+      <circle cx="32" cy="32" r="22.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2.6"/>
+      <path fill="currentColor" d="M32 15c1.4 12 4.6 15.6 17 17-12.4 1.4-15.6 5-17 17-1.4-12-4.6-15.6-17-17 12.4-1.4 15.6-5 17-17Z"/>
+    </g>
+  </symbol>
+</svg>
+
+<div data-controller="inview">
+
+<%# ---- Hero: copy left; right, the paper card every café has, stampable, in front of the real app ---- %>
+<%# lg+: fills the first screen under the 4.5rem header, content centred in it. %>
+<section class="grid content-center items-center gap-14 py-12 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-12 lg:gap-6 lg:py-10">
+  <div class="relative lg:col-span-7">
+    <%= doodle "sparkle", klass: "pointer-events-none absolute -top-12 right-[4%] hidden h-20 w-24 text-ink sm:block lg:-top-14 lg:right-[2%]", i: 4 %>
+    <h1 data-reveal class="l-hero-title isolate text-[46px] leading-[1] font-semibold tracking-[-0.035em] text-balance sm:text-[60px] lg:text-[66px] xl:text-[80px]"><%= t("landing.hero_title_html") %></h1>
+    <p data-reveal style="--i:1" class="mt-7 max-w-[44ch] text-lg leading-relaxed text-ink-2 xl:text-xl"><%= t("landing.hero_sub") %></p>
+    <div data-reveal style="--i:2" class="mt-9 flex flex-wrap items-center gap-3">
+      <a class="l-btn l-btn-primary px-7!" href="/merchant/signup"><%= t("landing.hero_cta") %></a>
+      <a class="l-btn l-btn-ghost" href="#pricing"><%= t("landing.hero_cta2") %></a>
     </div>
-    <div class="m-cta">
-      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.hero_cta", days: Workspace::TRIAL_DAYS) %></a>
-      <a class="m-btn ghost lg" href="#features"><%= t("landing.hero_cta2") %> →</a>
+    <p data-reveal style="--i:3" class="mt-5 flex items-center gap-2 text-sm text-ink-2"><%= t("landing.hero_note", days: Workspace::TRIAL_DAYS) %><%= doodle "heart", klass: "h-5 w-6 text-primary", i: 6 %></p>
+  </div>
+
+  <div class="lg:col-span-5">
+    <div data-controller="stampcard" class="relative mx-auto aspect-square w-full max-w-[560px]">
+      <%= doodle "cup", klass: "pointer-events-none absolute top-[9%] left-[8%] h-20 w-20 -rotate-6 text-ink", i: 12 %>
+      <%# The customer's app on an iPhone, rebuilt in HTML from the real Mộc Cà Phê home screen so it
+          stays crisp at any size and its stamp count follows the paper card. %>
+      <div data-reveal="phone" style="--i:1" class="absolute top-0 right-[2%] w-[45%]">
+        <div>
+          <%= render layout: "iphone", locals: { active: "home" } do %>
+              <div class="px-[5.5cqi]">
+                <div data-reveal="ui" style="--i:6" class="flex items-center gap-[3cqi]">
+                  <span class="grid size-[11cqi] place-items-center rounded-[3.2cqi] bg-primary font-[Fraunces] text-[4.4cqi] font-bold text-on-primary">MC</span>
+                  <span class="min-w-0 flex-1 leading-tight"><span class="block text-[4.4cqi] font-bold"><%= t("landing.stamp.shop") %></span><span class="block truncate text-[3.2cqi] text-ink-2"><%= t("landing.phone.hello") %></span></span>
+                  <%= ui_icon(:bell, size: 16, klass: "size-[5.6cqi] text-ink") %>
+                </div>
+
+                <div data-reveal="ui" style="--i:7" class="l-iphone-card mt-[4.5cqi]">
+                  <span class="flex items-start justify-between">
+                    <span class="text-[2.7cqi] tracking-[.14em] uppercase opacity-80"><%= t("landing.phone.points") %></span>
+                    <span class="flex items-center gap-[1cqi] rounded-full border border-white/35 bg-white/15 px-[2.6cqi] py-[1cqi] text-[3cqi] font-bold"><%= ui_icon(:medal, size: 12, klass: "size-[3.4cqi]") %><%= t("landing.receipt.tier") %></span>
+                  </span>
+                  <span class="mt-[1.5cqi] block font-[Fraunces] text-[14cqi] leading-none tabular-nums">120</span>
+                  <%# The stamp row lives on the card so the paper card never covers it; it follows the paper card live. %>
+                  <span class="mt-[3.6cqi] flex items-baseline justify-between text-[3cqi]">
+                    <span class="opacity-85"><%= t("landing.brand.stamps") %> · <%= t("landing.stamp.rule") %></span>
+                    <span class="font-bold tabular-nums"><span data-stampcard-target="count">3</span>/9</span>
+                  </span>
+                  <span class="mt-[1.6cqi] block h-[1.6cqi] overflow-hidden rounded-full bg-white/25"><span data-stampcard-target="bar" class="block h-full rounded-full bg-white transition-[width] duration-500" style="width:33%"></span></span>
+                  <span class="mt-[3.6cqi] flex items-end justify-between">
+                    <span class="text-[3.8cqi] font-semibold tracking-[.04em]">VŨ HỮU</span>
+                    <span class="text-[2.8cqi] opacity-85"><%= t("landing.phone.rate") %></span>
+                  </span>
+                </div>
+
+                <div class="mt-[4cqi] grid grid-cols-3 gap-[2.4cqi]">
+                  <% [[:stamp, "stamps"], [:wheel, "wheel"], [:target, "missions"], [:users, "invite"], [:medal, "badges"], [:gift, "gifts"]].each_with_index do |(icon, k), i| %>
+                    <span data-reveal="ui" style="--i:<%= 8 + i %>" class="flex flex-col items-center gap-[1.4cqi] rounded-[4cqi] border border-line bg-white py-[3cqi] text-[2.9cqi] font-semibold">
+                      <%= ui_icon(icon, size: 20, klass: "size-[6.4cqi] text-primary") %><%= t("landing.phone.#{k}") %>
+                    </span>
+                  <% end %>
+                </div>
+
+              </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div data-reveal="card-in" style="--i:3" class="absolute bottom-[5%] left-0 w-[82%]">
+      <button type="button" data-action="stampcard#press"
+              class="l-kraft w-full cursor-pointer text-left"
+              aria-label="<%= t("landing.stamp.press") %>">
+        <span class="block">
+          <span class="flex items-baseline justify-between gap-3">
+            <span class="text-[6.4cqi] leading-none font-semibold tracking-[-0.02em]"><%= t("landing.stamp.shop") %></span>
+            <span class="text-[3.2cqi] font-medium text-ink-2"><%= t("landing.stamp.rule") %></span>
+          </span>
+          <span class="mt-[1.6cqi] block text-[3cqi] tracking-[.08em] text-ink-2 uppercase"><%= t("landing.stamp.card") %></span>
+          <span class="mt-[4cqi] grid grid-cols-5 gap-[2.6cqi]">
+            <% 10.times do |i| %>
+              <span class="l-slot <%= 'l-slot-reward' if i == 9 %>" <%= 'data-stampcard-target=slot'.html_safe if i < 9 %>>
+                <% if i == 9 %><span class="px-1 text-center text-[2.4cqi] leading-tight font-semibold"><%= t("landing.stamp.reward") %></span><% else %><span class="l-slot-n"><%= i + 1 %></span><% end %>
+                <% if i < 3 %><svg class="l-stamp" style="rotate:<%= [-12, 8, -4][i] %>deg; --i:<%= i + 11 %>" viewBox="0 0 64 64" aria-hidden="true"><use href="#stamp"/></svg><% end %>
+              </span>
+            <% end %>
+          </span>
+        </span>
+      </button>
+      </div>
+      <template data-stampcard-target="tpl"><svg class="l-stamp" viewBox="0 0 64 64" aria-hidden="true"><use href="#stamp"/></svg></template>
     </div>
-    <div class="m-trust"><%= t("landing.trust") %></div>
+    <p class="relative mx-auto mt-4 flex max-w-[560px] flex-wrap items-center justify-between gap-2 text-sm text-ink-2">
+      <%= doodle "arrow", klass: "pointer-events-none absolute -top-14 left-2 hidden h-12 w-20 -rotate-6 text-ink-2 sm:block", i: 10 %>
+      <span class="flex items-center gap-2"><%= ui_icon(:stamp, size: 18, klass: "text-primary") %><%= t("landing.stamp.hint") %></span>
+      <span class="text-xs"><%= t("landing.hero_caption") %></span>
+    </p>
   </div>
+</section>
 
-  <div class="m-visual">
-    <div class="m-phone">
-      <div class="m-mem">
-        <span class="bdg">👑 <%= t("landing.hero_tier") %></span>
-        <div class="k"><%= t("landing.hero_points_label") %></div>
-        <div class="pts">13.990</div>
-        <div class="per"><%= t("landing.hero_per_bill") %></div>
-        <div class="nm">NGUYEN AN · 0912 •• 456</div>
+<%# ---- Paper vs app: the same ritual, minus the annoyances ---- %>
+<section class="pt-24 md:pt-32">
+  <div class="grid gap-10 lg:grid-cols-12 lg:gap-8">
+    <div class="lg:col-span-4">
+      <%= doodle "paper-card", klass: "mb-5 h-14 w-auto text-ink" %>
+      <h2 data-reveal class="text-[32px] leading-[1.1] font-medium tracking-[-0.025em] text-balance md:text-[42px]"><%= t("landing.compare.title") %></h2>
+      <p data-reveal style="--i:1" class="mt-5 max-w-[40ch] text-[17px] leading-relaxed text-ink-2"><%= t("landing.compare.sub") %></p>
+    </div>
+    <div class="lg:col-span-7 lg:col-start-6">
+      <div class="grid grid-cols-2 gap-x-5 border-b border-line pb-4 text-sm font-semibold sm:gap-x-10">
+        <p class="flex items-center gap-2 text-ink-2"><i class="l-kraft-chip"></i><%= t("landing.compare.paper") %></p>
+        <p class="flex items-center gap-2 text-primary"><%= image_tag "quenly-mark.png", alt: "", width: 20, height: 20, class: "size-5" %><%= t("landing.compare.app") %></p>
       </div>
-      <div class="m-chips">
-        <span><%= ui_icon(:qrcode, size: 18) %></span>
-        <span><%= ui_icon(:gift, size: 18) %></span>
-        <span><%= ui_icon(:wheel, size: 18) %></span>
-        <span><%= ui_icon(:medal, size: 18) %></span>
-      </div>
+      <% t("landing.compare.rows").each_with_index do |(paper, app), i| %>
+        <div data-reveal style="--i:<%= i %>" class="grid grid-cols-2 gap-x-5 border-b border-line py-5 sm:gap-x-10">
+          <p class="flex gap-2.5 leading-relaxed text-ink-2"><%= doodle "cross", klass: "mt-1 size-4 shrink-0", i: i + 1 %><%= paper %></p>
+          <p class="flex gap-2.5 leading-relaxed font-medium"><%= doodle "check", klass: "mt-0.5 size-5 shrink-0 text-primary", i: i + 1 %><%= app %></p>
+        </div>
+      <% end %>
     </div>
   </div>
-</div></section>
+</section>
 
-<%# ---- Stats / value band ---- %>
-<section class="m-sec alt" style="padding:48px 0;"><div class="m-in">
-  <div class="m-stats">
-    <% [:stat1,:stat2,:stat3,:stat4].each do |s| %>
-      <div class="m-stat">
-        <div class="v"><%= t("landing.#{s}_t") %></div>
-        <div class="l"><%= t("landing.#{s}_d") %></div>
+<%# ---- How: three real artifacts of one visit, standing on the counter ---- %>
+<section id="how" class="pt-24 md:pt-32">
+  <%= doodle "cup", klass: "mb-5 h-14 w-auto text-ink" %>
+  <h2 data-reveal class="max-w-[20ch] text-[32px] leading-[1.1] font-medium tracking-[-0.025em] text-balance md:text-[42px]"><%= t("landing.how_title") %></h2>
+
+  <%# Three stages of one size, each object cropped by its panel's edge: the phone rises from the
+      bottom, the bill feeds out of a printer slot, the dashboard window runs off the corner. %>
+  <ol class="mt-14 grid gap-10 md:grid-cols-3 md:gap-5 lg:gap-6 [&>li]:min-w-0">
+    <li data-reveal="fade" class="relative">
+      <%= doodle "arrow", klass: "pointer-events-none absolute -top-9 -right-9 z-10 hidden h-12 w-20 rotate-[28deg] text-ink-2 md:block", i: 3 %>
+      <div class="l-stage l-grain">
+        <div data-reveal="up" style="--i:1" class="absolute inset-x-0 top-9 mx-auto w-[56%] max-w-[230px]">
+          <%= render layout: "iphone", locals: { active: "code" } do %>
+            <div class="px-[3.5cqi]"><%= image_tag "landing/member-code.jpg", alt: "", width: 720, height: 900, loading: "lazy", class: "block h-auto w-full" %></div>
+          <% end %>
+        </div>
+      </div>
+      <h3 class="mt-6 text-xl font-medium tracking-[-0.01em]"><span class="me-2 text-ink-2 tabular-nums">1</span><%= t("landing.s1_t") %></h3>
+      <p class="mt-2 leading-relaxed text-ink-2"><%= t("landing.s1_d") %></p>
+    </li>
+    <li data-reveal="fade" style="--i:1" class="relative">
+      <%= doodle "arrow", klass: "pointer-events-none absolute -top-9 -right-9 z-10 hidden h-12 w-20 rotate-[28deg] text-ink-2 md:block", i: 5 %>
+      <div class="l-stage l-grain">
+        <i class="l-printer" aria-hidden="true"></i>
+        <div class="l-receipt-wrap" aria-hidden="true">
+          <div data-reveal="print" style="--i:2" class="l-receipt">
+            <p class="text-center font-bold tracking-[.12em]"><%= t("landing.stamp.shop").upcase %></p>
+            <p class="mt-0.5 text-center opacity-70"><%= t("landing.receipt.bill_no") %> · 09:41</p>
+            <div class="l-receipt-rule"></div>
+            <% t("landing.receipt.items").each do |name, price| %>
+              <p class="flex justify-between gap-3"><span><%= name %></span><span class="tabular-nums"><%= price %></span></p>
+            <% end %>
+            <div class="l-receipt-rule"></div>
+            <p class="flex justify-between font-bold"><span><%= t("landing.receipt.total") %></span><span class="tabular-nums">120.000</span></p>
+            <div class="l-receipt-rule"></div>
+            <p>Vũ Hữu · <%= t("landing.receipt.tier") %></p>
+            <p class="flex justify-between"><span><%= t("landing.receipt.points") %></span><span class="font-bold">+12</span></p>
+            <p class="flex justify-between"><span><%= t("landing.receipt.stamps") %></span><span class="font-bold">+1 (7/10)</span></p>
+            <p class="mt-2 text-center opacity-70"><%= t("landing.receipt.thanks") %></p>
+          </div>
+        </div>
+      </div>
+      <h3 class="mt-6 text-xl font-medium tracking-[-0.01em]"><span class="me-2 text-ink-2 tabular-nums">2</span><%= t("landing.s2_t") %></h3>
+      <p class="mt-2 leading-relaxed text-ink-2"><%= t("landing.s2_d") %></p>
+    </li>
+    <li data-reveal="fade" style="--i:2">
+      <div class="l-stage l-grain">
+        <div data-reveal="slide" style="--i:3" class="l-browser absolute top-10 left-[9%] w-[175%]">
+          <div class="l-browser-bar" aria-hidden="true">
+            <i></i><i></i><i></i>
+            <span class="l-browser-url"><%= ui_icon(:lock, size: 12, stroke: 2) %><span class="truncate">moccaphe.loyalty.tiumpower.com</span></span>
+          </div>
+          <%= image_tag "landing/merchant-dashboard.jpg", alt: t("landing.s3_t"), width: 1600, height: 841, loading: "lazy", class: "block h-auto w-full" %>
+        </div>
+      </div>
+      <h3 class="mt-6 text-xl font-medium tracking-[-0.01em]"><span class="me-2 text-ink-2 tabular-nums">3</span><%= t("landing.s3_t") %></h3>
+      <p class="mt-2 leading-relaxed text-ink-2"><%= t("landing.s3_d") %></p>
+    </li>
+  </ol>
+</section>
+
+<%# ---- Brand: the same app, three shops, three identities ---- %>
+<section class="pt-24 md:pt-32">
+  <div class="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-8">
+    <div class="lg:col-span-6">
+      <%= doodle "shopfront", klass: "mb-5 h-14 w-auto text-ink" %>
+      <h2 data-reveal class="text-[32px] leading-[1.1] font-medium tracking-[-0.025em] text-balance md:text-[42px]"><%= t("landing.brand.title") %></h2>
+    </div>
+    <p data-reveal style="--i:1" class="max-w-[46ch] text-[17px] leading-relaxed text-ink-2 lg:col-span-5 lg:col-start-8"><%= t("landing.brand.sub") %></p>
+  </div>
+  <%# md+: the three shops fanned out like cards on a table, labelled by hand. Below md: a swipe row. %>
+  <div class="relative">
+  <div class="-mx-4 mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 md:mx-0 md:items-start md:justify-center md:gap-0 md:overflow-visible md:px-0 md:pt-6 md:pb-10" aria-hidden="true">
+    <% t("landing.brand.shops").each_with_index do |(name, sub, color), i| %>
+      <div data-reveal="card" style="--i:<%= i %>; --c:<%= color %>" class="w-[76%] shrink-0 snap-center sm:w-[46%] md:w-[31%] lg:w-[27%] <%= ['md:mt-10 md:-me-6 md:-rotate-6', 'md:relative md:z-10', 'md:mt-10 md:-ms-6 md:rotate-6'][i] %>">
+        <div class="l-shot">
+          <div class="flex items-center gap-3 px-1 pt-1">
+            <span class="grid size-10 place-items-center rounded-xl bg-(--c) text-sm font-bold text-white"><%= name.split.map { _1[0] }.first(2).join %></span>
+            <div class="min-w-0"><p class="truncate font-semibold"><%= name %></p><p class="text-xs text-ink-2"><%= t("landing.brand.hello") %></p></div>
+          </div>
+          <div class="mt-4 rounded-2xl bg-(--c) p-5 text-white">
+            <p class="text-[11px] tracking-[.14em] uppercase opacity-80"><%= t("landing.brand.points") %></p>
+            <p class="mt-1 text-[40px] leading-none font-medium tabular-nums"><%= [120, 48, 310][i] %></p>
+            <p class="mt-4 text-sm opacity-90"><%= t("landing.brand.member") %></p>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2 pb-1 text-center text-[11px] font-medium">
+            <% [[:stamp, "stamps"], [:wheel, "wheel"], [:gift, "gifts"]].each do |icon, k| %>
+              <span class="flex flex-col items-center gap-1.5 rounded-xl border border-line bg-white py-3"><%= ui_icon(icon, size: 20, klass: "text-(--c)") %><%= t("landing.brand.#{k}") %></span>
+            <% end %>
+          </div>
+        </div>
+        <p class="l-mono mt-3 truncate text-center text-xs text-ink-2"><%= sub %>.loyalty.tiumpower.com</p>
       </div>
     <% end %>
   </div>
-</div></section>
+  <div class="pointer-events-none hidden text-sm font-semibold text-primary lg:block" aria-hidden="true">
+    <span class="absolute top-2 left-0 flex flex-col items-end gap-1"><%= t("landing.brand.notes.logo") %><%= doodle "arrow", klass: "h-12 w-20 rotate-[70deg]", i: 4 %></span>
+    <span class="absolute top-24 right-0 flex flex-col items-start gap-1"><%= t("landing.brand.notes.colors") %><%= doodle "arrow", klass: "h-12 w-20 -scale-x-100 rotate-[-70deg]", i: 5 %></span>
+    <span class="absolute bottom-10 left-[16%] flex items-center gap-2"><%= doodle "arrow", klass: "h-10 w-16 -scale-y-100 rotate-[12deg]", i: 6 %><%= t("landing.brand.notes.address") %></span>
+  </div>
+  </div>
+  <p class="mt-4 text-center text-xs text-ink-2"><%= t("landing.brand.note") %></p>
+</section>
 
-<%# ---- Features ---- %>
-<section class="m-sec" id="features"><div class="m-in">
-  <div class="m-head">
-    <div class="eyebrow"><%= t("landing.nav_features") %></div>
-    <h2><%= t("landing.feat_title") %></h2>
-    <p><%= t("landing.feat_sub") %></p>
-  </div>
-  <div class="m-features">
-    <% [[:medal,:f1],[:qrcode,:f2],[:wheel,:f3],[:bell,:f4],[:users,:f5],[:target,:f6]].each do |icon, k| %>
-      <div class="m-feat">
-        <div class="ic"><%= ui_icon(icon, size: 24) %></div>
-        <h3><%= t("landing.#{k}_t") %></h3>
-        <p><%= t("landing.#{k}_d") %></p>
+<%# ---- Features: a café menu board of mechanics ---- %>
+<section id="features" class="l-board l-grain mt-24 py-20 md:mt-32 md:py-28">
+  <div class="grid gap-12 lg:grid-cols-12 lg:gap-8">
+    <div class="lg:col-span-4">
+      <%= doodle "chalkboard", klass: "mb-5 h-14 w-auto text-on-primary" %>
+      <h2 data-reveal class="text-[32px] leading-[1.1] font-medium tracking-[-0.025em] text-balance md:text-[42px]"><%= t("landing.board.title") %></h2>
+      <%= doodle "underline", klass: "mt-3 h-3 w-44 text-primary-2", i: 2 %>
+      <p data-reveal style="--i:1" class="mt-5 max-w-[36ch] text-[17px] leading-relaxed opacity-75"><%= t("landing.board.sub") %></p>
+      <div data-reveal="card" style="--i:2" class="l-shot mt-10 hidden w-[62%] max-w-60 lg:block">
+        <%= image_tag "landing/member-wheel.jpg", alt: t("landing.board.wheel_alt"), width: 688, height: 860, loading: "lazy", class: "block h-auto w-full" %>
       </div>
-    <% end %>
+    </div>
+    <ul class="grid gap-x-12 sm:grid-cols-2 lg:col-span-8 lg:self-center">
+      <% t("landing.board.items").each_with_index do |(name, note), i| %>
+        <li data-reveal style="--i:<%= i % 2 %>" class="flex items-baseline gap-3 border-b border-on-primary/12 py-5">
+          <span class="text-xl font-medium"><%= name %></span>
+          <span class="l-leader"></span>
+          <span class="shrink-0 text-right text-sm opacity-70"><%= note %></span>
+        </li>
+      <% end %>
+    </ul>
   </div>
-</div></section>
-
-<%# ---- Industries ---- %>
-<section class="m-sec alt"><div class="m-in">
-  <div class="m-head">
-    <div class="eyebrow">Industries</div>
-    <h2><%= t("landing.ind_title") %></h2>
-    <p><%= t("landing.ind_sub") %></p>
-  </div>
-  <div class="m-inds">
-    <% [:ind_fnb,:ind_retail,:ind_service].each do |k| %>
-      <div class="m-ind">
-        <h3><%= t("landing.#{k}_t") %></h3>
-        <p><%= t("landing.#{k}_d") %></p>
-      </div>
-    <% end %>
-  </div>
-</div></section>
-
-<%# ---- How it works ---- %>
-<section class="m-sec" id="how"><div class="m-in">
-  <div class="m-head">
-    <div class="eyebrow"><%= t("landing.nav_how") %></div>
-    <h2><%= t("landing.how_title") %></h2>
-  </div>
-  <div class="m-steps">
-    <% [:s1,:s2,:s3].each_with_index do |k, i| %>
-      <div class="m-step">
-        <div class="n"><%= i + 1 %></div>
-        <h3><%= t("landing.#{k}_t") %></h3>
-        <p><%= t("landing.#{k}_d") %></p>
-      </div>
-    <% end %>
-  </div>
-</div></section>
+</section>
 
 <%# ---- Pricing ---- %>
-<section class="m-sec alt" id="pricing"><div class="m-in">
-  <div class="m-head">
-    <div class="eyebrow"><%= t("landing.nav_pricing") %></div>
-    <h2><%= t("landing.pricing_title", days: Workspace::TRIAL_DAYS) %></h2>
-    <p><%= t("landing.pricing_sub") %></p>
+<section id="pricing" class="pt-24 md:pt-32">
+  <div class="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-8">
+    <div class="lg:col-span-7">
+      <%= doodle "price-tag", klass: "mb-5 h-14 w-auto text-ink" %>
+      <h2 data-reveal class="text-[40px] leading-[1.04] font-medium tracking-[-0.03em] text-balance md:text-[56px]"><%= t("landing.hook_day") %></h2>
+    </div>
+    <p data-reveal style="--i:1" class="max-w-[44ch] text-[17px] leading-relaxed text-ink-2 lg:col-span-5"><%= t("landing.hook_line") %></p>
   </div>
-  <div class="m-price">
-    <% @plans.each do |plan| %>
-      <% popular = plan.key == "growth" %>
-      <div class="m-plan <%= 'pop' if popular %>">
-        <% if popular %><span class="tag"><%= t("landing.price_popular") %></span><% end %>
-        <div class="pn"><%= plan.name %></div>
-        <div class="pp"><%= number_with_delimiter(plan.price) %><small><%= t("landing.price_mo") %></small></div>
-        <ul>
-          <% Array(plan.features).each do |feat| %>
-            <li><%= ui_icon(:check, size: 16) %><span><%= feat %></span></li>
+
+  <div class="mx-auto mt-12 grid max-w-xl gap-5 lg:max-w-none lg:grid-cols-3 lg:gap-6">
+    <% @plans.each_with_index do |plan, i| %>
+      <% suggested = plan.key == "growth" %>
+      <div data-reveal="card" style="--i:<%= i %>" class="l-grain relative flex flex-col rounded-[24px] p-7 lg:p-8 <%= suggested ? 'bg-white' : 'bg-surface-2' %>">
+        <% if suggested %><%= doodle "frame", klass: "pointer-events-none absolute -inset-1.5 size-[calc(100%+.75rem)] text-primary", i: 3 %><% end %>
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-xl font-semibold"><%= plan.name %></h3>
+          <% if suggested %><span class="relative px-3 py-1 text-xs font-semibold text-primary"><%= doodle "circle", klass: "pointer-events-none absolute -inset-x-2 -inset-y-1.5 h-[calc(100%+.75rem)] w-[calc(100%+1rem)]", i: 5 %><%= t("landing.price_popular") %></span><% end %>
+        </div>
+        <p class="mt-6 text-[36px] leading-none font-medium tracking-[-0.03em] tabular-nums lg:text-[40px]"><%= number_with_delimiter(plan.price) %><span class="ms-1 text-sm font-medium tracking-normal text-ink-2"><%= t("landing.price_mo") %></span></p>
+        <ul class="mt-8 flex-1 space-y-3 text-[15px]">
+          <% Array(plan.localized_features).each do |feat| %>
+            <li class="flex gap-2.5"><%= ui_icon(:check, size: 18, klass: "mt-0.5 shrink-0 text-primary", stroke: 2) %><%= feat %></li>
           <% end %>
         </ul>
-        <a class="m-btn <%= popular ? 'solid' : 'ghost' %>" href="/merchant/signup" style="<%= 'border:1px solid var(--line);' unless popular %>"><%= t("landing.price_choose") %></a>
+        <a class="l-btn l-btn-block mt-8 <%= suggested ? 'l-btn-primary' : 'l-btn-ghost' %>" href="/merchant/signup"><%= t("landing.price_choose") %></a>
       </div>
     <% end %>
   </div>
-  <p style="text-align:center;color:var(--ink-2);font-size:13px;margin-top:20px;"><%= t("landing.price_trial", days: Workspace::TRIAL_DAYS) %></p>
-</div></section>
+  <p class="mt-6 text-sm text-ink-2"><%= t("landing.price_trial", days: Workspace::TRIAL_DAYS) %></p>
+</section>
 
 <%# ---- FAQ ---- %>
-<section class="m-sec" id="faq"><div class="m-in">
-  <div class="m-head"><h2><%= t("landing.faq_title") %></h2></div>
-  <div class="m-faq">
-    <% [:q1,:q2,:q3,:q4].each_with_index do |q, i| %>
-      <details <%= "open" if i.zero? %>>
-        <summary><%= t("landing.#{q}") %></summary>
-        <p><%= t("landing.a#{i + 1}", days: Workspace::TRIAL_DAYS, grace: Workspace::GRACE_DAYS) %></p>
+<section id="faq" class="grid gap-8 pt-24 md:pt-32 lg:grid-cols-12 lg:gap-8">
+  <div data-reveal class="lg:col-span-4"><div class="lg:sticky lg:top-28"><%= render "section_head", title: t("landing.faq_title"), doodle: "question" %></div></div>
+  <div class="divide-y divide-line border-y border-line lg:col-span-8">
+    <% [:q1, :q2, :q3, :q4].each_with_index do |q, i| %>
+      <details data-reveal style="--i:<%= i %>" class="group py-5" <%= "open" if i.zero? %>>
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold [&::-webkit-details-marker]:hidden">
+          <%= t("landing.#{q}") %>
+          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-lg leading-none font-normal text-ink-2 transition-transform duration-200 group-open:rotate-45" aria-hidden="true">+</span>
+        </summary>
+        <p class="max-w-[62ch] pt-3 leading-relaxed text-ink-2"><%= t("landing.a#{i + 1}", days: Workspace::TRIAL_DAYS, grace: Workspace::GRACE_DAYS) %></p>
       </details>
     <% end %>
   </div>
-</div></section>
+</section>
 
-<%# ---- Final CTA ---- %>
-<section style="padding:8px 0 80px;"><div class="m-in" style="padding:0;">
-  <div class="m-band">
-    <h2><%= t("landing.cta_title") %></h2>
-    <p><%= t("landing.cta_sub", days: Workspace::TRIAL_DAYS) %></p>
-    <div class="m-cta">
-      <a class="m-btn solid lg" href="/merchant/signup"><%= t("landing.cta_btn", days: Workspace::TRIAL_DAYS) %></a>
-    </div>
+<%# ---- Closing: the card is full ---- %>
+<%# overflow-x-clip: the tilted stamp would otherwise widen the page at ~1024px. %>
+<section class="relative grid items-center gap-10 overflow-x-clip py-24 md:py-32 lg:grid-cols-12 lg:gap-8">
+  <%# points from the stamp back at the button %>
+  <%= doodle "arrow", klass: "pointer-events-none absolute bottom-[7.6rem] left-[22%] hidden h-14 w-28 -scale-x-100 rotate-[-22deg] text-ink-2 lg:block", i: 4 %>
+  <div class="lg:col-span-7">
+    <h2 data-reveal class="max-w-[16ch] text-[38px] leading-[1.06] font-medium tracking-[-0.03em] text-balance md:text-[56px]"><%= t("landing.cta_title") %></h2>
+    <p data-reveal style="--i:1" class="mt-5 max-w-[48ch] text-lg leading-relaxed text-ink-2"><%= t("landing.cta_sub", days: Workspace::TRIAL_DAYS) %></p>
+    <a data-reveal style="--i:2" class="l-btn l-btn-primary mt-9 px-8!" href="/merchant/signup"><%= t("landing.hero_cta") %></a>
   </div>
-</div></section>
+  <div data-reveal="thud" style="--i:2" class="relative mx-auto grid size-52 place-items-center text-primary md:size-64 lg:col-span-4 lg:col-start-9" aria-hidden="true">
+    <svg class="absolute inset-0 size-full -rotate-12 opacity-90 mix-blend-multiply" viewBox="0 0 64 64"><use href="#stamp"/></svg>
+    <span class="-rotate-12 rounded-md bg-surface px-3 py-1 text-xl font-semibold tracking-[-0.01em] md:text-2xl"><%= t("landing.stamp.reward") %></span>
+  </div>
+</section>
+
+</div>

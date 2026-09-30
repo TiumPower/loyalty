@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Dynamic Loyalty — Phase 0 demo seed
+# Quenly — Phase 0 demo seed
 # 3 themed workspaces on one layout (dynamic branding), each with program,
 # tiers, an outlet, an owner and demo members. Safe to re-run.
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ def seed_password_hint(created)
   " / #{SEED_PASSWORD}"
 end
 
-puts "Seeding Dynamic Loyalty demo data…"
+puts "Seeding Quenly demo data…"
 
 Plan.seed_defaults!
 puts "  ✓ Plans: #{Plan.ordered.map(&:key).join(', ')}"

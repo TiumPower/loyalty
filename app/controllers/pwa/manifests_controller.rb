@@ -13,7 +13,7 @@ module Pwa
 
     def manifest_hash
       ws = @workspace
-      shop  = ws&.name || "Dynamic Loyalty"
+      shop  = ws&.name || "Quenly"
       theme = ws&.theme_value("primary") || "#8C4A2F"
       bg    = ws&.theme_value("surface") || "#FBF6EF"
       # Without an uploaded logo, shops were installing onto their customers'

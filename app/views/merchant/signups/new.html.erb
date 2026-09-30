@@ -1,9 +1,9 @@
-<% content_for :title, "Tạo cửa hàng — Dynamic Loyalty" %>
+<% content_for :title, "Tạo cửa hàng · Quenly" %>
 
-<div class="m-formwrap" data-controller="subsuggest"><div class="m-in">
-  <div class="m-formcard">
-    <h1><%= t("merchant.signup.title") %></h1>
-    <p class="sub"><%= t("merchant.signup.sub", days: Workspace::TRIAL_DAYS) %></p>
+<div class="py-10 sm:py-16" data-controller="subsuggest">
+  <div class="mx-auto max-w-xl rounded-3xl border border-line bg-white p-6 shadow-xl shadow-ink/5 sm:p-9">
+    <h1 class="text-3xl font-bold tracking-tight"><%= t("merchant.signup.title") %></h1>
+    <p class="mt-2 mb-6 text-ink-2"><%= t("merchant.signup.sub", days: Workspace::TRIAL_DAYS) %></p>
 
     <% if @workspace.errors.any? %>
       <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:18px;">
@@ -21,42 +21,42 @@
     <% end %>
 
     <%= form_with model: @workspace, url: merchant_signup_path, method: :post, html: { data: { turbo: false } } do |f| %>
-      <div class="m-field">
+      <div class="mb-4">
         <%= f.label :name, t("merchant.signup.shop_name"), class: "l-label" %>
         <%= f.text_field :name, class: "l-field", placeholder: t("merchant.signup.shop_name_ph") %>
       </div>
 
-      <div class="m-field">
+      <div class="mb-4">
         <%= f.label :subdomain, t("merchant.signup.subdomain"), class: "l-label" %>
         <%# The suffix used to sit beside the input and eat most of a phone's
             width, so the owner could not see the address they were typing. %>
-        <div class="m-subwrap">
-          <%= f.text_field :subdomain, class: "l-field", placeholder: "moccaphe",
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-1.5">
+          <%= f.text_field :subdomain, class: "l-field min-w-0 sm:text-right", placeholder: "moccaphe",
                 autocapitalize: "none", autocorrect: "off", spellcheck: false,
                 data: { subsuggest_target: "field" } %>
-          <span class="l-mono m-subsuffix">.loyalty.tiumpower.com</span>
+          <span class="l-mono text-xs whitespace-nowrap text-ink-2 sm:text-base">.loyalty.tiumpower.com</span>
         </div>
         <div style="font-size:12px; color:var(--ink-2); margin-top:4px;"><%= t("merchant.signup.subdomain_note") %></div>
       </div>
 
-      <div class="m-field">
+      <div class="mb-4">
         <%= f.label :industry, t("merchant.signup.industry"), class: "l-label" %>
         <%= f.select :industry, [[t("merchant.signup.ind_fnb"), "fnb"], [t("merchant.signup.ind_retail"), "retail"], [t("merchant.signup.ind_service"), "service"]], {}, class: "l-field" %>
       </div>
 
       <hr style="border:none; border-top:1px solid var(--line); margin:20px 0;">
 
-      <div class="m-grid2">
-        <div class="m-field">
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <div class="mb-4">
           <%= label_tag :owner_name, t("merchant.signup.owner_name"), class: "l-label" %>
           <%= text_field_tag :owner_name, params[:owner_name], class: "l-field" %>
         </div>
-        <div class="m-field">
+        <div class="mb-4">
           <%= label_tag :email, t("merchant.signup.email"), class: "l-label" %>
           <%= email_field_tag :email, params[:email], class: "l-field", placeholder: "you@example.com" %>
         </div>
       </div>
-      <div class="m-field">
+      <div class="mb-4">
         <%= label_tag :password, t("merchant.signup.password"), class: "l-label" %>
         <div style="position:relative;">
           <%= password_field_tag :password, nil, class: "l-field", placeholder: t("merchant.signup.password_ph"),
@@ -71,7 +71,7 @@
     <% end %>
 
     <p style="text-align:center; color:var(--ink-2); font-size:13.5px; margin-top:18px;">
-      <%= t("merchant.signup.have_account") %> <%= link_to t("merchant.signup.login"), new_user_session_path, style: "color:var(--brown); font-weight:600;" %>
+      <%= t("merchant.signup.have_account") %> <%= link_to t("merchant.signup.login"), new_user_session_path, style: "color:var(--primary); font-weight:600;" %>
     </p>
   </div>
-</div></div>
+</div>

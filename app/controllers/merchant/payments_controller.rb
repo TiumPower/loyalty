@@ -83,7 +83,7 @@ module Merchant
       data = service.create_payment_link(
         order_code:  invoice.payos_order_code,
         amount:      invoice.amount,
-        description: "Loyalty #{invoice.plan}",
+        description: "Quenly #{invoice.plan}",
         return_url:  merchant_billing_return_url(code: invoice.payos_order_code),
         cancel_url:  merchant_billing_return_url(code: invoice.payos_order_code, cancel: true)
       )
