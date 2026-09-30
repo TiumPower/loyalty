@@ -29,6 +29,7 @@ module MerchantHelper
       ] },
       { key: :customers, icon: :users, label: t("merchant.nav.sec_customers"), items: [
         [:customers, t("merchant.nav.customers"), merchant_customers_path, true],
+        [:segments,  t("merchant.nav.segments"),  merchant_segments_path,  manage],
         [:feedback,  t("merchant.nav.feedback"),  merchant_feedback_path,  true]
       ] },
       { key: :campaigns, icon: :megaphone, label: t("merchant.nav.sec_campaigns"), items: [

@@ -34,6 +34,22 @@ module Merchant
       @compose_params = { segment: @segment, outlet: @applied_outlet&.id, tier: @tier, q: @q.presence }.compact
     end
 
+    # The audiences the shop can target, with what each rule means and who is
+    # currently in it. The rules are live, so every number here is computed now
+    # rather than stored — which is also why there is no "trend" column.
+    def segments
+      @tiers  = current_workspace.tiers.ordered.to_a
+      @counts = MemberSegments.counts
+      @keys   = MemberSegments::PRESETS.keys
+      @key    = MemberSegments::PRESETS.key?(params[:key]) ? params[:key] : @keys.first
+      scope   = MemberSegments.audience(segment: @key)
+      @sample = scope.order(points_balance: :desc).limit(3).to_a
+      @size   = @counts[@key].to_i
+      # Tier mix of the selected audience — "who is in here" in one glance.
+      counts_by_tier = scope.group(:tier_key).count
+      @mix = @tiers.map { |t| [t, counts_by_tier[t.key].to_i] }
+    end
+
     def show
       @transactions   = @member.point_transactions.recent.includes(:outlet, :staff).limit(50).to_a
       @vouchers       = @member.vouchers.recent.includes(:reward).limit(20).to_a
@@ -96,7 +112,7 @@ module Merchant
       redirect_to merchant_customer_path(@member), alert: message
     end
 
-    def nav_key = :customers
+    def nav_key = (action_name == "segments" ? :segments : :customers)
 
     def set_member
       @member = Member.find(params[:id])
