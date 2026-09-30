@@ -18,8 +18,72 @@
     link can point at "stamp cards" and land there. %>
 <% case @section %>
 <% when "stamps" %>
+  <%# ---- The design's program table: what each card asks for, how it is
+        doing, and a way in to edit it. The editors themselves stay below. ---- %>
+  <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+    <div style="flex:1; min-width:220px;">
+      <h2 class="l-display" style="font-size:22px;"><%= t("merchant.gami.stamps") %></h2>
+      <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= t("merchant.gami.stamps_sub") %></p>
+    </div>
+    <span class="m-badge"><%= t("merchant.gami.n_programs", n: @stamp_cards.size) %></span>
+  </div>
+
+  <% if @stamp_cards.any? %>
+    <div class="l-panel" style="margin-bottom:16px;">
+      <div style="overflow-x:auto;">
+        <table class="m-table" style="min-width:820px;">
+          <thead>
+            <tr>
+              <th><%= t("merchant.gami.col_program") %></th>
+              <th><%= t("merchant.gami.col_status") %></th>
+              <th><%= t("merchant.gami.col_goal") %></th>
+              <th><%= t("merchant.gami.col_schedule") %></th>
+              <th><%= t("merchant.gami.col_performance") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @stamp_cards.each do |c| %>
+              <% st = @stamp_stats[c.id] || { joined: 0, done: 0 } %>
+              <tr>
+                <td>
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:19px;"><%= c.display_icon %></span>
+                    <div style="min-width:0;">
+                      <div style="font-weight:600;"><%= c.title %></div>
+                      <% if c.reward %><div style="font-size:12px; color:var(--ink-2);"><%= c.reward.title %></div><% end %>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <% if c.running? %>
+                    <span class="m-badge up"><%= t("merchant.gami.status_running") %></span>
+                  <% else %>
+                    <span class="m-badge"><%= t("merchant.gami.status_paused") %></span>
+                  <% end %>
+                </td>
+                <td class="m-num"><%= t("merchant.gami.goal_n", n: c.target_count) %></td>
+                <td style="color:var(--ink-2); font-size:12.5px;">
+                  <% if c.starts_at || c.ends_at %>
+                    <%= [c.starts_at && l(c.starts_at.to_date, format: :short),
+                         c.ends_at && l(c.ends_at.to_date, format: :short)].compact.join(" – ") %>
+                  <% else %>
+                    <%= t("merchant.gami.schedule_always") %>
+                  <% end %>
+                </td>
+                <td style="font-size:12.5px;">
+                  <span class="m-num"><%= st[:joined] %></span> <span style="color:var(--ink-2);"><%= t("merchant.gami.perf_joined") %></span>
+                  · <span class="m-num" style="color:var(--good);"><%= st[:done] %></span> <span style="color:var(--ink-2);"><%= t("merchant.gami.perf_done") %></span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12.5px; color:var(--ink-2); margin-top:12px;"><%= t("merchant.gami.table_hint") %></p>
+    </div>
+  <% end %>
+
   <div class="l-panel">
-    <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.stamps") %></h3>
     <%= render "merchant/gamification/reward_source", context: :stamp %>
     <style>
       /* Shared "saved item" card look for stamp cards & missions (created rows vs the new-item form) */

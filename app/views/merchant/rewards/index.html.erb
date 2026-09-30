@@ -51,49 +51,87 @@
       <% end %>
     </div>
   <% else %>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px;">
-      <% @rewards.each do |r| %>
-        <div class="l-panel" style="padding:16px; <%= 'opacity:.55;' unless r.active? %>">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:26px;"><%= r.display_icon %></span>
-            <div style="flex:1; min-width:0;">
-              <div style="font-weight:700;"><%= r.title %></div>
-              <div style="font-size:12px; color:var(--ink-2);"><%= r.value_label %> · <%= r.kind_label %></div>
-            </div>
-            <span class="l-chip" style="font-size:11px; flex:none; <%= r.active? ? 'background:var(--good-soft,#DEEBE1); color:var(--good);' : 'color:var(--ink-2);' %>">
-              <%= r.active? ? t("merchant.rewards.status_active") : t("merchant.rewards.status_inactive") %>
-            </span>
-          </div>
-          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-            <% if r.cost_points %><span class="l-chip l-chip-brand"><%= t("merchant.rewards.points_n", n: number_with_delimiter(r.cost_points)) %></span><% end %>
-            <%# "0 lượt" sat on a card that looked exactly like a healthy one —
-                green "Đang bật" and all — so the one question this screen exists
-                to answer, which offers have run out, had to be worked out by
-                reading numbers. Same for an offer that is on but outside its
-                window: customers can't redeem it and the card said nothing. %>
-            <% state = r.redeem_state %>
-            <% low = r.remaining && r.remaining.positive? && r.remaining <= Merchant::RewardsController::LOW_STOCK %>
-            <span class="l-chip" style="<%= 'background:#F7E0DA; color:#B4402F; font-weight:700;' if state == :out_of_stock %><%= 'background:#FBEFD6; color:#8A5A16; font-weight:700;' if low %>">
-              <%= r.stock.nil? ? "∞" : r.remaining %> <%= t("merchant.rewards.uses") %>
-            </span>
-            <% if r.active? && state != :open %>
-              <span class="l-chip" style="background:#F7E0DA; color:#B4402F; font-weight:700;"><%= t("merchant.rewards.state_#{state}") %></span>
-            <% end %>
-            <% c = @voucher_counts[r.id] || { issued: 0, used: 0 } %>
-            <span class="l-chip"><%= t("merchant.rewards.redeemed", n: c[:issued]) %></span><span class="l-chip"><%= t("merchant.rewards.used", n: c[:used]) %></span>
-            <% if r.schedule_summary %><span class="l-chip" style="background:var(--primary)18; color:var(--primary-ink);">🕒 <%= r.schedule_summary %></span><% end %>
-          </div>
-          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-            <%= link_to t("merchant.rewards.edit"), edit_merchant_reward_path(r), class: "l-btn l-btn-ghost",
-                  style: "padding:6px 12px; font-size:13px;", data: { turbo_frame: "reward_form", action: "modal#open" } %>
-            <%= button_to (r.active? ? t("merchant.rewards.turn_off") : t("merchant.rewards.turn_on")),
-                  toggle_merchant_reward_path(r, request.query_parameters), method: :patch,
-                  class: "l-btn l-btn-ghost", style: "padding:6px 12px; font-size:13px;", form: { style: "display:inline; margin:0;" } %>
-            <%= button_to t("merchant.rewards.delete"), merchant_reward_path(r), method: :delete, form: { data: { turbo_confirm: t("merchant.rewards.delete_confirm") } },
-                  class: "l-btn l-btn-ghost", style: "padding:6px 12px; font-size:13px; color:var(--warn);" %>
-          </div>
+    <%# ---- The design's compact list: one row per reward, sized for scanning
+          a whole catalogue rather than reading one card at a time. ---- %>
+    <div class="l-panel" style="padding:0;">
+      <div style="display:flex; align-items:center; gap:14px; padding:16px 18px; border-bottom:1px solid var(--line);">
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:15px;"><%= t("merchant.rewards.list_title") %></div>
+          <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= t("merchant.rewards.list_sub") %></div>
         </div>
-      <% end %>
+        <span class="m-badge"><%= t("merchant.rewards.n_rewards", n: @rewards.size) %></span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="m-table" style="min-width:900px;">
+          <thead>
+            <tr>
+              <th style="padding-left:18px;"><%= t("merchant.rewards.col_reward") %></th>
+              <th><%= t("merchant.rewards.col_status") %></th>
+              <th><%= t("merchant.rewards.col_cost") %></th>
+              <th><%= t("merchant.rewards.col_stock") %></th>
+              <th><%= t("merchant.rewards.col_usage") %></th>
+              <th style="padding-right:18px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rewards.each do |r| %>
+              <% state = r.redeem_state %>
+              <% low = r.remaining && r.remaining.positive? && r.remaining <= Merchant::RewardsController::LOW_STOCK %>
+              <% c = @voucher_counts[r.id] || { issued: 0, used: 0 } %>
+              <tr style="<%= 'opacity:.6;' unless r.active? %>">
+                <td style="padding-left:18px;">
+                  <div style="display:flex; align-items:center; gap:11px;">
+                    <span style="width:40px; height:40px; border-radius:11px; flex:none; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; font-size:19px;">
+                      <%= reward_art(r, size: 120, emoji_size: 19) %>
+                    </span>
+                    <div style="min-width:0;">
+                      <div style="font-weight:600;"><%= r.title %></div>
+                      <div style="font-size:12px; color:var(--ink-2);"><%= r.value_label %> · <%= r.kind_label %></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <% if !r.active? %>
+                    <span class="m-badge"><%= t("merchant.rewards.status_inactive") %></span>
+                  <% elsif state == :open %>
+                    <span class="m-badge up"><%= t("merchant.rewards.status_active") %></span>
+                  <% else %>
+                    <%# On, but customers still cannot redeem it — the card used
+                        to look healthy and say nothing. %>
+                    <span class="m-badge down"><%= t("merchant.rewards.state_#{state}") %></span>
+                  <% end %>
+                </td>
+                <td class="m-num"><%= r.cost_points ? number_with_delimiter(r.cost_points) : "—" %></td>
+                <td>
+                  <span class="m-num" style="<%= 'color:var(--warn);' if state == :out_of_stock %><%= 'color:var(--amber);' if low %>">
+                    <%= r.stock.nil? ? "∞" : r.remaining %>
+                  </span>
+                  <span style="color:var(--ink-2); font-size:12px;"><%= t("merchant.rewards.uses") %></span>
+                </td>
+                <td style="font-size:12.5px; color:var(--ink-2);">
+                  <%= t("merchant.rewards.redeemed", n: c[:issued]) %> · <%= t("merchant.rewards.used", n: c[:used]) %>
+                  <% if r.schedule_summary %><div style="font-size:12px;">🕒 <%= r.schedule_summary %></div><% end %>
+                </td>
+                <td style="padding-right:18px; white-space:nowrap;">
+                  <%= link_to t("merchant.rewards.edit"), edit_merchant_reward_path(r), class: "l-btn l-btn-ghost",
+                        style: "padding:5px 12px; font-size:12.5px;", data: { turbo_frame: "reward_form", action: "modal#open" } %>
+                  <%= button_to (r.active? ? t("merchant.rewards.turn_off") : t("merchant.rewards.turn_on")),
+                        toggle_merchant_reward_path(r, request.query_parameters), method: :patch,
+                        class: "l-btn l-btn-ghost", style: "padding:5px 12px; font-size:12.5px;", form: { style: "display:inline; margin:0;" } %>
+                  <%= button_to t("merchant.rewards.delete"), merchant_reward_path(r), method: :delete,
+                        form: { data: { turbo_confirm: t("merchant.rewards.delete_confirm") }, style: "display:inline; margin:0;" },
+                        class: "l-btn l-btn-ghost", style: "padding:5px 12px; font-size:12.5px; color:var(--warn);" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="padding:14px 18px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-2);">
+        <%= t("merchant.rewards.list_footer", n: @rewards.size) %>
+      </div>
     </div>
   <% end %>
 

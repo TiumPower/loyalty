@@ -13,6 +13,9 @@ module Merchant
       @submissions = scope.includes(:member, :mission, photo_attachment: :blob)
                           .order(submitted_at: :desc).to_a
       @pending_count = MissionProgress.where(mission_id: photo_mission_ids, approval_status: "pending").count
+      # The design reviews one submission at a time beside the queue, so the
+      # open one is addressable — a reviewer can link a colleague straight to it.
+      @selected = @submissions.find { |s| s.id.to_s == params[:id].to_s } || @submissions.first
     end
 
     def approve

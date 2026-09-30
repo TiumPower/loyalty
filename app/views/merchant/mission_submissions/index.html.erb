@@ -1,74 +1,124 @@
 <% content_for :title, t("merchant.gami.rq_title") %>
 <% content_for :title_en, "PROOF REVIEW" %>
 <% g = ->(k, **o) { t("merchant.gami.#{k}", **o) } %>
-<% merchant_back merchant_gamification_path %>
+<% merchant_back merchant_missions_admin_path, t("merchant.nav.missions") %>
 
-<%= form_with url: merchant_mission_submissions_path, method: :get, data: { turbo: false } do %>
-  <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-    <% [["pending", g.(:rq_pending)], ["approved", g.(:rq_approved)], ["rejected", g.(:rq_rejected)]].each do |val, lbl| %>
-      <button type="submit" name="status" value="<%= val %>"
-              class="l-chip <%= 'l-chip-brand' if @status == val %>" style="border:none; cursor:pointer;">
-        <%= lbl %><%= " · #{@pending_count}" if val == "pending" && @pending_count.positive? %>
-      </button>
-    <% end %>
+<div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+  <div style="flex:1; min-width:220px;">
+    <h2 class="l-display" style="font-size:22px;"><%= g.(:rq_title) %></h2>
+    <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= g.(:rq_sub) %></p>
   </div>
-<% end %>
+  <% if @pending_count.positive? %>
+    <span class="m-badge down" style="font-size:12px; padding:5px 12px;"><%= g.(:rq_waiting, n: @pending_count) %></span>
+  <% end %>
+</div>
+
+<div class="m-subnav" style="margin-bottom:16px;">
+  <% [["pending", g.(:rq_pending)], ["approved", g.(:rq_approved)], ["rejected", g.(:rq_rejected)]].each do |val, lbl| %>
+    <%= link_to merchant_mission_submissions_path(status: val), class: ("active" if @status == val) do %>
+      <%= lbl %><%= " · #{@pending_count}" if val == "pending" && @pending_count.positive? %>
+    <% end %>
+  <% end %>
+</div>
 
 <% if @submissions.empty? %>
-  <div class="l-panel" style="text-align:center; padding:40px; color:var(--ink-2);">
-    <div style="font-size:40px;">📭</div>
-    <p style="margin-top:8px;"><%= g.(:rq_empty) %></p>
+  <div class="l-panel" style="text-align:center; padding:44px; color:var(--ink-2);">
+    <div style="font-size:36px;">📭</div>
+    <p style="margin-top:10px;"><%= g.(:rq_empty) %></p>
   </div>
 <% else %>
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;">
-    <% @submissions.each do |s| %>
-      <div class="l-panel" style="padding:14px;">
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-          <span style="font-size:22px;"><%= s.mission.display_icon %></span>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:700;"><%= s.member.display_name %></div>
-            <div style="font-size:12px; color:var(--ink-2);"><%= s.mission.title %></div>
+  <%# Queue on the left, the evidence for one submission on the right — so a
+      reviewer decides on a full-size photo instead of a thumbnail in a grid. %>
+  <div class="m-ops" style="grid-template-columns:minmax(0,340px) minmax(0,1fr);">
+    <div class="l-panel">
+      <h3 style="font-size:15px; font-weight:700; margin-bottom:4px;"><%= g.(:rq_queue) %></h3>
+      <p style="font-size:12.5px; color:var(--ink-2); margin-bottom:10px;"><%= g.(:rq_count, n: @submissions.size) %></p>
+      <% @submissions.each do |s| %>
+        <% on = @selected && s.id == @selected.id %>
+        <%= link_to merchant_mission_submissions_path(status: @status, id: s.id),
+              class: "l-row", style: "margin-top:8px; #{'border-color:var(--primary);' if on}" do %>
+          <span class="ic"><%= s.mission.display_icon %></span>
+          <div class="bd">
+            <div class="tt"><%= s.member.display_name %></div>
+            <div class="mt"><%= s.mission.title %></div>
           </div>
-          <% if s.platform.present? %>
-            <span class="l-chip" style="font-size:11px;"><%= Mission::PLATFORM_LABELS[s.platform] || s.platform %></span>
+          <span class="tr" style="font-size:11.5px;"><%= s.submitted_at ? time_ago_in_words(s.submitted_at) : "—" %></span>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if (s = @selected) %>
+      <div>
+        <%# ---- who and what ---- %>
+        <div class="l-panel">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="width:42px; height:42px; border-radius:12px; flex:none; display:grid; place-items:center;
+                         background:var(--primary-soft); font-size:20px;"><%= s.mission.display_icon %></span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:16px;"><%= s.member.display_name %></div>
+              <div style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= s.mission.title %></div>
+            </div>
+            <% if s.platform.present? %>
+              <span class="m-badge"><%= Mission::PLATFORM_LABELS[s.platform] || s.platform %></span>
+            <% end %>
+          </div>
+          <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--line-soft);">
+            <div class="l-kv"><span class="k"><%= g.(:rq_submitted) %></span><span class="v"><%= s.submitted_at ? l(s.submitted_at, format: :short) : "—" %></span></div>
+            <div class="l-kv"><span class="k"><%= g.(:rq_reward) %></span><span class="v">+<%= number_with_delimiter(s.mission.reward_points) %></span></div>
+          </div>
+          <% if s.note.present? %>
+            <div class="l-note" style="margin-top:12px;"><%= ui_icon(:mail, size: 16) %><span><%= s.note %></span></div>
+          <% end %>
+          <%# What the automatic check thought — a starting point, not the verdict. %>
+          <% if s.ai_verdict.present? && s.ai_verdict["reason"].present? %>
+            <div class="l-note brand" style="margin-top:10px;">
+              <%= ui_icon(:sparkles, size: 16) %>
+              <span>
+                <strong><%= g.(:rq_ai) %><% if s.ai_verdict["confidence"] %> · <%= (s.ai_verdict["confidence"].to_f * 100).round %>%<% end %></strong><br>
+                <%= s.ai_verdict["reason"] %>
+              </span>
+            </div>
           <% end %>
         </div>
 
-        <% if s.photo.attached? %>
-          <a href="<%= url_for(s.photo) %>" target="_blank" rel="noopener">
-            <%= image_tag s.photo.variant(resize_to_limit: [600, 600]),
-                  style: "width:100%; border-radius:12px; display:block;" %>
-          </a>
-        <% end %>
-
-        <% if s.note.present? %>
-          <p style="font-size:13px; color:var(--ink-2); margin-top:8px;"><%= s.note %></p>
-        <% end %>
-
-        <% if s.ai_verdict.present? && s.ai_verdict["reason"].present? %>
-          <div class="l-chip" style="margin-top:8px; font-size:11px; white-space:normal; height:auto; padding:6px 10px;">
-            🤖 <%= g.(:rq_ai) %>: <%= s.ai_verdict["reason"] %>
-            <% if s.ai_verdict["confidence"] %>(<%= (s.ai_verdict["confidence"].to_f * 100).round %>%)<% end %>
-          </div>
-        <% end %>
-
-        <div style="font-size:11px; color:var(--ink-2); margin-top:8px;">
-          <%= g.(:rq_submitted) %>: <%= s.submitted_at ? l(s.submitted_at, format: :short) : "—" %>
+        <%# ---- the evidence itself, big enough to actually judge ---- %>
+        <div class="l-panel" style="margin-top:16px;">
+          <h3 style="font-size:15px; font-weight:700; margin-bottom:10px;"><%= g.(:rq_evidence) %></h3>
+          <% if s.photo.attached? %>
+            <a href="<%= url_for(s.photo) %>" target="_blank" rel="noopener">
+              <%= image_tag s.photo.variant(resize_to_limit: [1200, 1200]),
+                    style: "width:100%; max-height:560px; object-fit:contain; border-radius:12px; display:block; background:var(--surface-2);" %>
+            </a>
+            <p style="font-size:12px; color:var(--ink-2); margin-top:8px;"><%= g.(:rq_open_full) %></p>
+          <% else %>
+            <p style="color:var(--ink-2); font-size:13.5px;"><%= g.(:rq_no_photo) %></p>
+          <% end %>
         </div>
 
-        <% if s.pending? %>
-          <div style="display:flex; gap:8px; margin-top:12px;">
-            <%= button_to g.(:rq_approve), approve_merchant_mission_submission_path(s), method: :patch,
-                  class: "l-btn l-btn-primary", style: "flex:1; padding:8px; font-size:13px;" %>
-            <%= button_to g.(:rq_reject), reject_merchant_mission_submission_path(s), method: :patch,
-                  class: "l-btn l-btn-ghost", style: "flex:1; padding:8px; font-size:13px; color:var(--warn);",
-                  form: { data: { turbo_confirm: g.(:rq_reject_prompt) } } %>
-          </div>
-        <% elsif s.approved? %>
-          <div class="l-chip" style="margin-top:12px; background:var(--good-soft,#DEEBE1); color:var(--good);">✓ <%= g.(:rq_approved) %></div>
-        <% else %>
-          <div class="l-chip" style="margin-top:12px; color:var(--warn);">✕ <%= g.(:rq_rejected) %></div>
-        <% end %>
+        <%# ---- the decision ---- %>
+        <div class="l-panel" style="margin-top:16px;">
+          <% if s.pending? %>
+            <h3 style="font-size:15px; font-weight:700;"><%= g.(:rq_decide) %></h3>
+            <p style="font-size:12.5px; color:var(--ink-2); margin-top:3px;"><%= g.(:rq_decide_sub, n: number_with_delimiter(s.mission.reward_points)) %></p>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+              <%= button_to g.(:rq_approve), approve_merchant_mission_submission_path(s), method: :patch,
+                    class: "l-btn l-btn-primary", form: { style: "flex:1;" } %>
+              <%= button_to g.(:rq_reject), reject_merchant_mission_submission_path(s), method: :patch,
+                    class: "l-btn l-btn-ghost", style: "color:var(--warn);",
+                    form: { style: "flex:1;", data: { turbo_confirm: g.(:rq_reject_prompt) } } %>
+            </div>
+          <% elsif s.approved? %>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="m-badge up" style="font-size:12px; padding:5px 12px;"><%= g.(:rq_approved) %></span>
+              <span style="font-size:13px; color:var(--ink-2);"><%= g.(:rq_awarded, n: number_with_delimiter(s.mission.reward_points)) %></span>
+            </div>
+          <% else %>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span class="m-badge down" style="font-size:12px; padding:5px 12px;"><%= g.(:rq_rejected) %></span>
+              <% if s.note.present? %><span style="font-size:13px; color:var(--ink-2);"><%= s.note %></span><% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </div>

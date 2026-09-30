@@ -19,6 +19,15 @@ module Merchant
       # Everything already wired up stays pickable; nothing new that is unusable.
       @rewards     = assignable_rewards(@stamp_cards.map(&:reward_id), @badges.map(&:reward_id),
                                         @wheel.segments.to_a.map { |sg| sg["reward_id"] })
+      # Per-card numbers for the design's "Performance" column: how many members
+      # are on each card and how many have finished one.
+      if @stamp_cards.any?
+        rows = StampCardMembership.where(stamp_card_id: @stamp_cards.map(&:id))
+                                  .group(:stamp_card_id)
+                                  .pluck(Arel.sql("stamp_card_id, COUNT(*), COALESCE(SUM(completed_count), 0)"))
+        @stamp_stats = rows.to_h { |id, joined, done| [id, { joined: joined.to_i, done: done.to_i }] }
+      end
+      @stamp_stats ||= {}
       @new_stamp_card = StampCard.new(target_count: 9)
       @new_mission    = Mission.new(period: "daily", reward_points: 20, goal: 1)
       render :show
