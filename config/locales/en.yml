@@ -1705,7 +1705,7 @@ en:
       call_shop: "Call shop"
       directions_cta: "Get directions"
       send_message: "Send message"
-      more_reviews: "See all reviews"
+      more_reviews: "See all reviews (%{n} more)"
       title: "About the shop"
       about: "About"
       outlets: "Outlets"

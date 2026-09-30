@@ -178,8 +178,10 @@
     <% end %>
 
     <%# One list, newest first, as the design shows. A review of the member's own
-        is flagged inline and editable rather than hidden behind a second tab. %>
-    <div style="margin-top:14px;">
+        is flagged inline and editable rather than hidden behind a second tab.
+        The list lives in its own frame so "see all" swaps the reviews in place
+        instead of reloading the page and throwing the reader back to the top. %>
+    <%= turbo_frame_tag "shop_reviews", class: "l-busy", style: "display:block; margin-top:14px;" do %>
       <% if @ratings.empty? %>
         <div class="l-empty">
           <div class="ic"><%= ui_icon(:star, size: 26) %></div>
@@ -230,11 +232,13 @@
           </div>
         <% end %>
         <% if @ratings.size > @shown %>
-          <%= link_to t("customer.shop.more_reviews"), member_shop_about_path(all: 1),
-                class: "l-btn l-btn-ghost l-btn-block", style: "margin-bottom:12px;" %>
+          <%= link_to member_shop_about_path(all: 1), class: "l-btn l-btn-ghost l-btn-block",
+                style: "margin-bottom:12px;", data: { turbo_frame: "shop_reviews" } do %>
+            <%= t("customer.shop.more_reviews", n: @ratings.size - @shown) %>
+          <% end %>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
 
     <%= link_to member_new_review_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:4px;" do %>
       <%= ui_icon(:edit, size: 16) %><%= t("customer.review.new_title") %>

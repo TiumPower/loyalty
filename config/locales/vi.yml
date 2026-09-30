@@ -1746,7 +1746,7 @@ vi:
       call_shop: "Gọi cho quán"
       directions_cta: "Xem đường đi"
       send_message: "Gửi lời nhắn"
-      more_reviews: "Xem tất cả đánh giá"
+      more_reviews: "Xem tất cả đánh giá (%{n} nữa)"
       title: "Về quán"
       about: "Giới thiệu"
       outlets: "Chi nhánh"

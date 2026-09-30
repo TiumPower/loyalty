@@ -1,0 +1,7 @@
+<%# A small spinner for anything that waits. Drawn rather than animated with a
+    background image so it inherits the surrounding colour. %>
+<svg class="l-spinner" viewBox="0 0 24 24" width="<%= local_assigns.fetch(:size, 16) %>"
+     height="<%= local_assigns.fetch(:size, 16) %>" aria-hidden="true">
+  <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".22"/>
+  <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

@@ -22,7 +22,9 @@
 
 /* Marketing pages (layouts/marketing): pill buttons, no lift or glow. */
 .marketing .l-btn { border-radius: 999px; min-height: 46px; padding-inline: 22px; }
+@media (hover: hover) and (pointer: fine) {
 .marketing .l-btn-primary:is(*, :hover, :active) { box-shadow: none; transform: none; }
+}
 .marketing .l-btn-ghost { border-color: color-mix(in srgb, var(--ink) 70%, transparent); }
 .marketing ::selection { background: color-mix(in srgb, var(--primary) 24%, transparent); color: var(--ink); }
 .marketing :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
@@ -31,7 +33,9 @@ html:has(body.marketing) { scroll-padding-top: calc(5.5rem + env(safe-area-inset
 .l-hdr { padding-top: env(safe-area-inset-top); }
 .l-link { text-decoration: underline transparent; text-underline-offset: 2px;
   transition: color .15s, text-decoration-color .15s, text-underline-offset .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-link:hover { color: var(--ink); text-decoration-color: currentColor; text-underline-offset: 4px; }
+}
 
 /* Type: one family, Hanken Grotesk (a warm neo-grotesque with full Vietnamese), for everything. */
 .marketing { font-family: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -95,7 +99,9 @@ body.marketing { background: url("grain.png") var(--surface); }
   background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 5px; }
 .l-kraft { container-type: inline-size; rotate: -3deg; padding: 6% 6.5% 7%; border-radius: 10px; color: var(--ink);
   box-shadow: 0 1px 1px rgb(58 42 32 / .12), 0 18px 40px -16px rgb(58 42 32 / .45); transition: rotate .3s; }
+@media (hover: hover) and (pointer: fine) {
 .l-kraft:hover { rotate: -2deg; }
+}
 .l-kraft-chip { display: inline-block; width: 22px; height: 14px; border-radius: 3px; }
 .l-slot { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%;
   border: 1.5px dashed color-mix(in srgb, var(--ink) 30%, transparent); }
@@ -259,37 +265,54 @@ body {
    Admin overrides it to its dark sidebar colour so its buttons match too. */
 .l-btn-primary { background: var(--btn-primary); color: var(--btn-primary-ink);
   box-shadow: 0 8px 20px color-mix(in srgb, var(--btn-primary) 32%, transparent); }
+@media (hover: hover) and (pointer: fine) {
 .l-btn-primary:hover { background: color-mix(in srgb, var(--btn-primary) 86%, #fff);
   box-shadow: 0 10px 26px color-mix(in srgb, var(--btn-primary) 42%, transparent); transform: translateY(-1px); }
+}
 .l-btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in srgb, var(--btn-primary) 30%, transparent); }
 .l-btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+@media (hover: hover) and (pointer: fine) {
 .l-btn-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); border-color: color-mix(in srgb, var(--ink) 22%, var(--line)); }
+}
 .l-btn-soft  { background: color-mix(in srgb, var(--btn-primary) 12%, #fff); color: var(--btn-primary); }
+@media (hover: hover) and (pointer: fine) {
 .l-btn-soft:hover { background: color-mix(in srgb, var(--btn-primary) 20%, #fff); }
+}
 .l-btn-block { width:100%; }
 
 .l-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px;
   font-size:12px; font-weight:600; background: var(--surface-2); color: var(--ink-2); transition: background .15s, color .15s; }
 .l-chip-brand { background: var(--primary-soft); color: var(--primary-ink); }
-/* interactive chips (links / buttons) get a hover */
+/* interactive chips (links / buttons) get a hover *
+@media (hover: hover) and (pointer: fine) {
+/
 a.l-chip:hover, button.l-chip:hover { background: color-mix(in srgb, var(--ink) 10%, var(--surface-2)); color: var(--ink); }
+}
+@media (hover: hover) and (pointer: fine) {
 a.l-chip-brand:hover, button.l-chip-brand:hover { background: color-mix(in srgb, var(--primary) 22%, #fff); color: var(--primary-ink); }
+}
 /* wheel prize row remove button */
 .wheel-x { width:34px; height:38px; flex:none; border:1px solid var(--line); background:#fff; border-radius:10px;
   color:var(--ink-2); cursor:pointer; font-size:14px; line-height:1; transition:border-color .15s, color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .wheel-x:hover { border-color:var(--warn); color:var(--warn); }
+}
 
 /* styled file-upload button (dropzone look) */
 .l-upload { display:flex; align-items:center; gap:10px; width:100%; text-align:left; cursor:pointer;
   border:1.5px dashed var(--line); border-radius:12px; background:var(--surface); color:var(--ink-2);
   padding:14px 16px; font-size:14px; font-weight:600; transition:border-color .15s, background .15s, color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-upload:hover { border-color:var(--primary); color:var(--primary); background:color-mix(in srgb, var(--primary) 6%, var(--surface)); }
+}
 .l-upload svg { flex:none; }
 
 /* clickable outlet cards (whole card is a link; actions sit above it) */
 .l-outlet-card { position:relative; background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px;
   transition:box-shadow .15s, transform .15s, border-color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-outlet-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); border-color:color-mix(in srgb, var(--primary) 45%, var(--line)); cursor:pointer; }
+}
 .l-outlet-hit { position:absolute; inset:0; z-index:1; border-radius:inherit; }
 .l-outlet-actions { position:relative; z-index:2; }
 
@@ -298,12 +321,18 @@ a.l-chip-brand:hover, button.l-chip-brand:hover { background: color-mix(in srgb,
 .l-chip-lg { padding:11px 18px; font-size:15px; gap:9px; background:#fff; color:var(--ink);
   border:1px solid var(--line); box-shadow:var(--shadow); }
 .l-chip-lg svg { width:20px; height:20px; color:var(--primary); }
+@media (hover: hover) and (pointer: fine) {
 a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
   border-color:color-mix(in srgb, var(--primary) 40%, var(--line)); box-shadow:var(--shadow-lg); transform:translateY(-1px); }
+}
 .l-wtabs button { transition: background .15s, color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-wtabs button:hover:not(.active) { color: var(--ink); }
+}
 .l-preset { transition: border-color .15s, box-shadow .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-preset:hover { border-color: var(--primary); box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 18%, transparent); }
+}
 
 .l-field { width:100%; padding:13px 15px; border-radius:14px; border:1px solid var(--line);
   background:#fff; font-size:16px; color: var(--ink); }
@@ -363,7 +392,9 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
   display:grid; place-items:center; background: var(--card); border:1px solid var(--line);
   color: var(--ink); text-decoration:none; box-shadow: var(--shadow-sm); cursor:pointer;
   transition: border-color .15s, color .15s, background .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-iconbtn:hover { border-color: color-mix(in srgb, var(--primary) 42%, var(--line)); color: var(--primary); }
+}
 .l-iconbtn.sm { width:34px; height:34px; }
 .l-iconbtn .num { position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; padding:0 5px;
   border-radius:999px; background: var(--warn); color:#fff; font-size:10.5px; font-weight:700;
@@ -377,13 +408,17 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .pwa-app .l-tile.flat { box-shadow:none; }
 .pwa-app .l-tile.pad-0 { padding:0; overflow:hidden; }
 .pwa-app a.l-tile, .pwa-app button.l-tile { display:block; width:100%; text-align:left; color:inherit; text-decoration:none; }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app a.l-tile:hover, .pwa-app button.l-tile:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+}
 
 /* Section heading: title left, "see all" on the right. */
 .l-sec { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:22px 2px 10px; }
 .l-sec h3 { font-size:17px; font-weight:700; letter-spacing:-.015em; }
 .l-sec .more { font-size:13px; font-weight:600; color: var(--primary); text-decoration:none; }
+@media (hover: hover) and (pointer: fine) {
 .l-sec .more:hover { text-decoration:underline; }
+}
 /* Uppercase group label above a list (DAILY / WEEKLY / COMPLETED). */
 .l-grouplabel { font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
   color: var(--ink-2); margin:20px 2px 8px; }
@@ -410,7 +445,9 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-pill.lg { padding:7px 14px; font-size:13px; }
 /* Leading status dot (Available / Used / Expired). */
 .l-pill .bead { width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
+@media (hover: hover) and (pointer: fine) {
 a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
+}
 
 /* Small uppercase label above a value. */
 .pwa-app .l-eyebrow { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-2); font-weight:600; }
@@ -421,18 +458,28 @@ a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
   border:1.5px solid transparent; text-decoration:none; transition:.15s; font-family:inherit; }
 .pwa-app .l-btn-primary { background: var(--btn-primary); color: var(--btn-primary-ink);
   box-shadow: 0 6px 16px color-mix(in srgb, var(--btn-primary) 26%, transparent); }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app .l-btn-primary:hover { background: color-mix(in srgb, var(--btn-primary) 88%, #000);
   box-shadow: 0 8px 22px color-mix(in srgb, var(--btn-primary) 34%, transparent); }
+}
 .pwa-app .l-btn-primary:active { transform: translateY(1px); box-shadow: 0 3px 10px color-mix(in srgb, var(--btn-primary) 28%, transparent); }
 /* Secondary action under a primary one: outlined in the brand colour. */
 .pwa-app .l-btn-outline { background: var(--card); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 42%, transparent); }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app .l-btn-outline:hover { background: var(--primary-soft); border-color: var(--primary); }
+}
 .pwa-app .l-btn-ghost { background: var(--card); color: var(--ink); border-color: var(--line); }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app .l-btn-ghost:hover { background: var(--surface-2); }
+}
 .pwa-app .l-btn-soft { background: var(--primary-soft); color: var(--primary-ink); }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app .l-btn-soft:hover { background: color-mix(in srgb, var(--primary) 20%, #fff); }
+}
 .pwa-app .l-btn-dark { background: var(--ink); color: var(--surface); }
+@media (hover: hover) and (pointer: fine) {
 .pwa-app .l-btn-dark:hover { background: color-mix(in srgb, var(--ink) 86%, #000); }
+}
 .pwa-app .l-btn-block { width:100%; }
 .pwa-app .l-btn-sm { padding:9px 15px; font-size:13px; border-radius:11px; }
 .pwa-app .l-btn-xs { padding:6px 12px; font-size:12px; border-radius:9px; }
@@ -448,7 +495,14 @@ a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
 .l-seg > * { flex:1; display:block; width:100%; text-align:center; border:1px solid transparent;
   background:transparent; padding:9px 10px; border-radius:999px; font-size:13.5px; font-weight:700;
   color: var(--ink-2); cursor:pointer; text-decoration:none; font-family:inherit; transition:.15s; }
-.l-seg > a:hover, .l-seg > button:hover { color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+/* `:not(.active)` as well as the media query: a bare `:hover` outweighs
+   `.active` on specificity, so with a mouse the current tab would repaint
+   itself in the inactive colour — and on a touchscreen, where hover sticks to
+   whatever was last tapped, the tab you just chose stayed dark until you
+   tapped somewhere else. */
+.l-seg > a:not(.active):hover, .l-seg > button:not(.active):hover { color: var(--ink); }
+}
 .l-seg > .active { background: var(--primary); color: var(--on-primary); }
 /* Variant sitting on a white card: inactive tabs get a card background. */
 .l-seg.boxed { background: var(--card); border:1px solid var(--line); border-radius:999px; padding:5px; gap:4px; }
@@ -468,7 +522,9 @@ a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
 .l-row { display:flex; align-items:center; gap:12px; background: var(--card); border:1px solid var(--line);
   border-radius:14px; padding:13px 14px; text-decoration:none; color: var(--ink);
   box-shadow: var(--shadow-sm); transition: border-color .15s, box-shadow .15s; }
+@media (hover: hover) and (pointer: fine) {
 a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+}
 .l-row + .l-row { margin-top:10px; }
 .l-row .ic { width:40px; height:40px; border-radius:12px; flex:none; display:grid; place-items:center;
   background: var(--primary-soft); color: var(--primary); font-size:19px; }
@@ -488,7 +544,9 @@ a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--prima
   color: var(--ink); border-bottom:1px solid var(--line-soft); background:transparent;
   width:100%; border-left:none; border-right:none; border-top:none; font-family:inherit; font-size:15px; text-align:left; }
 .l-rows > *:last-child { border-bottom:none; }
+@media (hover: hover) and (pointer: fine) {
 .l-rows a:hover, .l-rows button:hover { background: var(--surface-2); }
+}
 .l-rows .ic { color: var(--ink-2); flex:none; display:grid; place-items:center; }
 .l-rows .tr { margin-left:auto; display:flex; align-items:center; gap:8px; color: var(--ink-2); font-size:13.5px; flex:none; }
 
@@ -532,7 +590,9 @@ a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--prima
 .l-vrow { display:flex; align-items:center; gap:12px; background: var(--card); border:1px solid var(--line);
   border-radius:14px; padding:10px; text-decoration:none; color: var(--ink); box-shadow: var(--shadow-sm);
   transition: border-color .15s; }
+@media (hover: hover) and (pointer: fine) {
 a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+}
 .l-vrow + .l-vrow { margin-top:10px; }
 .l-vrow .thumb { width:56px; height:56px; border-radius:11px; flex:none; overflow:hidden;
   background: var(--primary-soft); display:grid; place-items:center; font-size:24px; }
@@ -559,7 +619,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-offer { flex:0 0 152px; background: var(--card); border:1px solid var(--line); border-radius:14px;
   padding:10px; box-shadow: var(--shadow-sm); text-decoration:none; color: var(--ink);
   display:flex; flex-direction:column; gap:8px; transition: border-color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .l-offer:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line)); }
+}
 .l-offer .ph { aspect-ratio:4/3; border-radius:10px; overflow:hidden; background: var(--primary-soft);
   display:grid; place-items:center; font-size:30px; }
 .l-offer .ph img { width:100%; height:100%; object-fit:cover; display:block; }
@@ -575,7 +637,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
   border-radius:14px; background: var(--card); border:1px solid var(--line); text-decoration:none;
   color: var(--ink); font-size:11.5px; font-weight:600; line-height:1.2; text-align:center;
   min-width:0; box-shadow: var(--shadow-sm); transition: border-color .15s, transform .12s; }
+@media (hover: hover) and (pointer: fine) {
 .l-quick a:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--line)); transform: translateY(-1px); }
+}
 .l-quick .ic { width:38px; height:38px; border-radius:12px; display:grid; place-items:center;
   background: var(--primary-soft); color: var(--primary); }
 
@@ -653,7 +717,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
   background: var(--scanner-bg); color:#fff; }
 .l-darkbar .t { font-size:16px; font-weight:700; flex:1; text-align:center; }
 .l-darkbar .l-iconbtn { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.2); color:#fff; }
+@media (hover: hover) and (pointer: fine) {
 .l-darkbar .l-iconbtn:hover { background: rgba(255,255,255,.24); color:#fff; }
+}
 .l-viewfinder { position:relative; background:#0B0B0D; display:grid; place-items:center; overflow:hidden;
   min-height:330px; color:#fff; text-align:center; }
 .l-viewfinder video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
@@ -765,7 +831,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-share .ic { width:48px; height:48px; border-radius:50%; display:grid; place-items:center;
   background: var(--card); border:1px solid var(--line); color: var(--primary); box-shadow: var(--shadow-sm);
   transition: border-color .15s, transform .12s; }
+@media (hover: hover) and (pointer: fine) {
 .l-share > *:hover .ic { border-color: var(--primary); transform: translateY(-2px); }
+}
 
 /* ---------- forms ---------- */
 .pwa-app .l-field { width:100%; padding:14px 15px; border-radius:13px; border:1px solid var(--line);
@@ -809,17 +877,23 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
   background: var(--primary); color: var(--on-primary); width:48px; height:48px; border-radius:50%;
   display:grid; place-items:center;
   box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 42%, transparent); }
+@media (hover: hover) and (pointer: fine) {
 .l-tabbar .scan-fab:hover { background: color-mix(in srgb, var(--primary) 88%, #000); color: var(--on-primary); }
+}
 
 /* ===================== SCROLLBARS (subtle) ===================== */
 * { scrollbar-width: thin; scrollbar-color: rgba(120,120,130,.3) transparent; }
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: rgba(120,120,130,.28); border-radius: 8px; }
+@media (hover: hover) and (pointer: fine) {
 *::-webkit-scrollbar-thumb:hover { background: rgba(120,120,130,.5); }
+}
 .l-side { scrollbar-color: rgba(255,255,255,.18) transparent; }
 .l-side::-webkit-scrollbar-thumb { background: rgba(255,255,255,.16); }
+@media (hover: hover) and (pointer: fine) {
 .l-side::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.3); }
+}
 .l-carousel::-webkit-scrollbar, .l-phone::-webkit-scrollbar { display: none; }
 .l-carousel, .l-phone { scrollbar-width: none; }
 
@@ -868,14 +942,18 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-navgrp { font-size:9px; letter-spacing:.16em; text-transform:uppercase; opacity:.45; margin:16px 10px 6px; }
 .l-nav-item { display:flex; align-items:center; gap:11px; padding:9px 11px; border-radius:11px;
   color:#EDE4D8; text-decoration:none; font-size:14px; }
-.l-nav-item:hover { background:rgba(255,255,255,.07); }
+@media (hover: hover) and (pointer: fine) {
+.l-nav-item:not(.active):hover { background:rgba(255,255,255,.07); }
+}
 .l-nav-item.active { background:rgba(255,255,255,.1); box-shadow: inset 3px 0 0 var(--primary-2); }
 .l-nav-item .en { display:block; font-size:8.5px; letter-spacing:.1em; text-transform:uppercase; opacity:.5; }
 /* Prominent counter-scanner CTA in the merchant sidebar — the most-used action. */
 .l-nav-scan { display:flex; align-items:center; gap:10px; padding:13px 14px; margin-bottom:10px;
   border-radius:13px; background:#fff; color:var(--primary); font-weight:800; font-size:15.5px;
   text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.18); transition:transform .12s ease, box-shadow .12s ease; }
-.l-nav-scan:hover { transform:translateY(-1px); box-shadow:0 9px 22px rgba(0,0,0,.24); }
+@media (hover: hover) and (pointer: fine) {
+.l-nav-scan:not(.active):hover { transform:translateY(-1px); box-shadow:0 9px 22px rgba(0,0,0,.24); }
+}
 .l-nav-scan.active { outline:2px solid rgba(255,255,255,.85); }
 .l-nav-scan svg { flex:none; }
 /* Emoji quick-pick popover — only shown when the icon field is focused/clicked */
@@ -886,7 +964,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-iconpick[hidden] { display:none; }
 .l-iconpick-btn { font-size:18px; line-height:1; padding:6px 0; border:1px solid var(--line);
   border-radius:9px; background:var(--surface); cursor:pointer; transition:border-color .12s, transform .12s; }
+@media (hover: hover) and (pointer: fine) {
 .l-iconpick-btn:hover { border-color:var(--primary); transform:translateY(-1px); }
+}
 /* Reward create/edit modal */
 .l-modal { position:fixed; inset:0; margin:auto; border:none; border-radius:22px; padding:0;
   width:min(600px, calc(100vw - 32px));
@@ -898,7 +978,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
 .l-modal-x { border:none; background:var(--surface-2,#eee); color:var(--ink-2); width:34px; height:34px;
   border-radius:50%; font-size:15px; cursor:pointer; line-height:1; flex:none; }
+@media (hover: hover) and (pointer: fine) {
 .l-modal-x:hover { background:var(--line); color:var(--ink); }
+}
 .l-modal-loading { padding:64px 24px; text-align:center; color:var(--ink-2); }
 /* Weekday selector chips for reward schedule */
 .l-daychip { cursor:pointer; }
@@ -980,11 +1062,15 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-bannerlib-item .pick { position:absolute; left:6px; bottom:6px; border:none; cursor:pointer;
   padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.94); color:var(--ink);
   font-size:11.5px; font-weight:700; line-height:1.4; box-shadow:0 1px 4px rgba(0,0,0,.22); }
+@media (hover: hover) and (pointer: fine) {
 .l-bannerlib-item .pick:hover { background:#fff; color:var(--primary); }
+}
 .l-bannerlib-item .del { position:absolute; top:6px; right:6px; border:none; cursor:pointer;
   width:22px; height:22px; padding:0; border-radius:50%; line-height:1;
   background:rgba(0,0,0,.5); color:#fff; font-size:12px; }
+@media (hover: hover) and (pointer: fine) {
 .l-bannerlib-item .del:hover { background:var(--warn); }
+}
 
 /* ---- ticket-style voucher card ---- */
 .l-ticket { position:relative; display:flex; background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); text-decoration:none; color:var(--ink); }
@@ -1032,7 +1118,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-toast.error .ic { background:var(--warn); }
 .l-toast .msg { flex:1; font-size:14px; color:var(--ink); line-height:1.4; }
 .l-toast .x { background:none; border:none; cursor:pointer; color:var(--ink-2); font-size:15px; line-height:1; padding:2px 4px; flex:none; }
+@media (hover: hover) and (pointer: fine) {
 .l-toast .x:hover { color:var(--ink); }
+}
 
 /* ---- Subscription warning banner (merchant dashboard) ---- */
 /* flex-wrap so the CTA drops below the text on a phone instead of sitting on
@@ -1050,7 +1138,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-a2hs .ic { width:58px; height:58px; margin:0 auto 12px; border-radius:16px; background:var(--primary-soft); display:grid; place-items:center; font-size:28px; }
 .l-a2hs-x { position:absolute; top:10px; right:10px; width:36px; height:36px; border-radius:50%; background:var(--surface-2);
   border:none; cursor:pointer; color:var(--ink-2); font-size:18px; line-height:1; display:grid; place-items:center; }
+@media (hover: hover) and (pointer: fine) {
 .l-a2hs-x:hover { background:color-mix(in srgb, var(--ink) 10%, var(--surface-2)); color:var(--ink); }
+}
 
 /* launcher (dev) */
 .l-launch { max-width:1000px; margin:0 auto; padding:48px 20px; }
@@ -1125,7 +1215,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-action { display:flex; align-items:center; gap:12px; width:100%; padding:13px 16px; border-radius:12px;
   background: var(--card); border:1px solid var(--line); color: var(--ink); text-decoration:none;
   font-size:14.5px; font-weight:600; box-shadow: var(--shadow-sm); }
+@media (hover: hover) and (pointer: fine) {
 .l-action:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--line)); color: var(--primary); }
+}
 .l-action svg { flex:none; color: var(--primary); }
 
 /* ---------- six-box OTP ---------- */
@@ -1159,7 +1251,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-mission .cnt { margin-left:auto; flex:none; }
 .l-mission .act.btn { padding:6px 14px; border-radius:999px; background: var(--primary);
   color: var(--on-primary); font-size:13px; font-weight:700; }
+@media (hover: hover) and (pointer: fine) {
 .l-mission .act.btn:hover { background: color-mix(in srgb, var(--primary) 88%, #000); }
+}
 
 /* ---------- speech bubble (stamp card mascot) ---------- */
 .l-bubble { position:relative; flex:1; min-width:0; background: var(--card); border:1px solid var(--line);
@@ -1175,7 +1269,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
    inside does the work; this is only the paint. */
 .l-tag { cursor:pointer; background: var(--surface-2); color: var(--ink-2); border-radius:999px;
   padding:7px 14px; font-size:13px; font-weight:600; border:1.5px solid transparent; transition:.15s; }
-.l-tag:hover { color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+.l-tag:not(.on):hover { color: var(--ink); }
+}
 .l-tag.on { background: var(--primary-soft); color: var(--primary-ink); border-color: var(--primary); }
 
 /* A button that has to read as a link (resend, inline actions inside a form). */
@@ -1227,7 +1323,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-subnav { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .m-subnav a { padding:8px 14px; border-radius:999px; font-size:13.5px; font-weight:600;
   color: var(--ink-2); text-decoration:none; }
-.m-subnav a:hover { color: var(--ink); background: var(--surface-2); }
+@media (hover: hover) and (pointer: fine) {
+.m-subnav a:not(.active):hover { color: var(--ink); background: var(--surface-2); }
+}
 .m-subnav a.active { background: var(--primary); color: var(--on-primary); }
 .m-subnav .note { margin-left:auto; font-size:12px; color: var(--ink-2); }
 
@@ -1256,7 +1354,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-quick { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .m-quick a { display:block; padding:14px; border-radius:13px; border:1px solid var(--line);
   background: var(--surface); text-decoration:none; color: var(--ink); transition: border-color .15s; }
+@media (hover: hover) and (pointer: fine) {
 .m-quick a:hover { border-color: var(--primary); }
+}
 .m-quick .hd { display:flex; align-items:center; justify-content:space-between; }
 .m-quick .ic { width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
   background: var(--primary-soft); color: var(--primary); }
@@ -1315,7 +1415,9 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   background: var(--surface-2); color: var(--ink-2); margin-bottom:9px; }
 .m-choice .tt { font-weight:700; font-size:13.5px; }
 .m-choice .ds { font-size:12px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
+@media (hover: hover) and (pointer: fine) {
 .m-choice:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--line)); }
+}
 .m-choice:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); }
 .m-choice:has(input:checked) .ic { background: var(--primary); color: var(--on-primary); }
 .m-choice:has(input:disabled) { opacity:.55; cursor:not-allowed; }
@@ -1357,8 +1459,12 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-rowact { display:inline-flex; align-items:center; gap:2px; justify-content:flex-end; }
 .m-rowact a, .m-rowact button { display:grid; place-items:center; width:32px; height:32px;
   border:none; background:none; border-radius:9px; color: var(--ink-2); cursor:pointer; padding:0; }
+@media (hover: hover) and (pointer: fine) {
 .m-rowact a:hover, .m-rowact button:hover { background: var(--surface-2); color: var(--ink); }
+}
+@media (hover: hover) and (pointer: fine) {
 .m-rowact .danger:hover { background: var(--warn-soft); color: var(--warn); }
+}
 .m-rowact form { display:inline-flex; margin:0; }
 
 /* Four numbers that describe a list before you read it — the design opens every
@@ -1483,3 +1589,21 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-stampmark { width:100%; height:100%; display:block; color: var(--primary); opacity:.92; }
 @keyframes stampPress { 0% { transform:scale(1.45); opacity:0; } 60% { opacity:1; } 100% { transform:scale(1); } }
 @media (prefers-reduced-motion: reduce) { .l-stamps .s.on { animation:none; } }
+
+/* ---------- waiting ---------- */
+/* One spinner for everything that waits, in the colour of whatever it sits in. */
+.l-spinner { display:inline-block; vertical-align:-2px; animation: l-spin .7s linear infinite; }
+@keyframes l-spin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .l-spinner { animation-duration: 2s; } }
+
+/* Turbo marks a frame aria-busy while it fetches. Dim what is there and show a
+   spinner over it, so a slow connection looks like work rather than a dead tap. */
+.l-busy { position:relative; }
+.l-busy[aria-busy="true"] > * { opacity:.45; transition:opacity .15s; }
+.l-busy[aria-busy="true"]::after { content:""; position:absolute; left:50%; top:28px; width:22px; height:22px;
+  margin-left:-11px; border-radius:50%; border:2.6px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  border-top-color: var(--primary); animation: l-spin .7s linear infinite; }
+
+/* Turbo's page-load bar, in the shop's colour rather than its default blue.
+   It is the only feedback a customer gets while a tap is in flight. */
+.turbo-progress-bar { height:3px; background: var(--primary); }
