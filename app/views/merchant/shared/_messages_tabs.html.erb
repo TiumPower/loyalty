@@ -1,0 +1,7 @@
+<%# Second level of the design's Campaigns section: the two things that send a
+    message to customers. Rendered by both screens so they agree. %>
+<% here = local_assigns.fetch(:current) %>
+<div class="m-subnav" style="margin-bottom:16px;">
+  <%= link_to t("merchant.nav.broadcasts"), merchant_broadcasts_path, class: ("active" if here == :broadcasts) %>
+  <%= link_to t("merchant.nav.automations"), merchant_automations_path, class: ("active" if here == :automations) %>
+</div>

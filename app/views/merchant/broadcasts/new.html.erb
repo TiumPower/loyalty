@@ -1,61 +1,177 @@
 <% content_for :title, t("merchant.nav.broadcasts") %>
 <% content_for :title_en, "BROADCAST" %>
-<% merchant_back merchant_broadcasts_path %>
+<% b = ->(k, **o) { t("merchant.broadcasts.#{k}", **o) } %>
 
-<div data-controller="campaign-preview" class="l-work wide">
+<%= render "merchant/shared/messages_tabs", current: :broadcasts %>
+
+<div class="m-edhead">
+  <div class="bd">
+    <div class="tt"><%= b.(:ed_title) %></div>
+    <div class="ds"><%= b.(:ed_desc) %></div>
+  </div>
+  <div class="act">
+    <%= link_to b.(:ed_cancel), merchant_broadcasts_path, class: "l-btn l-btn-ghost",
+          style: "padding:9px 16px; font-size:13.5px;" %>
+  </div>
+</div>
+
+<div data-controller="campaign-preview">
   <%= form_with model: @broadcast, url: merchant_broadcasts_path, method: :post do |f| %>
     <% if @broadcast.errors.any? %>
-      <div class="l-panel" style="margin-bottom:16px; background:#F7E0DA; color:#B4402F; border:none;">
-        <%= @broadcast.errors.full_messages.to_sentence %>
+      <div class="l-note warn" style="margin-bottom:14px;">
+        <%= ui_icon(:shield, size: 16) %><span><%= @broadcast.errors.full_messages.to_sentence %></span>
       </div>
     <% end %>
-    <div class="l-panel" style="margin-bottom:16px;">
-      <div class="l-eyebrow"><%= t("merchant.broadcasts.step1") %></div>
-      <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-        <span style="font-size:24px;"><%= MemberSegments.icon(@segment) %></span>
-        <div style="flex:1;">
-          <div style="font-weight:700;"><%= @audience_label %></div>
-          <div style="font-size:13px; color:var(--ink-2);"><%= t("merchant.broadcasts.will_send_html", n: @count).html_safe %></div>
+
+    <div class="m-editor">
+      <div>
+        <%# The audience is chosen on the Customers screen and carried here, so this
+            section confirms it rather than asking again. %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= b.(:sec_audience) %></div>
+            <div class="s"><%= b.(:sec_audience_sub) %></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:26px; flex:none;"><%= MemberSegments.icon(@segment) %></span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:14.5px;"><%= @audience_label %></div>
+              <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= b.(:will_send_html, n: @count).html_safe %></div>
+            </div>
+            <%= link_to b.(:change_group), merchant_customers_path, class: "l-chip", style: "flex:none;" %>
+          </div>
+          <%= f.hidden_field :segment_key, value: @segment %>
+          <%= f.hidden_field :audience_outlet_id, value: @outlet&.id %>
+          <%= f.hidden_field :audience_query, value: @q %>
+          <%= f.hidden_field :audience_tier, value: @tier %>
         </div>
-        <%= link_to t("merchant.broadcasts.change_group"), merchant_customers_path, class: "l-chip" %>
+
+        <%# Read-only: the app decides where a broadcast lands. %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= b.(:sec_channels) %></div>
+            <div class="s"><%= b.(:sec_channels_sub) %></div>
+          </div>
+          <div class="m-channel on">
+            <div class="ic"><%= ui_icon(:bell, size: 16) %></div>
+            <div class="bd"><div class="tt"><%= t("merchant.campaigns.ch_inapp") %></div><div class="ds"><%= t("merchant.campaigns.ch_inapp_sub") %></div></div>
+            <div class="st"><%= t("merchant.campaigns.ch_on") %></div>
+          </div>
+          <div class="m-channel <%= 'on' if PushSender.configured? %>">
+            <div class="ic"><%= ui_icon(:phone, size: 16) %></div>
+            <div class="bd">
+              <div class="tt"><%= t("merchant.campaigns.ch_push") %></div>
+              <div class="ds"><%= b.(:push_reach, n: @push_ready.to_i) %></div>
+            </div>
+            <div class="st"><%= PushSender.configured? ? t("merchant.campaigns.ch_on") : t("merchant.campaigns.ch_off") %></div>
+          </div>
+          <div class="m-channel">
+            <div class="ic"><%= ui_icon(:mail, size: 16) %></div>
+            <div class="bd"><div class="tt"><%= t("merchant.campaigns.ch_email") %></div><div class="ds"><%= t("merchant.campaigns.ch_email_sub") %></div></div>
+            <div class="st"><%= t("merchant.campaigns.ch_off") %></div>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= b.(:sec_message) %></div>
+            <div class="s"><%= b.(:sec_message_sub) %></div>
+          </div>
+          <label class="l-label"><%= b.(:title) %></label>
+          <%= f.text_field :title, class: "l-field", required: true, placeholder: b.(:title_ph),
+                data: { campaign_preview_target: "title", action: "input->campaign-preview#update" } %>
+          <div data-controller="charcount">
+            <label class="l-label" style="margin-top:12px;"><%= b.(:content) %></label>
+            <%= f.text_area :body, class: "l-field", rows: 4, required: true, placeholder: b.(:content_ph),
+                  data: { campaign_preview_target: "body", charcount_target: "input",
+                          action: "input->campaign-preview#update input->charcount#count" } %>
+            <div style="display:flex; justify-content:flex-end; font-size:12px; color:var(--ink-2); margin-top:5px;">
+              <%= b.(:chars) %> <span data-charcount-target="out"></span>
+            </div>
+          </div>
+          <div class="l-note" style="margin-top:8px;">
+            <%= ui_icon(:bell, size: 16) %>
+            <span><strong><%= b.(:msg_note) %></strong> <%= b.(:msg_note_sub) %></span>
+          </div>
+        </div>
       </div>
-      <%= f.hidden_field :segment_key, value: @segment %>
-      <%= f.hidden_field :audience_outlet_id, value: @outlet&.id %>
-      <%= f.hidden_field :audience_query, value: @q %>
-      <%= f.hidden_field :audience_tier, value: @tier %>
+
+      <div>
+        <%# Send now or later. The date fields belong to the second choice only,
+            so they fold away for the first (pure CSS, no state to get wrong). %>
+        <div class="m-section m-when">
+          <div class="hd">
+            <div class="t"><%= b.(:sec_when) %></div>
+            <div class="s"><%= b.(:sec_when_sub) %></div>
+          </div>
+          <div class="m-choices" style="grid-template-columns:1fr 1fr;">
+            <label class="m-choice">
+              <%= radio_button_tag "when", "now", params[:scheduled_at].blank? %>
+              <div class="ic"><%= ui_icon(:launch, size: 17) %></div>
+              <div class="tt"><%= b.(:when_now) %></div>
+              <div class="ds"><%= b.(:when_now_sub) %></div>
+            </label>
+            <label class="m-choice">
+              <%= radio_button_tag "when", "later", params[:scheduled_at].present? %>
+              <div class="ic"><%= ui_icon(:clock, size: 17) %></div>
+              <div class="tt"><%= b.(:when_later) %></div>
+              <div class="ds"><%= b.(:when_later_sub) %></div>
+            </label>
+          </div>
+          <div class="m-when-fields" style="margin-top:14px;">
+            <label class="l-label"><%= b.(:schedule_label) %></label>
+            <input type="datetime-local" name="scheduled_at" value="<%= params[:scheduled_at] %>" class="l-field">
+            <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= b.(:schedule_hint) %></p>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= b.(:sec_reach) %></div>
+            <div class="s"><%= b.(:sec_reach_sub) %></div>
+          </div>
+          <div class="m-estimate">
+            <div class="ic"><%= ui_icon(:users, size: 19) %></div>
+            <div style="flex:1; min-width:0;">
+              <div class="v"><%= number_with_delimiter(@count.to_i) %></div>
+              <div class="d"><%= b.(:reach_detail) %></div>
+            </div>
+          </div>
+          <% if @count.to_i.positive? %>
+            <div class="l-note" style="margin-top:12px;">
+              <%= ui_icon(:shield, size: 16) %><span><%= b.(:reach_note) %></span>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="m-previewlabel" style="margin-top:18px;"><%= b.(:step3) %></div>
+        <div class="m-phone">
+          <div class="scr">
+            <div class="bd">
+              <div style="display:flex; gap:10px;">
+                <div style="width:32px; height:32px; border-radius:10px; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; font-size:12px; font-weight:700; flex:none;"><%= current_workspace.logo_initials %></div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:11.5px; color:var(--ink-2);"><%= current_workspace.name %> · <%= b.(:just_now) %></div>
+                  <div class="tt" data-campaign-preview-target="pvTitle" style="margin-top:3px;"><%= b.(:pv_title) %></div>
+                  <div class="ds" data-campaign-preview-target="pvBody"><%= b.(:pv_body) %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="l-panel" style="margin-bottom:16px;">
-      <div class="l-eyebrow"><%= t("merchant.broadcasts.step2") %></div>
-      <label class="l-label" style="margin-top:8px;"><%= t("merchant.broadcasts.title") %></label>
-      <%= f.text_field :title, class: "l-field", required: true, placeholder: t("merchant.broadcasts.title_ph"),
-            data: { campaign_preview_target: "title", action: "input->campaign-preview#update" } %>
-      <label class="l-label" style="margin-top:12px;"><%= t("merchant.broadcasts.content") %></label>
-      <%= f.text_area :body, class: "l-field", rows: 3, required: true, placeholder: t("merchant.broadcasts.content_ph"),
-            data: { campaign_preview_target: "body", action: "input->campaign-preview#update" } %>
-      <label class="l-label" style="margin-top:12px;"><%= t("merchant.broadcasts.schedule_label") %></label>
-      <input type="datetime-local" name="scheduled_at" value="<%= params[:scheduled_at] %>" class="l-field">
+    <div class="m-savebar">
+      <% if @count.to_i.zero? %>
+        <div class="l-note warn" style="margin:0;">
+          <%= ui_icon(:shield, size: 16) %><span><%= b.(:empty_group) %></span>
+        </div>
+      <% else %>
+        <%= f.submit b.(:send_now), class: "l-btn l-btn-primary",
+              data: { turbo_confirm: b.(:send_confirm, n: @count) } %>
+        <span style="font-size:12.5px; color:var(--ink-2);"><%= b.(:save_hint) %></span>
+      <% end %>
     </div>
-
-    <% if @count.to_i.zero? %>
-      <div class="l-chip" style="background:#F7E0DA; color:#B4402F;"><%= t("merchant.broadcasts.empty_group") %></div>
-    <% else %>
-      <%= f.submit t("merchant.broadcasts.send_now"), class: "l-btn l-btn-primary",
-            data: { turbo_confirm: t("merchant.broadcasts.send_confirm", n: @count) } %>
-    <% end %>
   <% end %>
-
-  <div style="position:sticky; top:90px;">
-    <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.broadcasts.step3") %></div>
-    <div class="l-tile">
-      <div style="display:flex; gap:12px;">
-        <div style="width:42px; height:42px; border-radius:14px; background:var(--primary); color:#fff; display:grid; place-items:center; font-size:20px; flex:none;">🎁</div>
-        <div style="flex:1; min-width:0;">
-          <div data-campaign-preview-target="pvTitle" style="font-weight:700;"><%= t("merchant.broadcasts.pv_title") %></div>
-          <div data-campaign-preview-target="pvBody" style="font-size:13px; color:var(--ink-2); margin-top:2px;"><%= t("merchant.broadcasts.pv_body") %></div>
-          <div style="font-size:11px; color:var(--ink-2); margin-top:6px;"><%= t("merchant.broadcasts.just_now") %> · <%= current_workspace.name %></div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

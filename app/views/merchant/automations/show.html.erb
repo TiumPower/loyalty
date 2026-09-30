@@ -1,49 +1,72 @@
 <% content_for :title, t("merchant.nav.automations") %>
 <% content_for :title_en, "AUTOMATIONS" %>
-<% reward_opts = @rewards.map { |r| [r.title, r.id] } %>
+<% a = ->(k, **o) { t("merchant.automations.#{k}", **o) } %>
 
-<div style="max-width:680px;">
-  <p style="color:var(--ink-2); font-size:14px; margin-bottom:16px;"><%= t("merchant.automations.intro") %></p>
+<%= render "merchant/shared/messages_tabs", current: :automations %>
 
-  <% if @rewards.empty? %>
-    <div class="l-panel" style="background:#F7E0DA; color:#B4402F;"><%= t("merchant.automations.need_reward") %></div>
-  <% end %>
+<div class="m-sec">
+  <div>
+    <h3><%= a.(:list_title) %></h3>
+    <div class="sub"><%= a.(:intro) %></div>
+  </div>
+</div>
 
-  <%= form_with url: merchant_automations_path, method: :patch do %>
-    <% %w[welcome birthday winback].each do |kind| %>
-      <% title = t("merchant.automations.#{kind}_title"); desc = t("merchant.automations.#{kind}_desc") %>
-      <% c = @cfg[kind] || {} %>
-      <div class="l-panel" style="margin-bottom:14px;">
-        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-          <input type="hidden" name="automations[<%= kind %>][enabled]" value="0">
-          <input type="checkbox" name="automations[<%= kind %>][enabled]" value="1" <%= "checked" if c["enabled"] %> style="width:18px;height:18px; accent-color:var(--primary);">
-          <span style="font-weight:700; font-size:16px;"><%= title %></span>
-        </label>
-        <p style="color:var(--ink-2); font-size:13px; margin:6px 0 12px 28px;"><%= desc %></p>
+<% if @rewards.empty? %>
+  <div class="l-note warn" style="margin-bottom:16px;">
+    <%= ui_icon(:shield, size: 16) %><span><%= a.(:need_reward) %></span>
+  </div>
+<% end %>
 
-        <div style="margin-left:28px; display:grid; gap:10px;">
-          <div>
-            <label class="l-label"><%= kind == "winback" ? t("merchant.automations.gift_optional") : t("merchant.automations.gift") %></label>
-            <%= select_tag "automations[#{kind}][reward_id]", options_for_select(reward_opts, c["reward_id"].to_i),
-                  include_blank: (kind == "winback" ? t("merchant.automations.no_gift") : t("merchant.automations.pick_reward")), class: "l-field" %>
-          </div>
-
-          <% if kind == "winback" %>
-            <div style="display:grid; grid-template-columns:150px 1fr; gap:10px;">
-              <div>
-                <label class="l-label"><%= t("merchant.automations.winback_days") %></label>
-                <%= number_field_tag "automations[winback][days]", (c["days"].presence || 30), class: "l-field", min: 1 %>
-              </div>
-              <div>
-                <label class="l-label"><%= t("merchant.automations.message") %></label>
-                <%= text_field_tag "automations[winback][message]", c["message"], class: "l-field", placeholder: t("merchant.automations.message_ph") %>
+<div class="l-panel" style="padding:6px 10px;">
+  <table class="m-table">
+    <thead>
+      <tr>
+        <th><%= a.(:col_automation) %></th>
+        <th><%= a.(:col_trigger) %></th>
+        <th><%= a.(:col_gift) %></th>
+        <th><%= a.(:col_status) %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% Merchant::AutomationsController::KINDS.each do |kind| %>
+        <% cfg    = @cfg[kind] || {} %>
+        <% on     = cfg["enabled"] %>
+        <% reward = @rewards.find { |r| r.id == cfg["reward_id"].to_i } %>
+        <tr>
+          <td>
+            <div class="m-who">
+              <span class="av" style="background:var(--primary-soft); color:var(--primary-ink);"><%= ui_icon(automation_icon(kind), size: 16) %></span>
+              <div style="min-width:0;">
+                <div class="nm"><%= a.("#{kind}_title") %></div>
+                <div class="sub"><%= a.("#{kind}_desc") %></div>
               </div>
             </div>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
+          </td>
+          <td style="color:var(--ink-2);">
+            <%= kind == "winback" ? a.(:trig_winback, n: (cfg["days"].presence || 30)) : a.("trig_#{kind}") %>
+          </td>
+          <td>
+            <% if reward %>
+              <%= reward.display_icon %> <%= reward.title %>
+            <% else %>
+              <span style="color:var(--ink-2);"><%= a.(:no_gift_set) %></span>
+            <% end %>
+          </td>
+          <td>
+            <span class="m-badge <%= 'up' if on %>"><%= on ? a.(:on) : a.(:off) %></span>
+          </td>
+          <td>
+            <%= link_to a.(:edit), merchant_edit_automation_path(kind),
+                  style: "font-size:13px; font-weight:600; color:var(--primary); text-decoration:none;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
-    <%= submit_tag t("merchant.automations.save"), class: "l-btn l-btn-primary", style: "margin-top:4px;" %>
-  <% end %>
+<div class="l-note" style="margin-top:16px;">
+  <%= ui_icon(:clock, size: 16) %>
+  <span><strong><%= a.(:schedule_note) %></strong> <%= a.(:schedule_note_sub) %></span>
 </div>

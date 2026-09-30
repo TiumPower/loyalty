@@ -8,8 +8,9 @@ module Merchant
 
     def new
       load_audience(params[:segment], params[:outlet], params[:q], params[:tier])
-      @count     = @audience_scope.count
-      @broadcast = Broadcast.new(segment_key: @segment)
+      @count      = @audience_scope.count
+      @push_ready = push_ready_count(@audience_scope.select(:id))
+      @broadcast  = Broadcast.new(segment_key: @segment)
     end
 
     def create
@@ -23,13 +24,14 @@ module Merchant
       )
       members = @audience_scope.to_a
       @count  = members.size
+      @push_ready = push_ready_count(members.map(&:id))
 
       if members.empty?
         @broadcast.errors.add(:base, "Nhóm khách này chưa có ai — không thể gửi.")
         return render :new, status: :unprocessable_entity
       end
 
-      sched = parse_schedule(params[:scheduled_at])
+      sched = parse_schedule(params[:scheduled_at]) unless params[:when] == "now"
       if sched && sched > Time.current
         @broadcast.scheduled_at = sched
         if @broadcast.save
@@ -63,7 +65,7 @@ module Merchant
 
     private
 
-    def nav_key = :broadcasts
+    def nav_key = :messages
 
     # Resolve the filtered audience (segment + branch + search) once, and build the
     # display name, from whichever params the request carries (query on :new, nested
@@ -76,6 +78,12 @@ module Merchant
       @tier    = tier.presence if current_workspace.tiers.any? { |t| t.key == tier }
       @audience_scope = MemberSegments.audience(segment: @segment, outlet_id: @outlet&.id, q: @q, tier: @tier)
       @audience_label = MemberSegments.audience_label(segment: @segment, outlet: @outlet, q: @q, tier: @tier)
+    end
+
+    # How many of these customers actually have the app installed — the honest
+    # ceiling for the push channel, next to the in-app inbox which reaches all.
+    def push_ready_count(member_ids)
+      PushSubscription.where(member_id: member_ids).distinct.count(:member_id)
     end
 
     def broadcast_params

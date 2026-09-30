@@ -21,6 +21,8 @@ class PageSmokeTest < ActionDispatch::IntegrationTest
     /merchant/broadcasts /merchant/broadcasts/new
     /merchant/program /merchant/gamification
     /merchant/feedback /merchant/automations /merchant/alerts
+    /merchant/automations/welcome/edit /merchant/automations/birthday/edit
+    /merchant/automations/winback/edit
     /merchant/staff /merchant/domain /merchant/appearance
     /merchant/billing /merchant/checkin_qr /merchant/quick_login_qr
     /merchant/scanner /merchant/scan-home

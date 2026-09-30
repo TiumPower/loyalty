@@ -1,120 +1,265 @@
-<div data-controller="campaign-preview campaigngen"
-     data-campaigngen-url-value="<%= generate_content_merchant_campaigns_path %>"
-     class="l-work wide">
+<%# The admin design edits a campaign in two columns: what the campaign IS on the
+    left in labelled sections, how and when it goes out on the right, with a live
+    customer notification under it. %>
+<% c  = ->(k, **o) { t("merchant.campaigns.#{k}", **o) } %>
+<% new = !@campaign.persisted? %>
+
+<div class="m-edhead">
+  <div class="bd">
+    <div class="tt">
+      <%= new ? c.(:ed_new_title) : @campaign.name %>
+      <% unless new %><span class="m-badge <%= @campaign.live? ? 'up' : '' %>"><%= @campaign.status_label %></span><% end %>
+    </div>
+    <div class="ds"><%= new ? c.(:ed_new_desc) : c.(:ed_edit_desc) %></div>
+  </div>
+  <div class="act">
+    <%= link_to c.(:ed_cancel), (new ? merchant_campaigns_path : merchant_campaign_path(@campaign)),
+          class: "l-btn l-btn-ghost", style: "padding:9px 16px; font-size:13.5px;" %>
+  </div>
+</div>
+
+<div data-controller="campaign-preview campaigngen audience-estimate"
+     data-campaigngen-url-value="<%= generate_content_merchant_campaigns_path %>">
   <%# multipart: the create form can carry a banner image. %>
   <%= form_with model: [:merchant, @campaign], html: { multipart: true } do |f| %>
     <% if @campaign.errors.any? %>
-      <div class="l-chip" style="background:#F3DDD7; color:#B4402F; margin-bottom:12px;"><%= @campaign.errors.full_messages.to_sentence %></div>
-    <% end %>
-    <div class="l-panel" style="margin-bottom:16px;">
-      <h3 class="l-display" style="font-size:18px; margin-bottom:12px;"><%= t("merchant.campaigns.s1") %></h3>
-      <label class="l-label"><%= t("merchant.campaigns.name") %></label>
-      <%= f.text_field :name, class: "l-field", placeholder: t("merchant.campaigns.name_ph"),
-            data: { campaigngen_target: "name" } %>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
-        <div>
-          <label class="l-label"><%= t("merchant.campaigns.kind") %></label>
-          <%= f.select :campaign_type, Campaign::TYPE_LABELS.keys.map { |k| [t("merchant.campaign_types.#{k}"), k] }, {}, class: "l-field", data: { campaigngen_target: "type" } %>
-        </div>
-        <div>
-          <label class="l-label"><%= t("merchant.campaigns.audience") %></label>
-          <%= f.select :audience, Campaign::AUDIENCE_LABELS.keys.map { |k| [t("merchant.campaign_audiences.#{k}"), k] }, {}, class: "l-field", data: { campaigngen_target: "audience" } %>
-        </div>
+      <div class="l-note warn" style="margin-bottom:14px;">
+        <%= ui_icon(:shield, size: 16) %><span><%= @campaign.errors.full_messages.to_sentence %></span>
       </div>
-    </div>
-
-    <div class="l-panel" style="margin-bottom:16px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
-        <h3 class="l-display" style="font-size:18px; margin:0;"><%= t("merchant.campaigns.s2") %></h3>
-        <button type="button" class="l-btn l-btn-soft" style="padding:6px 12px; font-size:13px; white-space:nowrap;"
-                data-campaigngen-target="button" data-action="campaigngen#generate">
-          ✨ <%= t("merchant.campaigns.ai_generate") %>
-        </button>
-      </div>
-      <label class="l-label"><%= t("merchant.campaigns.title") %></label>
-      <%= text_field_tag "campaign[content][title]", @campaign.content_value("title"), class: "l-field",
-            placeholder: t("merchant.campaigns.title_ph"),
-            data: { campaign_preview_target: "title", campaigngen_target: "title", action: "input->campaign-preview#update" } %>
-      <label class="l-label" style="margin-top:12px;"><%= t("merchant.campaigns.body") %></label>
-      <%= text_area_tag "campaign[content][body]", @campaign.content_value("body"), class: "l-field", rows: 2,
-            placeholder: t("merchant.campaigns.body_ph"),
-            data: { campaign_preview_target: "body", campaigngen_target: "body", action: "input->campaign-preview#update" } %>
-    </div>
-
-    <div class="l-panel" style="margin-bottom:16px;">
-      <h3 class="l-display" style="font-size:18px; margin-bottom:12px;"><%= t("merchant.campaigns.s3") %></h3>
-      <label class="l-label"><%= t("merchant.campaigns.reward") %></label>
-      <%# A sold-out reward is not offered at all (see #reward_options); the only
-          one that can show up here is this campaign's own, flagged as such. %>
-      <%= f.select :reward_id, @rewards.map { |r| ["#{r.display_icon} #{r.title}#{r.in_stock? ? '' : t('merchant.campaigns.reward_opt_sold_out')}", r.id] },
-            { include_blank: t("merchant.campaigns.reward_none") }, class: "l-field",
-            data: { campaign_preview_target: "reward", campaigngen_target: "reward", action: "change->campaign-preview#update" } %>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
-        <div><label class="l-label"><%= t("merchant.campaigns.starts") %></label><%= f.datetime_local_field :starts_at, value: f.object.starts_at&.strftime("%Y-%m-%dT%H:%M"), class: "l-field" %></div>
-        <div><label class="l-label"><%= t("merchant.campaigns.ends") %></label><%= f.datetime_local_field :ends_at, value: f.object.ends_at&.strftime("%Y-%m-%dT%H:%M"), class: "l-field" %></div>
-      </div>
-    </div>
-
-    <% unless @campaign.persisted? %>
-      <div class="l-panel" style="margin-bottom:16px;">
-        <h3 class="l-display" style="font-size:18px; margin-bottom:8px;"><%= t("merchant.campaigns.s4") %></h3>
-        <label style="display:flex; align-items:center; gap:8px; font-size:14px;">
-          <%= check_box_tag "generate_qr", "1", true %> <%= t("merchant.campaigns.gen_qr") %>
-        </label>
-        <label class="l-label" style="margin-top:12px;"><%= t("merchant.campaigns.max_claims") %></label>
-        <%= number_field_tag "max_claims", 200, class: "l-field", style: "max-width:180px;" %>
-        <%# The banner used to be reachable only from an existing campaign's page. %>
-        <% if AiImageService.configured? %>
-          <label style="display:flex; align-items:flex-start; gap:8px; font-size:14px; margin-top:14px;">
-            <%= check_box_tag "generate_banner", "1", false %>
-            <span>🎨 <%= t("merchant.campaigns.gen_banner_now") %></span>
-          </label>
-          <%# Baking in the QR is a choice: a banner meant for Facebook/Zalo is
-              often nicer without one. %>
-          <label style="display:flex; align-items:flex-start; gap:8px; font-size:14px; margin:10px 0 0 26px;">
-            <%= check_box_tag "banner_include_qr", "1", true %>
-            <span>
-              <%= t("merchant.campaigns.banner_include_qr") %>
-              <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.campaigns.banner_include_qr_hint") %></span>
-            </span>
-          </label>
-        <% end %>
-        <%# Own artwork, offered whether or not the AI key is configured. %>
-        <div style="margin-top:14px;" data-controller="upload">
-          <label class="l-label"><%= t("merchant.campaigns.upload_banner_now") %></label>
-          <button type="button" class="l-upload" data-action="upload#pick">
-            <%= ui_icon(:launch, size: 18) %>
-            <span data-upload-target="name"><%= t("merchant.campaigns.upload_banner") %></span>
-          </button>
-          <%= file_field_tag "banner", accept: "image/png,image/jpeg,image/webp,image/gif",
-                data: { upload_target: "input", action: "upload#changed" }, hidden: true %>
-          <p style="color:var(--ink-2); font-size:12.5px; margin-top:6px;"><%= t("merchant.campaigns.upload_banner_hint") %></p>
-        </div>
-      </div>
-      <%# Created idle on purpose — the merchant starts it from the campaign page. %>
-      <%= f.hidden_field :status, value: "draft" %>
     <% end %>
 
-    <%= f.submit(@campaign.persisted? ? t("merchant.campaigns.save") : t("merchant.campaigns.create"), class: "l-btn l-btn-primary") %>
+    <div class="m-editor">
+      <div>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_basics) %></div>
+            <div class="s"><%= c.(:sec_basics_sub) %></div>
+          </div>
+          <label class="l-label"><%= c.(:name) %></label>
+          <%= f.text_field :name, class: "l-field", placeholder: c.(:name_ph),
+                data: { campaigngen_target: "name" } %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= c.(:name_hint) %></p>
+        </div>
+
+        <%# A select hid what each campaign type actually does; the design spends
+            the room on a sentence per option instead. %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_type) %></div>
+            <div class="s"><%= c.(:sec_type_sub) %></div>
+          </div>
+          <div class="m-choices">
+            <% Campaign::TYPES.each do |key| %>
+              <label class="m-choice">
+                <%= f.radio_button :campaign_type, key, data: { campaigngen_target: "type" } %>
+                <div class="ic"><%= ui_icon(campaign_type_icon(key), size: 17) %></div>
+                <div class="tt"><%= t("merchant.campaign_types.#{key}") %></div>
+                <div class="ds"><%= t("merchant.campaign_type_desc.#{key}") %></div>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_audience) %></div>
+            <div class="s"><%= c.(:sec_audience_sub) %></div>
+          </div>
+          <label class="l-label"><%= c.(:audience) %></label>
+          <%= f.select :audience, Campaign::AUDIENCE_LABELS.keys.map { |k| [t("merchant.campaign_audiences.#{k}"), k] }, {},
+                class: "l-field",
+                data: { campaigngen_target: "audience", audience_estimate_target: "select",
+                        action: "change->audience-estimate#update" } %>
+          <div class="l-note brand" style="margin-top:12px;">
+            <%= ui_icon(:users, size: 16) %>
+            <span><%= c.(:audience_note) %></span>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_reward) %></div>
+            <div class="s"><%= c.(:sec_reward_sub) %></div>
+          </div>
+          <label class="l-label"><%= c.(:reward) %></label>
+          <%# A sold-out reward is not offered at all (see #reward_options); the only
+              one that can show up here is this campaign's own, flagged as such. %>
+          <%= f.select :reward_id, @rewards.map { |r| ["#{r.display_icon} #{r.title}#{r.in_stock? ? '' : c.(:reward_opt_sold_out)}", r.id] },
+                { include_blank: c.(:reward_none) }, class: "l-field",
+                data: { campaign_preview_target: "reward", campaigngen_target: "reward", action: "change->campaign-preview#update" } %>
+
+          <% if new %>
+            <div class="l-toggle-row" style="margin-top:6px;">
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600;"><%= c.(:gen_qr_label) %></div>
+                <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:gen_qr) %></div>
+              </div>
+              <label class="l-switch"><%= check_box_tag "generate_qr", "1", true %><span class="knob"></span></label>
+            </div>
+            <label class="l-label" style="margin-top:12px;"><%= c.(:max_claims) %></label>
+            <%= number_field_tag "max_claims", 200, class: "l-field", style: "max-width:180px;" %>
+          <% end %>
+        </div>
+
+        <div class="m-section">
+          <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="flex:1; min-width:0;">
+              <div class="t"><%= c.(:sec_message) %></div>
+              <div class="s"><%= c.(:sec_message_sub) %></div>
+            </div>
+            <button type="button" class="l-btn l-btn-soft" style="padding:7px 13px; font-size:13px; white-space:nowrap; flex:none;"
+                    data-campaigngen-target="button" data-action="campaigngen#generate">
+              ✨ <%= c.(:ai_generate) %>
+            </button>
+          </div>
+          <label class="l-label"><%= c.(:title) %></label>
+          <%= text_field_tag "campaign[content][title]", @campaign.content_value("title"), class: "l-field",
+                placeholder: c.(:title_ph),
+                data: { campaign_preview_target: "title", campaigngen_target: "title", action: "input->campaign-preview#update" } %>
+          <label class="l-label" style="margin-top:12px;"><%= c.(:body) %></label>
+          <%= text_area_tag "campaign[content][body]", @campaign.content_value("body"), class: "l-field", rows: 3,
+                placeholder: c.(:body_ph),
+                data: { campaign_preview_target: "body", campaigngen_target: "body", action: "input->campaign-preview#update" } %>
+          <div class="l-note" style="margin-top:12px;">
+            <%= ui_icon(:sparkles, size: 16) %>
+            <span><strong><%= c.(:msg_note) %></strong> <%= c.(:msg_note_sub) %></span>
+          </div>
+        </div>
+      </div>
+
+      <%# ---- How and when it goes out ---- %>
+      <div>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_creative) %></div>
+            <div class="s"><%= c.(:sec_creative_sub) %></div>
+          </div>
+          <% if new %>
+            <% if AiImageService.configured? %>
+              <div class="l-toggle-row" style="padding-top:0;">
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:13.5px; font-weight:600;">🎨 <%= c.(:gen_banner_label) %></div>
+                  <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:gen_banner_now) %></div>
+                </div>
+                <label class="l-switch"><%= check_box_tag "generate_banner", "1", false %><span class="knob"></span></label>
+              </div>
+              <%# Baking in the QR is a choice: a banner meant for Facebook/Zalo is
+                  often nicer without one. %>
+              <div class="l-toggle-row">
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:13.5px; font-weight:600;"><%= c.(:banner_include_qr) %></div>
+                  <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:banner_include_qr_hint) %></div>
+                </div>
+                <label class="l-switch"><%= check_box_tag "banner_include_qr", "1", true %><span class="knob"></span></label>
+              </div>
+            <% end %>
+            <%# Own artwork, offered whether or not the AI key is configured. %>
+            <div style="margin-top:14px;" data-controller="upload">
+              <label class="l-label"><%= c.(:upload_banner_now) %></label>
+              <button type="button" class="l-upload" data-action="upload#pick">
+                <%= ui_icon(:launch, size: 18) %>
+                <span data-upload-target="name"><%= c.(:upload_banner) %></span>
+              </button>
+              <%= file_field_tag "banner", accept: "image/png,image/jpeg,image/webp,image/gif",
+                    data: { upload_target: "input", action: "upload#changed" }, hidden: true %>
+              <p style="color:var(--ink-2); font-size:12px; margin-top:6px; line-height:1.45;"><%= c.(:upload_banner_hint) %></p>
+            </div>
+          <% else %>
+            <% if @campaign.banner.attached? %>
+              <%= image_tag @campaign.banner.variant(resize_to_limit: [560, 320]),
+                    style: "width:100%; border-radius:12px; display:block;" %>
+            <% else %>
+              <div style="aspect-ratio:16/9; border-radius:12px; background:var(--surface-2); display:grid; place-items:center; color:var(--ink-2); font-size:13px;">
+                <%= c.(:no_banner) %>
+              </div>
+            <% end %>
+            <%# The banner library, AI generation and QR compositing all live on the
+                campaign page, where the real QR exists to composite. %>
+            <%= link_to c.(:manage_banner), merchant_campaign_path(@campaign),
+                  class: "l-btn l-btn-soft", style: "margin-top:12px; width:100%; justify-content:center; font-size:13.5px;" %>
+          <% end %>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_schedule) %></div>
+            <div class="s"><%= c.(:sec_schedule_sub) %></div>
+          </div>
+          <label class="l-label"><%= c.(:starts) %></label>
+          <%= f.datetime_local_field :starts_at, value: f.object.starts_at&.strftime("%Y-%m-%dT%H:%M"), class: "l-field" %>
+          <label class="l-label" style="margin-top:12px;"><%= c.(:ends) %></label>
+          <%= f.datetime_local_field :ends_at, value: f.object.ends_at&.strftime("%Y-%m-%dT%H:%M"), class: "l-field" %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:8px; line-height:1.45;"><%= c.(:schedule_hint) %></p>
+        </div>
+
+        <%# Read-only on purpose: the app decides the channels, and a toggle that
+            changed nothing would be a lie. %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_channels) %></div>
+            <div class="s"><%= c.(:sec_channels_sub) %></div>
+          </div>
+          <div class="m-channel on">
+            <div class="ic"><%= ui_icon(:bell, size: 16) %></div>
+            <div class="bd"><div class="tt"><%= c.(:ch_inapp) %></div><div class="ds"><%= c.(:ch_inapp_sub) %></div></div>
+            <div class="st"><%= c.(:ch_on) %></div>
+          </div>
+          <div class="m-channel <%= 'on' if PushSender.configured? %>">
+            <div class="ic"><%= ui_icon(:phone, size: 16) %></div>
+            <div class="bd"><div class="tt"><%= c.(:ch_push) %></div><div class="ds"><%= c.(:ch_push_sub) %></div></div>
+            <div class="st"><%= PushSender.configured? ? c.(:ch_on) : c.(:ch_off) %></div>
+          </div>
+          <div class="m-channel">
+            <div class="ic"><%= ui_icon(:mail, size: 16) %></div>
+            <div class="bd"><div class="tt"><%= c.(:ch_email) %></div><div class="ds"><%= c.(:ch_email_sub) %></div></div>
+            <div class="st"><%= c.(:ch_off) %></div>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= c.(:sec_estimate) %></div>
+            <div class="s"><%= c.(:sec_estimate_sub) %></div>
+          </div>
+          <div class="m-estimate">
+            <div class="ic"><%= ui_icon(:users, size: 19) %></div>
+            <div style="flex:1; min-width:0;">
+              <div class="v" data-audience-estimate-target="value"><%= number_with_delimiter(@audience_counts[@campaign.audience].to_i) %></div>
+              <div class="d"><%= c.(:estimate_detail) %></div>
+            </div>
+          </div>
+          <%= tag.div "", data: { audience_estimate_target: "data", counts: @audience_counts.to_json }, hidden: true %>
+        </div>
+
+        <div class="m-previewlabel" style="margin-top:18px;"><%= c.(:preview_label) %></div>
+        <div class="m-phone">
+          <div class="scr">
+            <div class="art">
+              <% if !new && @campaign.banner.attached? %>
+                <%= image_tag @campaign.banner.variant(resize_to_limit: [560, 320]) %>
+              <% else %>🎁<% end %>
+            </div>
+            <div class="bd">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:9px;">
+                <div style="width:22px; height:22px; border-radius:7px; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; font-size:10px; font-weight:700;"><%= current_workspace.logo_initials %></div>
+                <span style="font-size:12px; color:var(--ink-2);"><%= current_workspace.name %></span>
+              </div>
+              <div class="tt" data-campaign-preview-target="pvTitle"><%= @campaign.content_value("title").presence || c.(:pv_title) %></div>
+              <div class="ds" data-campaign-preview-target="pvBody"><%= @campaign.content_value("body").presence || c.(:pv_body) %></div>
+              <div data-campaign-preview-target="pvReward" style="margin-top:10px;"></div>
+              <div class="cta"><%= c.(:claim_btn) %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Created idle on purpose — the merchant starts it from the campaign page. %>
+    <% if new %><%= f.hidden_field :status, value: "draft" %><% end %>
+
+    <div class="m-savebar">
+      <%= f.submit(new ? c.(:create_submit) : c.(:save), class: "l-btn l-btn-primary") %>
+      <span style="font-size:12.5px; color:var(--ink-2);"><%= new ? c.(:save_hint_new) : c.(:save_hint_edit) %></span>
+    </div>
   <% end %>
-
-  <%# ---- Live customer preview ---- %>
-  <div style="position:sticky; top:90px;">
-    <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.campaigns.preview_label") %></div>
-    <div class="l-tile" style="border-radius:20px;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-        <div style="width:34px; height:34px; border-radius:10px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:700; font-family:var(--font-display);"><%= current_workspace.logo_initials %></div>
-        <strong style="font-size:14px;"><%= current_workspace.name %></strong>
-      </div>
-      <div style="border-radius:16px; overflow:hidden; border:1px solid var(--line);">
-        <div style="height:96px; background:linear-gradient(135deg, var(--primary), var(--primary-2)); display:grid; place-items:center; color:#fff; font-size:36px;">🎁</div>
-        <div style="padding:14px;">
-          <div data-campaign-preview-target="pvTitle" style="font-weight:700;"><%= @campaign.content_value("title").presence || t("merchant.campaigns.pv_title") %></div>
-          <div data-campaign-preview-target="pvBody" style="font-size:13px; color:var(--ink-2); margin-top:4px;"><%= @campaign.content_value("body").presence || t("merchant.campaigns.pv_body") %></div>
-          <div data-campaign-preview-target="pvReward" style="margin-top:10px;"></div>
-          <button style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:12px; background:var(--primary); color:#fff; font-weight:600;"><%= t("merchant.campaigns.claim_btn") %></button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

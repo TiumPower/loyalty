@@ -1,6 +1,8 @@
 <% content_for :title, t("merchant.broadcasts.sent_title") %>
 <% content_for :title_en, "BROADCASTS" %>
 
+<%= render "merchant/shared/messages_tabs", current: :broadcasts %>
+
 <style>
   .bc-head{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:18px;}
   .bc-head .sub{color:var(--ink-2); font-size:13.5px; margin-top:2px;}
@@ -42,42 +44,63 @@
     <%= link_to t("merchant.broadcasts.compose"), new_merchant_broadcast_path, class: "l-btn l-btn-primary" %>
   </div>
 <% else %>
-  <div class="bc-list">
-    <% @broadcasts.each do |b| %>
-      <div class="bc-card">
-        <div class="bc-ava"><%= MemberSegments.icon(b.segment_key) %></div>
-        <div class="bc-main">
-          <div class="bc-title"><%= b.title %></div>
-          <% if b.body.present? %><div class="bc-body"><%= b.body %></div><% end %>
-          <div class="bc-meta">
-            <span><%= b.audience_display %></span>
-            <span class="dot"></span>
-            <span>
-              <% if b.scheduled? %>
-                🕑 <%= t("merchant.broadcasts.scheduled_chip", time: l(b.scheduled_at, format: :short)) %>
-              <% else %>
-                <%= l(b.created_at, format: :short) %>
-              <% end %>
-            </span>
-          </div>
-        </div>
-        <div class="bc-side" style="display:flex; align-items:center; gap:8px;">
-          <% if b.scheduled? %>
-            <span class="bc-badge sched">🕑 <%= t("merchant.broadcasts.scheduled_word") %></span>
-            <%# Scheduling with no way to call it back left a manager who changed
-                their mind watching it go out. %>
-            <% if current_membership&.can_manage? %>
-              <%= button_to t("merchant.broadcasts.cancel"), merchant_broadcast_path(b), method: :delete,
-                    class: "l-btn l-btn-ghost", style: "padding:5px 10px; font-size:12px;",
-                    form: { style: "display:inline;",
-                            data: { turbo_confirm: t("merchant.broadcasts.cancel_confirm",
-                                                     time: l(b.scheduled_at, format: :short)) } } %>
-            <% end %>
-          <% else %>
-            <span class="bc-badge sent">👥 <%= t("merchant.broadcasts.count", n: b.sent_count) %></span>
+  <div class="l-panel" style="padding:0;">
+    <div style="overflow-x:auto;">
+      <table class="m-table" style="min-width:800px;">
+        <thead>
+          <tr>
+            <th style="padding-left:18px;"><%= t("merchant.broadcasts.col_message") %></th>
+            <th><%= t("merchant.broadcasts.col_audience") %></th>
+            <th><%= t("merchant.broadcasts.col_when") %></th>
+            <th><%= t("merchant.broadcasts.col_status") %></th>
+            <th style="padding-right:18px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @broadcasts.each do |b| %>
+            <tr>
+              <td style="padding-left:18px;">
+                <div style="display:flex; align-items:center; gap:11px;">
+                  <span style="width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center;
+                               background:var(--primary-soft); font-size:17px;"><%= MemberSegments.icon(b.segment_key) %></span>
+                  <div style="min-width:0;">
+                    <div style="font-weight:600;"><%= b.title %></div>
+                    <% if b.body.present? %>
+                      <div style="font-size:12px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:320px;"><%= b.body %></div>
+                    <% end %>
+                  </div>
+                </div>
+              </td>
+              <td style="color:var(--ink-2); font-size:12.5px;"><%= b.audience_display %></td>
+              <td style="color:var(--ink-2); white-space:nowrap; font-size:12.5px;">
+                <%= l(b.scheduled? ? b.scheduled_at : b.created_at, format: :short) %>
+              </td>
+              <td>
+                <% if b.scheduled? %>
+                  <span class="m-badge amber"><%= t("merchant.broadcasts.scheduled_word") %></span>
+                <% else %>
+                  <span class="m-badge up"><%= t("merchant.broadcasts.count", n: b.sent_count) %></span>
+                <% end %>
+              </td>
+              <td style="padding-right:18px; white-space:nowrap;">
+                <%# Scheduling with no way to call it back left a manager who
+                    changed their mind watching it go out. %>
+                <% if b.scheduled? && current_membership&.can_manage? %>
+                  <%= button_to t("merchant.broadcasts.cancel"), merchant_broadcast_path(b), method: :delete,
+                        class: "l-btn l-btn-ghost", style: "padding:5px 12px; font-size:12.5px; color:var(--warn);",
+                        form: { style: "display:inline; margin:0;",
+                                data: { turbo_confirm: t("merchant.broadcasts.cancel_confirm",
+                                                         time: l(b.scheduled_at, format: :short)) } } %>
+                <% end %>
+              </td>
+            </tr>
           <% end %>
-        </div>
-      </div>
-    <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <p style="font-size:12.5px; color:var(--ink-2); line-height:1.55; margin-top:14px;">
+    <%= t("merchant.broadcasts.delivery_note") %>
+  </p>
 <% end %>

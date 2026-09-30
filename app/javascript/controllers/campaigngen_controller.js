@@ -18,8 +18,8 @@ export default class extends Controller {
       const token = document.querySelector('meta[name="csrf-token"]')?.content
       const params = new URLSearchParams()
       if (this.hasNameTarget && this.nameTarget.value.trim()) params.set("name", this.nameTarget.value.trim())
-      if (this.hasTypeTarget) params.set("campaign_type", this.typeTarget.value)
-      if (this.hasAudienceTarget) params.set("audience", this.audienceTarget.value)
+      if (this.hasTypeTarget) params.set("campaign_type", this.pick(this.typeTargets))
+      if (this.hasAudienceTarget) params.set("audience", this.pick(this.audienceTargets))
       if (this.hasRewardTarget && this.rewardTarget.value) params.set("reward_id", this.rewardTarget.value)
 
       const resp = await fetch(this.urlValue, {
@@ -41,6 +41,14 @@ export default class extends Controller {
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = original }
     }
+  }
+
+  // The campaign type is a group of radio cards, everything else a single
+  // input: read the CHECKED radio, not whichever one comes first in the DOM.
+  pick(targets) {
+    const radios = targets.filter((t) => t.type === "radio")
+    if (radios.length) return radios.find((r) => r.checked)?.value || ""
+    return targets[0]?.value || ""
   }
 
   fire(el) { el.dispatchEvent(new Event("input", { bubbles: true })) }

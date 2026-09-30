@@ -1273,3 +1273,54 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   color: var(--on-primary); text-align:center; font-weight:700; font-size:13.5px; }
 .m-previewlabel { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   color: var(--ink-2); margin-bottom:8px; }
+
+/* Editor heading: what is being edited, what state it is in, and the way out.
+   Sits between the page title and the two-column editor on every Create/Edit
+   screen of the admin design. */
+.m-edhead { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin:4px 0 16px; }
+.m-edhead .bd { flex:1; min-width:220px; }
+.m-edhead .tt { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:-.02em; }
+.m-edhead .ds { font-size:13px; color: var(--ink-2); margin-top:4px; line-height:1.5; }
+.m-edhead .act { display:flex; align-items:center; gap:8px; flex:none; }
+
+/* Pick-one cards. A select hides what each option means; the design spends the
+   room on an icon and a sentence so the choice can be made without guessing. */
+.m-choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+.m-choice { position:relative; display:block; cursor:pointer; border:1px solid var(--line);
+  border-radius:13px; padding:12px; background:#fff; transition:border-color .12s, background .12s; }
+.m-choice input { position:absolute; opacity:0; pointer-events:none; }
+.m-choice .ic { width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background: var(--surface-2); color: var(--ink-2); margin-bottom:9px; }
+.m-choice .tt { font-weight:700; font-size:13.5px; }
+.m-choice .ds { font-size:12px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
+.m-choice:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--line)); }
+.m-choice:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); }
+.m-choice:has(input:checked) .ic { background: var(--primary); color: var(--on-primary); }
+.m-choice:has(input:disabled) { opacity:.55; cursor:not-allowed; }
+
+/* Where a message physically goes. Read-only on every screen that shows it:
+   the app decides the channels, and claiming otherwise would be a lie. */
+.m-channel { display:flex; align-items:center; gap:12px; padding:11px 0; }
+.m-channel + .m-channel { border-top:1px solid var(--line-soft); }
+.m-channel .ic { width:32px; height:32px; border-radius:10px; flex:none; display:grid; place-items:center;
+  background: var(--surface-2); color: var(--ink-2); }
+.m-channel .bd { flex:1; min-width:0; }
+.m-channel .tt { font-size:13.5px; font-weight:600; }
+.m-channel .ds { font-size:12px; color: var(--ink-2); margin-top:2px; line-height:1.4; }
+.m-channel .st { flex:none; font-size:12px; font-weight:600; color: var(--ink-2); }
+.m-channel.on .ic { background: var(--good-soft); color: var(--good); }
+.m-channel.on .st { color: var(--good); }
+
+/* How many people this is about to reach — the number worth checking twice. */
+.m-estimate { display:flex; align-items:center; gap:12px; }
+.m-estimate .ic { width:38px; height:38px; border-radius:12px; flex:none; display:grid; place-items:center;
+  background: var(--primary-soft); color: var(--primary-ink); }
+.m-estimate .v { font-size:20px; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.m-estimate .d { font-size:12px; color: var(--ink-2); margin-top:2px; }
+
+/* "Send now" hides the schedule fields: they belong to the other choice, and a
+   date left behind in a hidden field is how a broadcast goes out at the wrong
+   time. The server ignores the value unless "later" is picked. */
+.m-when .m-when-fields { display:none; }
+.m-when:has(input[value="later"]:checked) .m-when-fields { display:block; }

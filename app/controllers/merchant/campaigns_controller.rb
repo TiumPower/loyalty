@@ -15,6 +15,7 @@ module Merchant
       @campaign = current_workspace.campaigns.new(campaign_type: "promo_voucher", audience: "all",
                                                   status: "draft", starts_at: Time.current)
       @rewards = reward_options
+      @audience_counts = audience_counts
     end
 
     def create
@@ -37,6 +38,7 @@ module Merchant
         redirect_to merchant_campaign_path(@campaign), notice: notice
       else
         @rewards = reward_options
+        @audience_counts = audience_counts
         render :new, status: :unprocessable_entity
       end
     end
@@ -55,6 +57,7 @@ module Merchant
 
     def edit
       @rewards = reward_options
+      @audience_counts = audience_counts
     end
 
     def update
@@ -62,6 +65,7 @@ module Merchant
         redirect_to merchant_campaign_path(@campaign), notice: "Đã cập nhật chiến dịch."
       else
         @rewards = reward_options
+        @audience_counts = audience_counts
         render :edit, status: :unprocessable_entity
       end
     end
@@ -210,6 +214,12 @@ module Merchant
 
     def set_campaign
       @campaign = current_workspace.campaigns.find(params[:id])
+    end
+
+    # How many customers each audience currently holds, so the editor can show
+    # what a campaign is about to reach before it is saved.
+    def audience_counts
+      Campaign::AUDIENCES.index_with { |key| MemberSegments.resolve(key).count }
     end
 
     def campaign_params

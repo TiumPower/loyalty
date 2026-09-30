@@ -12,25 +12,51 @@
     <p style="color:var(--ink-2);"><%= t("merchant.campaigns.empty_sub") %></p>
   </div>
 <% else %>
-  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;">
-    <% @campaigns.each do |c| %>
-      <%= link_to merchant_campaign_path(c), class: "l-panel", style: "text-decoration:none; color:var(--ink);" do %>
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span class="l-chip"><%= c.type_label %></span>
-          <span class="l-chip <%= 'l-chip-brand' if c.status == 'running' %>"><%= c.status_label %></span>
-        </div>
-        <div class="l-display" style="font-size:18px; margin-top:10px;"><%= c.name %></div>
-        <div style="font-size:13px; color:var(--ink-2); margin-top:4px;">
-          <%= c.audience_label %><%= " · #{c.reward.title}" if c.reward %>
-        </div>
-        <% if (pc = c.promo_codes.first) %>
-          <div style="display:flex; gap:8px; margin-top:12px;">
-            <span class="l-chip"><%= t("merchant.campaigns.scans", n: pc.scan_count) %></span>
-            <span class="l-chip"><%= t("merchant.campaigns.claims", n: pc.claims_count) %></span>
-            <span class="l-chip"><%= t("merchant.campaigns.uses", n: pc.used_count) %></span>
-          </div>
-        <% end %>
-      <% end %>
-    <% end %>
+  <div class="l-panel" style="padding:0;">
+    <div style="overflow-x:auto;">
+      <table class="m-table" style="min-width:880px;">
+        <thead>
+          <tr>
+            <th style="padding-left:18px;"><%= t("merchant.campaigns.col_campaign") %></th>
+            <th><%= t("merchant.campaigns.col_status") %></th>
+            <th><%= t("merchant.campaigns.col_type") %></th>
+            <th><%= t("merchant.campaigns.col_audience") %></th>
+            <th style="padding-right:18px;"><%= t("merchant.campaigns.col_performance") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @campaigns.each do |c| %>
+            <% pc = c.promo_codes.first %>
+            <tr>
+              <td style="padding-left:18px;">
+                <%= link_to merchant_campaign_path(c), style: "font-weight:600; color:var(--primary-ink); text-decoration:none;" do %>
+                  <%= c.name %>
+                <% end %>
+                <% if c.reward %>
+                  <div style="font-size:12px; color:var(--ink-2);"><%= c.reward.title %></div>
+                <% end %>
+              </td>
+              <td>
+                <span class="m-badge <%= 'up' if c.status == 'running' %>"><%= c.status_label %></span>
+              </td>
+              <td style="color:var(--ink-2); font-size:12.5px;"><%= c.type_label %></td>
+              <td style="color:var(--ink-2); font-size:12.5px;"><%= c.audience_label %></td>
+              <td style="padding-right:18px; font-size:12.5px;">
+                <% if pc %>
+                  <%# Scans, claims and uses are three different things: a code
+                      scanned but never claimed is a different problem from one
+                      claimed but never used. %>
+                  <span class="m-num"><%= pc.scan_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_scans") %></span>
+                  · <span class="m-num"><%= pc.claims_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_claims") %></span>
+                  · <span class="m-num" style="color:var(--good);"><%= pc.used_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_uses") %></span>
+                <% else %>
+                  <span style="color:var(--ink-2);">—</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
 <% end %>

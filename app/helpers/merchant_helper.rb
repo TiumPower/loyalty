@@ -32,10 +32,12 @@ module MerchantHelper
         [:segments,  t("merchant.nav.segments"),  merchant_segments_path,  manage],
         [:feedback,  t("merchant.nav.feedback"),  merchant_feedback_path,  true]
       ] },
+      # The design splits this section in two: campaigns, and everything that
+      # sends a message (broadcasts + automations) behind one tab, which then
+      # has its own pair of tabs.
       { key: :campaigns, icon: :megaphone, label: t("merchant.nav.sec_campaigns"), items: [
-        [:campaigns,   t("merchant.nav.campaigns"),   merchant_campaigns_path,  manage],
-        [:automations, t("merchant.nav.automations"), merchant_automations_path, manage],
-        [:broadcasts,  t("merchant.nav.broadcasts"),  merchant_broadcasts_path,  true]
+        [:campaigns, t("merchant.nav.campaigns"), merchant_campaigns_path,  manage],
+        [:messages,  t("merchant.nav.messages"),  merchant_broadcasts_path, true]
       ] },
       { key: :settings, icon: :gear, label: t("merchant.nav.sec_settings"), items: [
         [:appearance, t("merchant.nav.appearance"), merchant_appearance_path,   manage],
@@ -82,4 +84,15 @@ module MerchantHelper
     label += t("merchant.campaigns.reward_opt_sold_out") unless reward.in_stock?
     label
   end
+
+  # Icon per campaign type, for the pick-one cards in the campaign editor. Keys
+  # are Campaign::TYPES; a type without its own glyph falls back to the gift.
+  CAMPAIGN_TYPE_ICONS = { "promo_voucher" => :qrcode, "double_points" => :sparkles,
+                          "happy_hour" => :clock, "event" => :star,
+                          "flash_mission" => :flame }.freeze
+  def campaign_type_icon(key) = CAMPAIGN_TYPE_ICONS.fetch(key.to_s, :gift)
+
+  # Icon per automation, same idea.
+  AUTOMATION_ICONS = { "welcome" => :user, "birthday" => :gift, "winback" => :refresh }.freeze
+  def automation_icon(key) = AUTOMATION_ICONS.fetch(key.to_s, :bell)
 end

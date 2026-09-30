@@ -112,6 +112,9 @@ Rails.application.routes.draw do
     # Trả lời một đánh giá của khách (hiển thị công khai + báo cho khách).
     patch "feedback/:id/reply", to: "feedback#reply", as: :reply_feedback
     resource :automations, only: [:show, :update], controller: "automations"
+    # One automation at a time — the set is fixed (Merchant::AutomationsController::KINDS),
+    # so the key is the id.
+    get "automations/:kind/edit", to: "automations#edit", as: :edit_automation
     # :destroy cancels a SCHEDULED send that has not gone out yet — see the
     # controller. A sent broadcast is history and stays.
     resources :broadcasts, only: [:index, :new, :create, :destroy]

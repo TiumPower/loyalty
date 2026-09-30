@@ -1,0 +1,165 @@
+<% content_for :title, t("merchant.nav.automations") %>
+<% content_for :title_en, "EDIT AUTOMATION" %>
+<% a = ->(k, **o) { t("merchant.automations.#{k}", **o) } %>
+<% kind = @kind %>
+<% cfg  = @cfg[kind] || {} %>
+<% reward_opts = @rewards.map { |r| [reward_option_label(r), r.id] } %>
+
+<%= render "merchant/shared/messages_tabs", current: :automations %>
+
+<div class="m-edhead">
+  <div class="bd">
+    <div class="tt">
+      <%= a.("#{kind}_title") %>
+      <span class="m-badge <%= 'up' if cfg["enabled"] %>"><%= cfg["enabled"] ? a.(:on) : a.(:off) %></span>
+    </div>
+    <div class="ds"><%= a.("#{kind}_desc") %></div>
+  </div>
+  <div class="act">
+    <%= link_to a.(:ed_cancel), merchant_automations_path, class: "l-btn l-btn-ghost",
+          style: "padding:9px 16px; font-size:13.5px;" %>
+  </div>
+</div>
+
+<%= form_with url: merchant_automations_path, method: :patch do %>
+  <%= hidden_field_tag :kind, kind %>
+
+  <div class="m-editor">
+    <div>
+      <%# Which automation this is — fixed, not a choice: the three are wired to
+          three different places in the app, not to a rule builder. %>
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= a.(:sec_what) %></div>
+          <div class="s"><%= a.(:sec_what_sub) %></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:12px; flex:none; display:grid; place-items:center; background:var(--primary-soft); color:var(--primary-ink);">
+            <%= ui_icon(automation_icon(kind), size: 19) %>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:14.5px;"><%= a.("#{kind}_title") %></div>
+            <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= a.("trig_#{kind}_long") %></div>
+          </div>
+        </div>
+        <div class="l-toggle-row" style="margin-top:8px;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13.5px; font-weight:600;"><%= a.(:enabled_label) %></div>
+            <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= a.(:enabled_hint) %></div>
+          </div>
+          <%= hidden_field_tag "automations[#{kind}][enabled]", "0" %>
+          <label class="l-switch">
+            <%= check_box_tag "automations[#{kind}][enabled]", "1", cfg["enabled"] %><span class="knob"></span>
+          </label>
+        </div>
+      </div>
+
+      <% if kind == "winback" %>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= a.(:sec_trigger) %></div>
+            <div class="s"><%= a.(:sec_trigger_sub) %></div>
+          </div>
+          <label class="l-label"><%= a.(:winback_days) %></label>
+          <%= number_field_tag "automations[winback][days]", (cfg["days"].presence || 30),
+                class: "l-field", min: 1, style: "max-width:180px;" %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= a.(:winback_days_hint) %></p>
+        </div>
+      <% end %>
+
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= a.(:sec_gift) %></div>
+          <div class="s"><%= a.(:sec_gift_sub) %></div>
+        </div>
+        <label class="l-label"><%= kind == "winback" ? a.(:gift_optional) : a.(:gift) %></label>
+        <%= select_tag "automations[#{kind}][reward_id]", options_for_select(reward_opts, cfg["reward_id"].to_i),
+              include_blank: (kind == "winback" ? a.(:no_gift) : a.(:pick_reward)), class: "l-field" %>
+        <div class="l-note" style="margin-top:12px;">
+          <%= ui_icon(:shield, size: 16) %>
+          <span><strong><%= a.(:stock_note) %></strong> <%= a.(:stock_note_sub) %></span>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= a.(:sec_message) %></div>
+          <div class="s"><%= a.(:sec_message_sub) %></div>
+        </div>
+        <% if kind == "winback" %>
+          <label class="l-label"><%= a.(:message) %></label>
+          <%= text_field_tag "automations[winback][message]", cfg["message"], class: "l-field",
+                placeholder: a.(:message_ph) %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= a.(:message_hint) %></p>
+        <% else %>
+          <div class="l-note">
+            <%= ui_icon(:bell, size: 16) %><span><%= a.(:fixed_message) %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Guards that already exist in the code, written down where the merchant
+          can see them — each one is a way this could otherwise go wrong. %>
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= a.(:sec_guards) %></div>
+          <div class="s"><%= a.(:sec_guards_sub) %></div>
+        </div>
+        <% a.("guards_#{kind}").each do |line| %>
+          <div style="display:flex; gap:9px; align-items:flex-start; padding:7px 0; font-size:13px; color:var(--ink-2);">
+            <span style="color:var(--good); flex:none; margin-top:1px;"><%= ui_icon(:check, size: 15) %></span>
+            <span><%= line %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= a.(:sec_when) %></div>
+          <div class="s"><%= a.(:sec_when_sub) %></div>
+        </div>
+        <div style="font-size:13.5px; line-height:1.6;"><%= a.("runs_#{kind}") %></div>
+      </div>
+
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= t("merchant.campaigns.sec_channels") %></div>
+          <div class="s"><%= a.(:channels_sub) %></div>
+        </div>
+        <div class="m-channel on">
+          <div class="ic"><%= ui_icon(:bell, size: 16) %></div>
+          <div class="bd"><div class="tt"><%= t("merchant.campaigns.ch_inapp") %></div><div class="ds"><%= t("merchant.campaigns.ch_inapp_sub") %></div></div>
+          <div class="st"><%= t("merchant.campaigns.ch_on") %></div>
+        </div>
+        <div class="m-channel <%= 'on' if PushSender.configured? %>">
+          <div class="ic"><%= ui_icon(:phone, size: 16) %></div>
+          <div class="bd"><div class="tt"><%= t("merchant.campaigns.ch_push") %></div><div class="ds"><%= t("merchant.campaigns.ch_push_sub") %></div></div>
+          <div class="st"><%= PushSender.configured? ? t("merchant.campaigns.ch_on") : t("merchant.campaigns.ch_off") %></div>
+        </div>
+      </div>
+
+      <div class="m-previewlabel" style="margin-top:18px;"><%= a.(:preview_label) %></div>
+      <div class="m-phone">
+        <div class="scr">
+          <div class="bd">
+            <div style="display:flex; gap:10px;">
+              <div style="width:32px; height:32px; border-radius:10px; background:var(--primary); color:var(--on-primary); display:grid; place-items:center; font-size:12px; font-weight:700; flex:none;"><%= current_workspace.logo_initials %></div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:11.5px; color:var(--ink-2);"><%= current_workspace.name %></div>
+                <div class="tt" style="margin-top:3px;"><%= a.("pv_#{kind}_title") %></div>
+                <div class="ds"><%= @preview_body %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="m-savebar">
+    <%= submit_tag a.(:save), class: "l-btn l-btn-primary" %>
+    <span style="font-size:12.5px; color:var(--ink-2);"><%= a.(:save_hint) %></span>
+  </div>
+<% end %>
