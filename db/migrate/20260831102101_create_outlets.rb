@@ -12,6 +12,6 @@ class CreateOutlets < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :outlets, [:workspace_id, :code], unique: true, where: "code IS NOT NULL"
+    add_index :outlets, [ :workspace_id, :code ], unique: true, where: "code IS NOT NULL"
   end
 end

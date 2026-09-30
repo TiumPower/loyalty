@@ -1,6 +1,6 @@
 module Admin
   class WorkspacesController < BaseController
-    before_action :set_workspace, only: [:show, :update, :approve, :suspend, :reactivate, :destroy]
+    before_action :set_workspace, only: [ :show, :update, :approve, :suspend, :reactivate, :destroy ]
 
     PRESET_BY_INDUSTRY = { "fnb" => "cozy_cafe", "service" => "modern_beauty", "retail" => "retail_bold" }.freeze
 

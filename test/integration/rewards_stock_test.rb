@@ -47,7 +47,7 @@ class RewardsStockTest < ActionDispatch::IntegrationTest
   # Ruby range, so the window was shut at every hour of the day — including 22h
   # and 23h — while the form cheerfully summarised it as "22h–02h".
   test "a window that runs past midnight is open on both sides of midnight" do
-    r = build_reward(schedule: { "windows" => [{ "days" => [], "from_hour" => 22, "to_hour" => 2 }] })
+    r = build_reward(schedule: { "windows" => [ { "days" => [], "from_hour" => 22, "to_hour" => 2 } ] })
     ActsAsTenant.with_tenant(@ws) do
       { 22 => true, 23 => true, 0 => true, 1 => true, 2 => true,
         3 => false, 12 => false, 21 => false }.each do |hour, expected|
@@ -55,7 +55,7 @@ class RewardsStockTest < ActionDispatch::IntegrationTest
         assert_equal expected, r.within_window?(at), "#{hour}h should be #{expected}"
       end
       # A normal same-day window still behaves.
-      day = build_reward(schedule: { "windows" => [{ "days" => [], "from_hour" => 9, "to_hour" => 17 }] })
+      day = build_reward(schedule: { "windows" => [ { "days" => [], "from_hour" => 9, "to_hour" => 17 } ] })
       assert day.within_window?(Time.zone.now.change(hour: 12))
       refute day.within_window?(Time.zone.now.change(hour: 20))
     end
@@ -125,7 +125,7 @@ class RewardsStockTest < ActionDispatch::IntegrationTest
       3.times { low.claim_stock! }
       build_reward(title: "Còn nhiều", stock: 100).save!
       build_reward(title: "Ngoài giờ",
-                   schedule: { "windows" => [{ "days" => [], "from_hour" => 3, "to_hour" => 4 }] }).save!
+                   schedule: { "windows" => [ { "days" => [], "from_hour" => 3, "to_hour" => 4 } ] }).save!
     end
 
     get merchant_rewards_path

@@ -62,7 +62,7 @@ class StampCardHoldTest < ActiveSupport::TestCase
     assert_equal 1, Gamification.settle_held_cards(@reward.reload)
 
     settled, still_held = ActsAsTenant.with_tenant(@ws) do
-      [@card.membership_for(@other), @card.membership_for(third)]
+      [ @card.membership_for(@other), @card.membership_for(third) ]
     end
     assert_equal 0, settled.count
     assert_equal 1, settled.completed_count

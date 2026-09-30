@@ -91,7 +91,7 @@ module Merchant
       pts_in   = (params.dig(:mission, :proof_config, :platforms) || {}).to_unsafe_h
       platforms = Mission::PROOF_PLATFORMS.filter_map do |plat|
         next unless enabled[plat].present?
-        [plat, pts_in[plat].to_i]
+        [ plat, pts_in[plat].to_i ]
       end.to_h
       platforms.present? ? { "platforms" => platforms } : {}
     end

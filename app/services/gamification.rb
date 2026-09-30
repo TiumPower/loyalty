@@ -48,7 +48,7 @@ module Gamification
       mp  = mission.mission_progresses.find_by(member_id: member.id, period_key: key)
       next if mp.nil? || mp.completed? # already paid out — leave it
       step = mission.mission_type == "spend" ? purchase.amount.to_i : 1
-      mp.update!(progress: [mp.progress.to_i - step, 0].max)
+      mp.update!(progress: [ mp.progress.to_i - step, 0 ].max)
     end
   end
 
@@ -99,7 +99,7 @@ module Gamification
                                                        reward: card.reward&.title)
     Notification.create!(workspace: ws, member: member, kind: "system",
                          title: title, body: body, icon: "⏳", deep_link: "/stamps")
-    PushJob.perform_later(ws.id, [member.id], title, body, "/stamps") if PushSender.configured?
+    PushJob.perform_later(ws.id, [ member.id ], title, body, "/stamps") if PushSender.configured?
   rescue => e
     Rails.logger.error("[Gamification] notify_stamp_held: #{e.class} #{e.message}")
   end
@@ -113,7 +113,7 @@ module Gamification
     Notification.create!(workspace: ws, member: member, kind: "reward",
                          title: title, body: body, icon: "🎁",
                          deep_link: "/vouchers/#{voucher.id}")
-    PushJob.perform_later(ws.id, [member.id], title, body, "/vouchers/#{voucher.id}") if PushSender.configured?
+    PushJob.perform_later(ws.id, [ member.id ], title, body, "/vouchers/#{voucher.id}") if PushSender.configured?
   rescue => e
     Rails.logger.error("[Gamification] notify_stamp_reward: #{e.class} #{e.message}")
   end
@@ -167,7 +167,7 @@ module Gamification
     Notification.create!(workspace: ws, member: member, kind: "reward",
                          title: title, body: body, icon: badge.display_icon,
                          deep_link: deep_link)
-    PushJob.perform_later(ws.id, [member.id], title, body, deep_link) if PushSender.configured?
+    PushJob.perform_later(ws.id, [ member.id ], title, body, deep_link) if PushSender.configured?
   rescue => e
     Rails.logger.error("[Gamification] notify_badge_earned: #{e.class} #{e.message}")
   end

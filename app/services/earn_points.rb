@@ -75,4 +75,4 @@ class EarnPoints
                  multiplier: (@program.tiers_enabled ? (tier&.multiplier || 1) : 1).to_f,
                  tier_before: tier, tier_after: tier, leveled_up: false)
     end
-  end
+end

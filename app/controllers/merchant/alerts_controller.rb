@@ -5,7 +5,7 @@ module Merchant
     PER_PAGE = 50
 
     def index
-      @page   = [params[:page].to_i, 1].max
+      @page   = [ params[:page].to_i, 1 ].max
       scope   = MerchantAlert.recent
       @total  = scope.count
       @alerts = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a

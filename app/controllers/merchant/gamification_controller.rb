@@ -1,6 +1,6 @@
 module Merchant
   class GamificationController < BaseController
-    before_action :require_manager!, only: [:update_wheel]
+    before_action :require_manager!, only: [ :update_wheel ]
 
     def show
       return render_locked_feature(:gamification) if feature_locked?(:gamification)
@@ -28,7 +28,7 @@ module Merchant
         next if label.blank?
         value = r[:value].to_i
         rid = r[:reward_id].to_i
-        seg = { "label" => label, "weight" => [r[:weight].to_i, 1].max,
+        seg = { "label" => label, "weight" => [ r[:weight].to_i, 1 ].max,
                 "color" => r[:color].presence || "#E08A3C" }
         if rid.positive? && valid_reward_ids.include?(rid)
           # Prize is a reward voucher (points ignored).

@@ -10,6 +10,6 @@ class CreateReferrals < ActiveRecord::Migration[7.2]
       t.datetime :completed_at
       t.timestamps
     end
-    add_index :referrals, [:workspace_id, :referrer_id]
+    add_index :referrals, [ :workspace_id, :referrer_id ]
   end
 end

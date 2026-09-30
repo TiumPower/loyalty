@@ -41,8 +41,8 @@ class GamificationRewardGuideTest < ActionDispatch::IntegrationTest
     ok = create_reward("Còn suất", stock: 2, redeemed: 0)
     get "/merchant/gamification"
     assert_response :success
-    assert_match(/value="#{ok.id}"/, response.body)
-    assert_no_match(/value="#{sold_out.id}"/, response.body)
+    assert_select "select[name='stamp_card[reward_id]'] option[value='#{ok.id}']"
+    assert_select "select[name$='[reward_id]'] option[value='#{sold_out.id}']", 0
   end
 
   # ...but a card already pointing at it keeps it, flagged, so saving that card

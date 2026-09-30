@@ -19,6 +19,6 @@ class CreateCampaigns < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :campaigns, [:workspace_id, :status]
+    add_index :campaigns, [ :workspace_id, :status ]
   end
 end

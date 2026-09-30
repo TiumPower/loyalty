@@ -2,8 +2,8 @@ module Merchant
   class RewardsController < BaseController
     LOW_STOCK = 5 # remaining units at or below this are flagged on the card
 
-    before_action :require_manager!, except: [:index]
-    before_action :set_reward, only: [:edit, :update, :destroy, :toggle]
+    before_action :require_manager!, except: [ :index ]
+    before_action :set_reward, only: [ :edit, :update, :destroy, :toggle ]
 
     def index
       scope = current_workspace.rewards.listed

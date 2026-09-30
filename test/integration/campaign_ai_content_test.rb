@@ -120,7 +120,7 @@ class CampaignAiContentTest < ActionDispatch::IntegrationTest
                     status: "draft", reward_id: reward.id },
         generate_qr: "1", generate_banner: "1", banner_include_qr: "1"
       }
-      assert_equal [last_id.call, true], enqueued_jobs.last["arguments"]
+      assert_equal [ last_id.call, true ], enqueued_jobs.last["arguments"]
 
       # Not asked for → plain banner.
       post "/merchant/campaigns", params: {
@@ -128,14 +128,14 @@ class CampaignAiContentTest < ActionDispatch::IntegrationTest
                     status: "draft", reward_id: reward.id },
         generate_qr: "1", generate_banner: "1"
       }
-      assert_equal [last_id.call, false], enqueued_jobs.last["arguments"]
+      assert_equal [ last_id.call, false ], enqueued_jobs.last["arguments"]
 
       # Asked for, but no claim QR was created → nothing to bake in.
       post "/merchant/campaigns", params: {
         campaign: { name: "Không mã", campaign_type: "event", audience: "all", status: "draft" },
         generate_banner: "1", banner_include_qr: "1"
       }
-      assert_equal [last_id.call, false], enqueued_jobs.last["arguments"]
+      assert_equal [ last_id.call, false ], enqueued_jobs.last["arguments"]
     end
   end
 
@@ -148,7 +148,7 @@ class CampaignAiContentTest < ActionDispatch::IntegrationTest
     campaign, promo = ActsAsTenant.with_tenant(@ws) do
       c = Campaign.create!(workspace: @ws, name: "Cuối tuần", campaign_type: "promo_voucher",
                            audience: "all", status: "running", reward: reward)
-      [c, PromoCode.create!(workspace: @ws, campaign: c, reward: reward, active: true)]
+      [ c, PromoCode.create!(workspace: @ws, campaign: c, reward: reward, active: true) ]
     end
     assert promo.persisted?
 
@@ -158,11 +158,11 @@ class CampaignAiContentTest < ActionDispatch::IntegrationTest
       assert_match I18n.t("merchant.campaigns.banner_include_qr"), response.body
 
       patch "/merchant/campaigns/#{campaign.id}/generate_banner", params: { include_qr: "1" }
-      assert_equal [campaign.id, true], enqueued_jobs.last["arguments"]
+      assert_equal [ campaign.id, true ], enqueued_jobs.last["arguments"]
       assert_equal "generating", campaign.reload.banner_status
 
       patch "/merchant/campaigns/#{campaign.id}/generate_banner"
-      assert_equal [campaign.id, false], enqueued_jobs.last["arguments"]
+      assert_equal [ campaign.id, false ], enqueued_jobs.last["arguments"]
     end
   end
 end

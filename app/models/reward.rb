@@ -171,7 +171,7 @@ class Reward < ApplicationRecord
     if sch["windows"].is_a?(Array)
       sch["windows"]
     elsif sch["days"].present? || sch["from_hour"].present?
-      [{ "days" => sch["days"], "from_hour" => sch["from_hour"], "to_hour" => sch["to_hour"] }]
+      [ { "days" => sch["days"], "from_hour" => sch["from_hour"], "to_hour" => sch["to_hour"] } ]
     else
       []
     end
@@ -245,7 +245,7 @@ class Reward < ApplicationRecord
   public
 
   def remaining
-    stock.nil? ? nil : [stock - redeemed_count, 0].max
+    stock.nil? ? nil : [ stock - redeemed_count, 0 ].max
   end
 
   def value_label

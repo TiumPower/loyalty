@@ -23,6 +23,6 @@ class CreateStampCards < ActiveRecord::Migration[7.2]
       t.datetime :last_stamp_at
       t.timestamps
     end
-    add_index :stamp_card_memberships, [:member_id, :stamp_card_id], unique: true
+    add_index :stamp_card_memberships, [ :member_id, :stamp_card_id ], unique: true
   end
 end

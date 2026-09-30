@@ -14,7 +14,7 @@ module Admin
         counts = Member.group(:workspace_id).count
         @top = Workspace.where(id: counts.keys).to_a
                         .sort_by { |w| -counts[w.id].to_i }.first(6)
-                        .map { |w| [w, counts[w.id].to_i] }
+                        .map { |w| [ w, counts[w.id].to_i ] }
 
         # Simple anomaly flags
         @alerts = []

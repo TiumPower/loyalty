@@ -12,9 +12,9 @@ class CreateMerchantAlerts < ActiveRecord::Migration[7.2]
       t.datetime :read_at
       t.timestamps
     end
-    add_index :merchant_alerts, [:workspace_id, :created_at]
-    add_index :merchant_alerts, [:workspace_id, :read_at]
-    add_index :merchant_alerts, [:workspace_id, :dedup_key], unique: true,
+    add_index :merchant_alerts, [ :workspace_id, :created_at ]
+    add_index :merchant_alerts, [ :workspace_id, :read_at ]
+    add_index :merchant_alerts, [ :workspace_id, :dedup_key ], unique: true,
               where: "dedup_key IS NOT NULL"
   end
 end

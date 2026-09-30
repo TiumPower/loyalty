@@ -212,7 +212,7 @@ class Workspace < ApplicationRecord
     else
       start = Date.current.beginning_of_month
     end
-    [start, start.end_of_month]
+    [ start, start.end_of_month ]
   end
 
   # The FIRST period a converting trial pays for: the remainder of the month in
@@ -220,7 +220,7 @@ class Workspace < ApplicationRecord
   def first_billing_period
     return next_billing_period unless trial? && paid_until.present?
     start = paid_until.to_date + 1.day
-    [start, start.end_of_month]
+    [ start, start.end_of_month ]
   end
 
   # Amount due for a period given a plan price. A converting trial pays a

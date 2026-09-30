@@ -50,10 +50,10 @@ class LandingPageTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "robots keeps the app and console out of search results" do
+  # Pre-launch: everything but Googlebot/Bingbot (which must crawl to see noindex) is blocked.
+  test "robots blocks every other crawler while the product is not public" do
     get "/robots.txt"
     assert_response :success
-    assert_match %r{Disallow: /merchant/}, response.body
-    assert_match %r{Disallow: /admin/}, response.body
+    assert_match %r{User-agent: \*\nDisallow: /\n}, response.body
   end
 end

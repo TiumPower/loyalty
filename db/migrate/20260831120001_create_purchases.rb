@@ -14,6 +14,6 @@ class CreatePurchases < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :purchases, [:workspace_id, :created_at]
+    add_index :purchases, [ :workspace_id, :created_at ]
   end
 end

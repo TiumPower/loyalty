@@ -16,7 +16,7 @@ class CreatePointTransactions < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :point_transactions, [:workspace_id, :member_id, :created_at]
-    add_index :point_transactions, [:member_id, :kind]
+    add_index :point_transactions, [ :workspace_id, :member_id, :created_at ]
+    add_index :point_transactions, [ :member_id, :kind ]
   end
 end

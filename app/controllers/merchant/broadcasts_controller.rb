@@ -1,6 +1,6 @@
 module Merchant
   class BroadcastsController < BaseController
-    before_action :require_manager!, except: [:index]
+    before_action :require_manager!, except: [ :index ]
 
     def index
       @broadcasts = current_workspace.broadcasts.recent.to_a

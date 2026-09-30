@@ -1,6 +1,6 @@
 module Merchant
   class StaffController < BaseController
-    before_action :require_manager!, except: [:index]
+    before_action :require_manager!, except: [ :index ]
 
     def index
       @memberships = current_workspace.memberships.includes(:user, :outlet).to_a

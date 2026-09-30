@@ -24,9 +24,9 @@ namespace :loyalty do
     SHOPS = [
       { sub: "cozycafe", name: "Mộc Cà Phê", industry: "fnb", preset: "cozy_cafe", plan: "growth",
         term: "bạn", tagline: "Mỗi ly một niềm vui", scan_mode: "staff_scans_member", earn_per: 10_000,
-        outlets: [["MAIN", "Mộc Cà Phê — Thảo Điền", "12 Nguyễn Ư Dĩ, Thảo Điền, TP. Thủ Đức"],
-                  ["D1",   "Mộc Cà Phê — Quận 1",    "45 Lý Tự Trọng, Bến Nghé, Quận 1"],
-                  ["GV",   "Mộc Cà Phê — Gò Vấp",    "88 Quang Trung, Phường 10, Gò Vấp"]],
+        outlets: [ [ "MAIN", "Mộc Cà Phê — Thảo Điền", "12 Nguyễn Ư Dĩ, Thảo Điền, TP. Thủ Đức" ],
+                  [ "D1",   "Mộc Cà Phê — Quận 1",    "45 Lý Tự Trọng, Bến Nghé, Quận 1" ],
+                  [ "GV",   "Mộc Cà Phê — Gò Vấp",    "88 Quang Trung, Phường 10, Gò Vấp" ] ],
         rewards: [
           { title: "Cà phê sữa đá miễn phí", kind: "voucher",  icon: "☕", cost_points: 300,  value: 0,     value_unit: "item" },
           { title: "Giảm 30% toàn menu trà", kind: "discount", icon: "🧋", cost_points: 250,  value: 30,    value_unit: "percent" },
@@ -34,16 +34,16 @@ namespace :loyalty do
           { title: "Bánh ngọt tặng kèm",     kind: "gift",     icon: "🍰", cost_points: 500,  value: 0,     value_unit: "item", stock: 50 },
           { title: "Combo 2 ly + bánh",      kind: "voucher",  icon: "🥐", cost_points: 1200, value: 0,     value_unit: "item" }
         ],
-        stamp: ["Mua 9 ly tặng 1", "Tích 1 tem mỗi ly, đủ 9 tem đổi 1 ly miễn phí", "🧋", 9],
-        reviews: [[5, "Cà phê ngon, không gian ấm cúng, nhân viên dễ thương!"],
-                  [5, "Tích điểm đổi quà tiện lắm, tuần nào cũng ghé."],
-                  [4, "Bánh ngọt ổn, chỗ ngồi hơi ít vào giờ cao điểm."],
-                  [2, "Hôm qua đợi hơi lâu, mong shop cải thiện."]] },
+        stamp: [ "Mua 9 ly tặng 1", "Tích 1 tem mỗi ly, đủ 9 tem đổi 1 ly miễn phí", "🧋", 9 ],
+        reviews: [ [ 5, "Cà phê ngon, không gian ấm cúng, nhân viên dễ thương!" ],
+                  [ 5, "Tích điểm đổi quà tiện lắm, tuần nào cũng ghé." ],
+                  [ 4, "Bánh ngọt ổn, chỗ ngồi hơi ít vào giờ cao điểm." ],
+                  [ 2, "Hôm qua đợi hơi lâu, mong shop cải thiện." ] ] },
 
       { sub: "luaspa", name: "Lụa Spa & Beauty", industry: "service", preset: "modern_beauty", plan: "scale",
         term: "quý khách", tagline: "Chạm nhẹ, yêu thương", scan_mode: "staff_scans_member", earn_per: 20_000,
-        outlets: [["MAIN", "Lụa Spa — Quận 1",   "18 Lê Thánh Tôn, Bến Nghé, Quận 1"],
-                  ["PN",   "Lụa Spa — Phú Nhuận", "202 Phan Xích Long, Phú Nhuận"]],
+        outlets: [ [ "MAIN", "Lụa Spa — Quận 1",   "18 Lê Thánh Tôn, Bến Nghé, Quận 1" ],
+                  [ "PN",   "Lụa Spa — Phú Nhuận", "202 Phan Xích Long, Phú Nhuận" ] ],
         rewards: [
           { title: "Buổi massage 30 phút",     kind: "voucher",  icon: "💆", cost_points: 1200, value: 0,      value_unit: "item" },
           { title: "Giảm 20% liệu trình",      kind: "discount", icon: "✨", cost_points: 600,  value: 20,     value_unit: "percent" },
@@ -51,23 +51,23 @@ namespace :loyalty do
           { title: "Quà sinh nhật đặc biệt",   kind: "gift",     icon: "🎂", cost_points: 0,    value: 0,      value_unit: "item", stock: 100 }
         ],
         stamp: nil,
-        reviews: [[5, "Kỹ thuật viên nhẹ nhàng, rất thư giãn."],
-                  [5, "Đặt lịch nhanh, đổi voucher tiện."],
-                  [4, "Giá hơi cao nhưng chất lượng xứng đáng."]] },
+        reviews: [ [ 5, "Kỹ thuật viên nhẹ nhàng, rất thư giãn." ],
+                  [ 5, "Đặt lịch nhanh, đổi voucher tiện." ],
+                  [ 4, "Giá hơi cao nhưng chất lượng xứng đáng." ] ] },
 
       { sub: "phoretail", name: "Phố Retail", industry: "retail", preset: "retail_bold", plan: "starter",
         term: "Fan cứng", tagline: "Phong cách của bạn, đặc quyền của bạn", scan_mode: "both", earn_per: 15_000,
-        outlets: [["MAIN", "Phố Retail — Vincom Đồng Khởi", "72 Lê Thánh Tôn, Bến Nghé, Quận 1"],
-                  ["CRE",  "Phố Retail — Crescent Mall",    "101 Tôn Dật Tiên, Tân Phú, Quận 7"]],
+        outlets: [ [ "MAIN", "Phố Retail — Vincom Đồng Khởi", "72 Lê Thánh Tôn, Bến Nghé, Quận 1" ],
+                  [ "CRE",  "Phố Retail — Crescent Mall",    "101 Tôn Dật Tiên, Tân Phú, Quận 7" ] ],
         rewards: [
           { title: "Voucher 100.000đ mua sắm", kind: "voucher",  icon: "🛍️", cost_points: 900,  value: 100000, value_unit: "vnd" },
           { title: "Giảm 25% một sản phẩm",    kind: "discount", icon: "🏷️", cost_points: 500,  value: 25,     value_unit: "percent" },
           { title: "Túi tote độc quyền",       kind: "gift",     icon: "👜", cost_points: 1500, value: 0,      value_unit: "item", stock: 30 }
         ],
-        stamp: ["Mua 5 lần tặng quà", "Mỗi hoá đơn 1 tem, đủ 5 tem nhận quà", "🛍️", 5],
-        reviews: [[5, "Săn sale mà còn tích điểm, quá hời."],
-                  [3, "Nhân viên đông khách nên hơi chậm."],
-                  [5, "Túi tote đổi bằng điểm xịn hơn mong đợi."]] }
+        stamp: [ "Mua 5 lần tặng quà", "Mỗi hoá đơn 1 tem, đủ 5 tem nhận quà", "🛍️", 5 ],
+        reviews: [ [ 5, "Săn sale mà còn tích điểm, quá hời." ],
+                  [ 3, "Nhân viên đông khách nên hơi chậm." ],
+                  [ 5, "Túi tote đổi bằng điểm xịn hơn mong đợi." ] ] }
     ].freeze
 
     STAFF = [
@@ -79,7 +79,7 @@ namespace :loyalty do
 
     # Points target per demo member → spreads them across every tier, plus a
     # brand-new member (0 điểm) and one with a birthday today.
-    MEMBER_TARGETS = [0, 120, 850, 2_400, 3_300, 6_200, 9_500, 15_000].freeze
+    MEMBER_TARGETS = [ 0, 120, 850, 2_400, 3_300, 6_200, 9_500, 15_000 ].freeze
 
     ActsAsTenant.without_tenant do
       puts "⚠  Xoá toàn bộ workspace hiện có…"
@@ -161,10 +161,10 @@ namespace :loyalty do
                                 goal: 3, reward_points: 50, position: 1)
             ws.missions.create!(title: "Chi tiêu 100.000đ hôm nay", icon: "💳", mission_type: "spend", period: "daily",
                                 goal: 100_000, reward_points: 30, position: 2)
-            [["newbie", "Người mới", "Mua hàng lần đầu", "🌱", "first_purchase", 1],
-             ["regular", "Khách quen", "Mua đủ 10 lần", "☕", "purchases_count", 10],
-             ["collector", "Cao thủ điểm", "Tích luỹ 5.000 điểm", "💎", "points_total", 5000],
-             ["nightowl", "Cú đêm", "Mua sau 22h", "🦉", "night_owl", 1]].each_with_index do |(k, n, d, ic, ct, th), i|
+            [ [ "newbie", "Người mới", "Mua hàng lần đầu", "🌱", "first_purchase", 1 ],
+             [ "regular", "Khách quen", "Mua đủ 10 lần", "☕", "purchases_count", 10 ],
+             [ "collector", "Cao thủ điểm", "Tích luỹ 5.000 điểm", "💎", "points_total", 5000 ],
+             [ "nightowl", "Cú đêm", "Mua sau 22h", "🦉", "night_owl", 1 ] ].each_with_index do |(k, n, d, ic, ct, th), i|
               ws.badges.create!(key: k, name: n, description: d, icon: ic, criteria_type: ct, threshold: th, position: i)
             end
           end
@@ -195,9 +195,9 @@ namespace :loyalty do
             next m if target.zero?
 
             outlet = outlets.sample
-            chunks = [target / 3, target / 3, target - 2 * (target / 3)].reject(&:zero?)
+            chunks = [ target / 3, target / 3, target - 2 * (target / 3) ].reject(&:zero?)
             # Khách cuối cùng để "lâu không quay lại" (dữ liệu cho win-back).
-            window = n == MEMBER_TARGETS.size - 1 ? [180, 120] : [90, 1]
+            window = n == MEMBER_TARGETS.size - 1 ? [ 180, 120 ] : [ 90, 1 ]
             chunks.each do |pts|
               amt = pts * program.earn_per_amount / program.earn_points
               at  = Faker::Time.between(from: window[0].days.ago, to: window[1].days.ago)

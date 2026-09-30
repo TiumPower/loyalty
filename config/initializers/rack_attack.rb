@@ -7,7 +7,7 @@ class Rack::Attack
   begin
     self.cache.store = ActiveSupport::Cache::RedisCacheStore.new(
       url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
-      namespace: "rack_attack", error_handler: ->(*) {}
+      namespace: "rack_attack", error_handler: ->(*) { }
     )
   rescue StandardError => e
     Rails.logger.warn("[RackAttack] Redis store unavailable, using memory: #{e.class}")
@@ -62,7 +62,7 @@ class Rack::Attack
 
   self.throttled_responder = lambda do |req|
     period = (req.env["rack.attack.match_data"] || {})[:period]
-    [429, { "Content-Type" => "text/plain", "Retry-After" => period.to_s },
-     ["Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút. / Too many requests. Please try again shortly."]]
+    [ 429, { "Content-Type" => "text/plain", "Retry-After" => period.to_s },
+     [ "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút. / Too many requests. Please try again shortly." ] ]
   end
 end

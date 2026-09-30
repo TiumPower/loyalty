@@ -1,7 +1,7 @@
 class AddJoinSourceToMembers < ActiveRecord::Migration[7.2]
   def up
     add_column :members, :join_source, :string
-    add_index  :members, [:workspace_id, :join_source]
+    add_index  :members, [ :workspace_id, :join_source ]
     # Backfill: anyone with a referrer came in through the referral link; the
     # rest are unattributed history ("direct").
     execute <<~SQL
@@ -12,7 +12,7 @@ class AddJoinSourceToMembers < ActiveRecord::Migration[7.2]
   end
 
   def down
-    remove_index  :members, [:workspace_id, :join_source]
+    remove_index  :members, [ :workspace_id, :join_source ]
     remove_column :members, :join_source
   end
 end

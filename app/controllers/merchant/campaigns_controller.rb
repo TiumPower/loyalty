@@ -1,8 +1,8 @@
 module Merchant
   class CampaignsController < BaseController
-    before_action :require_manager!, except: [:index, :show, :banner_jobs]
-    before_action :set_campaign, only: [:show, :edit, :update, :qr, :pause, :resume, :destroy,
-                                        :generate_banner, :upload_banner, :select_banner, :remove_banner, :push]
+    before_action :require_manager!, except: [ :index, :show, :banner_jobs ]
+    before_action :set_campaign, only: [ :show, :edit, :update, :qr, :pause, :resume, :destroy,
+                                        :generate_banner, :upload_banner, :select_banner, :remove_banner, :push ]
 
     def index
       return render_locked_feature(:campaigns) if feature_locked?(:campaigns)
@@ -152,7 +152,7 @@ module Merchant
     # the de-duplicated union across every selected group.
     def push
       keys = Array(params[:segments]).map(&:to_s).select { |k| MemberSegments::PRESETS.key?(k) }.uniq
-      keys = [@campaign.audience] if keys.empty? # fall back to the campaign's own audience
+      keys = [ @campaign.audience ] if keys.empty? # fall back to the campaign's own audience
       members = keys.flat_map { |k| MemberSegments.resolve(k).to_a }.uniq(&:id)
 
       if members.empty?
@@ -215,7 +215,7 @@ module Merchant
     def campaign_params
       params.require(:campaign).permit(:name, :campaign_type, :audience, :reward_id,
                                        :starts_at, :ends_at, :status,
-                                       content: [:title, :body, :tone])
+                                       content: [ :title, :body, :tone ])
     end
 
     # Prompt for the AI content generator, built from the in-progress form.

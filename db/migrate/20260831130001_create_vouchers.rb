@@ -18,12 +18,12 @@ class CreateVouchers < ActiveRecord::Migration[7.2]
       t.references :used_outlet, null: true, foreign_key: { to_table: :outlets }
       t.references :used_by_staff, null: true, foreign_key: { to_table: :users }
 
-      t.jsonb    :metadata, null: false, default: {}
+      t.jsonb :metadata, null: false, default: {}
       t.timestamps
     end
 
-    add_index :vouchers, [:workspace_id, :code], unique: true
-    add_index :vouchers, [:workspace_id, :redeem_token]
-    add_index :vouchers, [:member_id, :state]
+    add_index :vouchers, [ :workspace_id, :code ], unique: true
+    add_index :vouchers, [ :workspace_id, :redeem_token ]
+    add_index :vouchers, [ :member_id, :state ]
   end
 end

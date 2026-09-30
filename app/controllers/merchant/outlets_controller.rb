@@ -1,8 +1,8 @@
 module Merchant
   class OutletsController < BaseController
     include ActionView::Helpers::NumberHelper
-    before_action :require_manager!, except: [:index]
-    before_action :set_outlet, only: [:show, :edit, :update, :destroy, :checkin_qr]
+    before_action :require_manager!, except: [ :index ]
+    before_action :set_outlet, only: [ :show, :edit, :update, :destroy, :checkin_qr ]
 
     def index
       @outlets = current_workspace.outlets.order(:name)

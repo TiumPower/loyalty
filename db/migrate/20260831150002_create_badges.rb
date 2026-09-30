@@ -11,7 +11,7 @@ class CreateBadges < ActiveRecord::Migration[7.2]
       t.integer :position,     null: false, default: 0
       t.timestamps
     end
-    add_index :badges, [:workspace_id, :key], unique: true
+    add_index :badges, [ :workspace_id, :key ], unique: true
 
     create_table :member_badges do |t|
       t.references :workspace, null: false, foreign_key: true
@@ -20,6 +20,6 @@ class CreateBadges < ActiveRecord::Migration[7.2]
       t.datetime :earned_at,   null: false
       t.timestamps
     end
-    add_index :member_badges, [:member_id, :badge_id], unique: true
+    add_index :member_badges, [ :member_id, :badge_id ], unique: true
   end
 end

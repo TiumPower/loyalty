@@ -54,7 +54,7 @@ class StampHoldNoticeTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@ws) { Membership.create!(user: user, workspace: @ws, role: "owner") }
     sign_in user
 
-    assert_enqueued_with(job: SettleHeldStampCardsJob, args: [@reward.id]) do
+    assert_enqueued_with(job: SettleHeldStampCardsJob, args: [ @reward.id ]) do
       patch "/merchant/rewards/#{@reward.id}", params: {
         reward: { title: "Cà phê", kind: "gift", value_unit: "item", value: 0, stock: 5, active: "1" }
       }

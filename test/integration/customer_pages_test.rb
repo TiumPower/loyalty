@@ -30,7 +30,7 @@ class CustomerPagesTest < ActionDispatch::IntegrationTest
     test "customer page #{suffix} renders" do
       sign_in_member!
       get "#{base}#{suffix}"
-      assert_includes [200, 302], response.status, "#{suffix} returned #{response.status}"
+      assert_includes [ 200, 302 ], response.status, "#{suffix} returned #{response.status}"
     end
   end
 
@@ -39,7 +39,7 @@ class CustomerPagesTest < ActionDispatch::IntegrationTest
     skip "no seeded reward" if reward.nil?
     sign_in_member!
     get "#{base}/rewards/#{reward.id}"
-    assert_includes [200, 302], response.status
+    assert_includes [ 200, 302 ], response.status
   end
 
   test "the login page renders for a signed-out visitor" do

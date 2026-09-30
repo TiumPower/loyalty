@@ -21,18 +21,18 @@ class BannerComposerTest < ActiveSupport::TestCase
 
   def dimensions(bytes)
     img = MiniMagick::Image.read(bytes)
-    [img.width, img.height]
+    [ img.width, img.height ]
   end
 
   test "a banner without a QR is still normalized to full-resolution 16:9" do
     out = BannerComposer.new(ai_bytes: @bytes, qr_url: nil).call
-    assert_equal [BannerComposer::W, BannerComposer::H], dimensions(out)
-    assert_equal [1536, 864], dimensions(out) # guards against a silent downscale
+    assert_equal [ BannerComposer::W, BannerComposer::H ], dimensions(out)
+    assert_equal [ 1536, 864 ], dimensions(out) # guards against a silent downscale
   end
 
   test "a banner with a QR keeps the same dimensions" do
     out = BannerComposer.new(ai_bytes: @bytes, qr_url: "https://example.com/scan/resolve?promo=abc").call
-    assert_equal [BannerComposer::W, BannerComposer::H], dimensions(out)
+    assert_equal [ BannerComposer::W, BannerComposer::H ], dimensions(out)
     # The composited QR card makes the image differ from the plain one.
     assert_not_equal BannerComposer.new(ai_bytes: @bytes, qr_url: nil).call, out
   end

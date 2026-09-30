@@ -9,6 +9,6 @@ class CreatePromoClaims < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :promo_claims, [:promo_code_id, :member_id], unique: true
+    add_index :promo_claims, [ :promo_code_id, :member_id ], unique: true
   end
 end

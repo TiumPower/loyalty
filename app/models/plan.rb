@@ -9,17 +9,17 @@ class Plan < ApplicationRecord
       max_outlets: 1, max_members: 500,
       allow_stamps: true, allow_gamification: false, allow_campaigns: false,
       allow_custom_domain: false, allow_ab_testing: false,
-      features: ["1 chi nhánh", "Points + Tiers + Stamp", "Tối đa 500 khách", "Máy quét tại quầy"] },
+      features: [ "1 chi nhánh", "Points + Tiers + Stamp", "Tối đa 500 khách", "Máy quét tại quầy" ] },
     { key: "growth", name: "Growth", price: 499_000, position: 1,
       max_outlets: 5, max_members: nil,
       allow_stamps: true, allow_gamification: true, allow_campaigns: true,
       allow_custom_domain: false, allow_ab_testing: false,
-      features: ["5 chi nhánh", "Đủ 4 cơ chế loyalty", "Không giới hạn khách", "Campaign + mã QR phát hành", "CRM & thông báo"] },
+      features: [ "5 chi nhánh", "Đủ 4 cơ chế loyalty", "Không giới hạn khách", "Campaign + mã QR phát hành", "CRM & thông báo" ] },
     { key: "scale", name: "Scale", price: 1_290_000, position: 2,
       max_outlets: nil, max_members: nil,
       allow_stamps: true, allow_gamification: true, allow_campaigns: true,
       allow_custom_domain: true, allow_ab_testing: true,
-      features: ["Không giới hạn chi nhánh", "Tên miền riêng", "Ưu tiên hỗ trợ"] }
+      features: [ "Không giới hạn chi nhánh", "Tên miền riêng", "Ưu tiên hỗ trợ" ] }
   ].freeze
 
   # The cheapest plan whose allow_<feature> flag is on (reads real plan data,

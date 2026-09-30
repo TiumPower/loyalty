@@ -23,7 +23,7 @@ class CreateMissions < ActiveRecord::Migration[7.2]
       t.datetime :claimed_at
       t.timestamps
     end
-    add_index :mission_progresses, [:member_id, :mission_id, :period_key], unique: true,
+    add_index :mission_progresses, [ :member_id, :mission_id, :period_key ], unique: true,
               name: "idx_mission_progress_unique"
   end
 end

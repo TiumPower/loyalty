@@ -19,19 +19,19 @@ class PosCharge < ApplicationRecord
 
   # Member self-scan earn (§6.2): awards points for the encoded amount once.
   def claim!(member)
-    return [nil, :expired] if expired?
-    return [nil, :used]    if state == "claimed"
+    return [ nil, :expired ] if expired?
+    return [ nil, :used ]    if state == "claimed"
 
     result = nil
     PosCharge.transaction do
       locked = PosCharge.lock.find(id)
-      return [nil, :used] unless locked.state == "open"
+      return [ nil, :used ] unless locked.state == "open"
       result = EarnPoints.new(member: member, amount: amount, outlet: outlet,
                               staff: staff, source: "pos_scan").call
       update!(state: "claimed", member: member, purchase: result.purchase,
               points_awarded: result.points, claimed_at: Time.current)
     end
-    [result, nil]
+    [ result, nil ]
   end
 
   private

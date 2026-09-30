@@ -4,7 +4,7 @@ module Customer
   class ReviewsController < BaseController
     before_action :require_workspace!
     before_action :require_member!
-    before_action :ensure_public!, only: [:index]
+    before_action :ensure_public!, only: [ :index ]
 
     # How often one member can receive the automatic "sorry about that" reward.
     # Without this, a member could farm vouchers by leaving 1-star reviews.

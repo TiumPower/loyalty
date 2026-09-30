@@ -37,7 +37,7 @@ module Merchant
       @expired = scope.expirations.sum(:amount).abs
       @total   = scope.count
 
-      @page    = [params[:page].to_i, 1].max
+      @page    = [ params[:page].to_i, 1 ].max
       @transactions = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
       @has_more = @total > @page * PER_PAGE
       # The undo button needs the Purchase behind each "earn" row. :source is

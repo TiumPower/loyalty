@@ -1,6 +1,6 @@
 module Merchant
   class DomainsController < BaseController
-    before_action :require_manager!, except: [:show]
+    before_action :require_manager!, except: [ :show ]
 
     def show
       @workspace = current_workspace

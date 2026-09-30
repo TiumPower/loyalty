@@ -32,7 +32,7 @@ class BrandingTest < ActionDispatch::IntegrationTest
   end
 
   test "a non-image cannot be used as the logo" do
-    Tempfile.create(["x", ".pdf"]) do |f|
+    Tempfile.create([ "x", ".pdf" ]) do |f|
       f.write("%PDF-1.4 not really")
       f.rewind
       patch "/merchant/appearance",
@@ -43,7 +43,7 @@ class BrandingTest < ActionDispatch::IntegrationTest
   end
 
   test "an oversized image is refused" do
-    Tempfile.create(["big", ".png"]) do |f|
+    Tempfile.create([ "big", ".png" ]) do |f|
       f.binmode
       f.write("\x89PNG\r\n\x1a\n".b + ("0" * (Workspace::LOGO_MAX_BYTES + 1024)))
       f.rewind

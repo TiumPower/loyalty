@@ -24,10 +24,10 @@ set :linked_dirs, %w[
 ]
 
 set :keep_releases, 5
-set :assets_roles, [:web]
+set :assets_roles, [ :web ]
 
 # Puma
-set :puma_threads,        [2, 4]
+set :puma_threads,        [ 2, 4 ]
 set :puma_workers,        2
 set :puma_bind,           "unix://#{shared_path}/tmp/sockets/puma.sock"
 set :puma_state,          "#{shared_path}/tmp/pids/puma.state"

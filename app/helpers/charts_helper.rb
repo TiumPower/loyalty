@@ -10,7 +10,7 @@ module ChartsHelper
     top    = 22          # room for value labels
     bottom = height - 26 # baseline (room for month labels)
     plot_h = bottom - top
-    max    = [points.map { |p| p[:value].to_i }.max, 1].max
+    max    = [ points.map { |p| p[:value].to_i }.max, 1 ].max
     bar_w  = (slot * 0.52).round
 
     bars = points.each_with_index.map do |p, i|
@@ -38,7 +38,7 @@ module ChartsHelper
     matrix = Array(matrix)
     return "".html_safe if matrix.empty?
 
-    max = [matrix.flat_map { |r| r[:hours] }.map(&:to_i).max.to_i, 1].max
+    max = [ matrix.flat_map { |r| r[:hours] }.map(&:to_i).max.to_i, 1 ].max
     cell = 22
     gap  = 3
     left = 34   # room for weekday labels

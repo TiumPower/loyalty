@@ -30,9 +30,9 @@ class SpinWheel < ApplicationRecord
     acc = 0
     segs.each_with_index do |s, i|
       acc += s["weight"].to_i
-      return [i, s] if roll < acc
+      return [ i, s ] if roll < acc
     end
-    [segs.size - 1, segs.last]
+    [ segs.size - 1, segs.last ]
   end
 
   # Perform a spin. Returns { index:, segment:, points:, error: }.

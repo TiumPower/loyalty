@@ -23,7 +23,7 @@ class CreateNotifications < ActiveRecord::Migration[7.2]
       t.datetime :read_at
       t.timestamps
     end
-    add_index :notifications, [:member_id, :read_at]
-    add_index :notifications, [:member_id, :created_at]
+    add_index :notifications, [ :member_id, :read_at ]
+    add_index :notifications, [ :member_id, :created_at ]
   end
 end

@@ -22,7 +22,7 @@ class PromoCode < ApplicationRecord
   def available?     = active? && within_window? && !out_of_claims?
 
   def remaining
-    max_claims.nil? ? nil : [max_claims - claims_count, 0].max
+    max_claims.nil? ? nil : [ max_claims - claims_count, 0 ].max
   end
 
   def used_count  = vouchers.where(state: "used").count
@@ -38,7 +38,7 @@ class PromoCode < ApplicationRecord
   # now happens under the row lock, and the index is still honoured as a last
   # line so a race can never mint two vouchers.
   def claim!(member)
-    return [nil, :unavailable] unless available?
+    return [ nil, :unavailable ] unless available?
 
     voucher = nil
     error   = nil
@@ -67,10 +67,10 @@ class PromoCode < ApplicationRecord
       PromoClaim.create!(workspace: workspace, promo_code: self, member: member, voucher: voucher)
       PromoCode.where(id: id).update_all("claims_count = claims_count + 1")
     end
-    [voucher, error]
+    [ voucher, error ]
   rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
     claimed = promo_claims.find_by(member_id: member.id)
-    claimed ? [claimed.voucher, :already] : [nil, :unavailable]
+    claimed ? [ claimed.voucher, :already ] : [ nil, :unavailable ]
   end
 
   def register_scan! = PromoCode.where(id: id).update_all("scan_count = scan_count + 1")

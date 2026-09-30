@@ -10,6 +10,6 @@ class CreateWorkspaceInsights < ActiveRecord::Migration[7.2]
       t.string   :status, default: "ready", null: false # ready | generating
       t.timestamps
     end
-    add_index :workspace_insights, [:workspace_id, :kind], unique: true
+    add_index :workspace_insights, [ :workspace_id, :kind ], unique: true
   end
 end

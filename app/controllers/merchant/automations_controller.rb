@@ -12,7 +12,7 @@ module Merchant
         "welcome"  => { "enabled" => flag("welcome", "enabled"), "reward_id" => field("welcome", "reward_id").presence },
         "birthday" => { "enabled" => flag("birthday", "enabled"), "reward_id" => field("birthday", "reward_id").presence },
         "winback"  => { "enabled" => flag("winback", "enabled"), "reward_id" => field("winback", "reward_id").presence,
-                        "days" => field("winback", "days").to_i, "message" => field("winback", "message").to_s.strip.presence },
+                        "days" => field("winback", "days").to_i, "message" => field("winback", "message").to_s.strip.presence }
       }
       # An automation pointing at an unusable reward fires and gives nothing.
       current_ids = current_workspace.settings.fetch("automations", {}).values
