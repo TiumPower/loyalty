@@ -209,12 +209,24 @@ module ApplicationHelper
   # before you read it. Tiers are merchant-editable — they can be renamed, added
   # to, or given their own keys — so an unknown key falls back to its rung on
   # the ladder rather than to nothing.
-  TIER_ICONS      = { "bronze" => :medal, "silver" => :award, "gold" => :star, "diamond" => :gem }.freeze
-  TIER_ICON_RUNGS = %i[medal award star gem].freeze
+  TIER_ICONS      = { "bronze" => :tier_hexagon, "silver" => :tier_star,
+                      "gold" => :tier_burst, "diamond" => :tier_diamond }.freeze
+  TIER_ICON_RUNGS = %i[tier_hexagon tier_star tier_burst tier_diamond].freeze
 
   def tier_icon(tier)
-    return :star if tier.nil?
-    TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :star
+    return :tier_hexagon if tier.nil?
+    TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :tier_hexagon
+  end
+
+  # The tier badge as the design draws it: a soft tinted pill with the tier's
+  # own solid glyph and lettering.
+  def tier_pill(tier, size: nil, klass: "l-pill tier")
+    return "".html_safe if tier.nil?
+    style = +"background:#{tier.pill_background}; color:#{tier.pill_foreground};"
+    style << " box-shadow: inset 0 0 0 1.5px #{tier.pill_ring};" if tier.pill_ring
+    content_tag(:span, class: klass, style: style) do
+      safe_join([ui_icon(tier_icon(tier), size: size || 13, fill: true), tier.name])
+    end
   end
 
   # Whether a branch is open right now, or nil when it has never said. Hours

@@ -20,8 +20,8 @@
     <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
       <div style="font-size:18px; font-weight:700; letter-spacing:-.018em;"><%= t("customer.my_code.title") %></div>
       <% if @member.tier %>
-        <span class="l-pill tier" style="background:<%= @member.tier.gradient_css %>; color:<%= @member.tier.ink_color %>;">
-          <%= ui_icon(tier_icon(@member.tier), size: 12, stroke: 2.2) %><%= t("customer.home.tier_badge", name: @member.tier.name) %>
+        <span class="l-pill tier" style="background:<%= @member.tier.pill_background %>; color:<%= @member.tier.pill_foreground %>;">
+          <%= ui_icon(tier_icon(@member.tier), size: 13, fill: true) %><%= t("customer.home.tier_badge", name: @member.tier.name) %>
         </span>
       <% end %>
     </div>

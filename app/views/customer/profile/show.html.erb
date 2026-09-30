@@ -45,9 +45,7 @@
           <div class="l-eyebrow"><%= t("customer.profile.loyalty") %></div>
           <div style="font-weight:700; font-size:16px; margin-top:3px;"><%= t("customer.profile.tier_named", name: tier.name) %></div>
         </div>
-        <span class="l-pill tier" style="flex:none; background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
-          <%= ui_icon(tier_icon(tier), size: 12, stroke: 2.2) %><%= tier.name %>
-        </span>
+        <%= tier_pill(tier) %>
       </div>
       <% if @member.next_tier %>
         <div class="l-bar thick" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>

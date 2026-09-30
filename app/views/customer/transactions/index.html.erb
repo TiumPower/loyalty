@@ -22,9 +22,7 @@
         <div class="v"><%= number_with_delimiter(@member.points_balance) %><small><%= t("customer.common.points_unit") %></small></div>
       </div>
       <% if tier %>
-        <span class="l-pill tier lg" style="flex:none; background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
-          <%= ui_icon(tier_icon(tier), size: 13, stroke: 2.2) %><%= tier.name %>
-        </span>
+        <%= tier_pill(tier, size: 14, klass: "l-pill tier lg") %>
       <% end %>
     </div>
     <% if @member.next_tier %>

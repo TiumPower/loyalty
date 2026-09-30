@@ -20,6 +20,13 @@ module IconsHelper
     eye_off: %(<path d="M3 3l18 18" stroke-linecap="round"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.4A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5a10 10 0 0 0 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>),
     pause:   %(<rect x="7" y="5" width="3.4" height="14" rx="1.2"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.2"/>),
     play:    %(<path d="M7.5 4.9 19 12 7.5 19.1Z" stroke-linejoin="round"/>),
+    # ---- Membership tiers. Solid shapes, as the design draws them: a hexagon,
+    # a five-point star, an eight-point burst and a diamond. Always rendered
+    # with `fill: true`.
+    tier_hexagon: %(<path d="M12 2 21.5 7.25V16.75L12 22 2.5 16.75V7.25Z"/>),
+    tier_star:    %(<path d="M12.00 2.20 14.47 8.60 21.32 8.97 15.99 13.30 17.76 19.93 12.00 16.20 6.24 19.93 8.01 13.30 2.68 8.97 9.53 8.60Z"/>),
+    tier_burst:   %(<path d="M12.00 2.20 13.91 7.38 18.93 5.07 16.62 10.09 21.80 12.00 16.62 13.91 18.93 18.93 13.91 16.62 12.00 21.80 10.09 16.62 5.07 18.93 7.38 13.91 2.20 12.00 7.38 10.09 5.07 5.07 10.09 7.38Z"/>),
+    tier_diamond: %(<path d="M12 2.4 21.6 12 12 21.6 2.4 12Z"/>),
     check:   %(<path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-linecap="round"/>),
     launch:  %(<path d="M14 4h6v6" stroke-linecap="round"/><path d="M20 4 10 14" stroke-linecap="round"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5" stroke-linecap="round"/>),
     trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>),
@@ -72,9 +79,17 @@ module IconsHelper
             data: { controller: "sketch", sketch_shape_value: shape, reveal: "sketch" })
   end
 
-  def ui_icon(name, size: 24, klass: nil, stroke: 1.8)
+  # `fill: true` draws the glyph as a solid shape instead of an outline. The
+  # tier badges are solid in the design — an outlined hexagon at 13px reads as
+  # a smudge.
+  def ui_icon(name, size: 24, klass: nil, stroke: 1.8, fill: false)
     body = ICONS[name.to_sym] or return "".html_safe
-    attrs = %(viewBox="0 0 24 24" width="#{size}" height="#{size}" fill="none" stroke="currentColor" stroke-width="#{stroke}" stroke-linejoin="round" stroke-linecap="round" class="#{klass}" aria-hidden="true")
+    paint = if fill
+      %(fill="currentColor" stroke="none")
+    else
+      %(fill="none" stroke="currentColor" stroke-width="#{stroke}" stroke-linejoin="round" stroke-linecap="round")
+    end
+    attrs = %(viewBox="0 0 24 24" width="#{size}" height="#{size}" #{paint} class="#{klass}" aria-hidden="true")
     "<svg #{attrs}>#{body}</svg>".html_safe
   end
 end

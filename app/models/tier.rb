@@ -26,7 +26,7 @@ class Tier < ApplicationRecord
                             less_than_or_equal_to: MAX_THRESHOLD }
   validates :multiplier,
             numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: MAX_MULTIPLIER }
-  validates :gradient_from, :gradient_to,
+  validates :gradient_from, :gradient_to, :pill_bg, :pill_fg, :pill_border,
             format: { with: HEX_COLOR_RE, message: :not_a_hex_color }, allow_blank: true
   validate  :benefits_are_a_short_list
 
@@ -40,6 +40,25 @@ class Tier < ApplicationRecord
 
   # Belt and braces for rows written before the validation existed.
   def self.hex?(value) = value.to_s.match?(HEX_COLOR_RE)
+
+  # ---- The badge pill -----------------------------------------------------
+  #
+  # The design draws a tier badge as a soft tinted pill with coloured lettering,
+  # not as the saturated gradient the hexagon crest uses. Shops that have not
+  # been given the design's palette fall back to their gradient: a light tint of
+  # it behind, the deep stop in front.
+  def pill_background
+    return pill_bg if self.class.hex?(pill_bg)
+    from = self.class.hex?(gradient_from) ? gradient_from : "#B08D57"
+    "color-mix(in srgb, #{from} 16%, #FFFFFF)"
+  end
+
+  def pill_foreground
+    return pill_fg if self.class.hex?(pill_fg)
+    self.class.hex?(gradient_to) ? gradient_to : "#7A5C3A"
+  end
+
+  def pill_ring = self.class.hex?(pill_border) ? pill_border : nil
 
   # Lettering that stays readable on this tier's own gradient.
   #

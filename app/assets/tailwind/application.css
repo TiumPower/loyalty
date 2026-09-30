@@ -400,11 +400,13 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-pill.dark { background: var(--ink); color: var(--surface); }
 .l-pill.gold { background: linear-gradient(135deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 70%, #000));
   color:#fff; font-weight:700; box-shadow:0 2px 8px color-mix(in srgb, var(--primary-2) 40%, transparent); }
-/* A tier badge wears that tier's own colours. The accent-coloured pill above
-   made a Bronze member look identical to a Diamond one — the whole point of a
-   tier is that you can tell it apart. The gradient is set inline because it
-   lives on the tier row and the merchant can change it. */
-.l-pill.tier { color:#fff; font-weight:700; box-shadow:0 2px 8px rgba(30,20,10,.18); }
+/* A tier badge wears that tier's own colours. The accent-coloured pill made a
+   Bronze member look identical to a Diamond one — the whole point of a tier is
+   that you can tell it apart. A soft tint with coloured lettering, as the
+   design draws it; the two colours live on the tier row, so they are set
+   inline and the merchant can change them. */
+.l-pill.tier { font-weight:700; }
+.l-pill.tier svg { flex:none; }
 .l-pill.lg { padding:7px 14px; font-size:13px; }
 /* Leading status dot (Available / Used / Expired). */
 .l-pill .bead { width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }

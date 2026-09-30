@@ -12,7 +12,7 @@
 <div class="l-screen" style="text-align:center;">
   <%# ---- the crest ---- %>
   <div class="l-crest lg" style="background: <%= @current&.gradient_css || 'linear-gradient(160deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
-    <%= ui_icon(tier_icon(@current), size: 24, stroke: 2) %>
+    <%= ui_icon(tier_icon(@current), size: 26, fill: true) %>
     <div class="nm"><%= @current&.name %></div>
   </div>
   <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>
@@ -63,7 +63,7 @@
           <%# Its own colour and glyph, greyed while it is still out of reach —
               the lock moves next to the name so the rung stays recognisable. %>
           <span class="ic l-tierdot <%= 'locked' unless reached %>" style="background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
-            <%= ui_icon(tier_icon(tier), size: 17, stroke: 2.2) %>
+            <%= ui_icon(tier_icon(tier), size: 17, fill: true) %>
           </span>
           <div class="bd">
             <div class="tt">

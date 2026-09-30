@@ -8,11 +8,18 @@ module WorkspaceBootstrap
   # holds its lettering. Merchants can change all of them, so these are only the
   # starting point (see Tier#ink_color, which keeps the text readable whatever
   # they pick).
+  # `from`/`to` are the crest gradient; `pill_*` are the badge, both sampled
+  # from the design. They are deliberately different palettes — the crest is
+  # saturated, the badge is a soft tint with coloured lettering.
   TIERS = [
-    { key: "bronze",  name: "Đồng",      threshold_points: 0,     multiplier: 1.0, from: "#C87A34", to: "#8A4310" },
-    { key: "silver",  name: "Bạc",       threshold_points: 2000,  multiplier: 1.2, from: "#C2CBD6", to: "#6E7B8A" },
-    { key: "gold",    name: "Vàng",      threshold_points: 5000,  multiplier: 1.5, from: "#F6B51F", to: "#DD7F09" },
-    { key: "diamond", name: "Kim Cương", threshold_points: 12000, multiplier: 2.0, from: "#7FC8E8", to: "#2F7FB5" }
+    { key: "bronze",  name: "Đồng",      threshold_points: 0,     multiplier: 1.0,
+      from: "#C87A34", to: "#8A4310", pill_bg: "#FCEED8", pill_fg: "#AC6E55" },
+    { key: "silver",  name: "Bạc",       threshold_points: 2000,  multiplier: 1.2,
+      from: "#C2CBD6", to: "#6E7B8A", pill_bg: "#F2F5F9", pill_fg: "#97A2B6" },
+    { key: "gold",    name: "Vàng",      threshold_points: 5000,  multiplier: 1.5,
+      from: "#F6B51F", to: "#DD7F09", pill_bg: "#FCF3CC", pill_fg: "#B76041", pill_border: "#CC7C2E" },
+    { key: "diamond", name: "Kim Cương", threshold_points: 12000, multiplier: 2.0,
+      from: "#7FC8E8", to: "#2F7FB5", pill_bg: "#FAF2EE", pill_fg: "#2C241C" }
   ].freeze
 
   EARN = { "fnb" => 10_000, "retail" => 15_000, "service" => 20_000 }.freeze
@@ -29,7 +36,9 @@ module WorkspaceBootstrap
       TIERS.each_with_index do |t, i|
         next if workspace.tiers.exists?(key: t[:key])
         workspace.tiers.create!(name: t[:name], key: t[:key], threshold_points: t[:threshold_points],
-                                multiplier: t[:multiplier], gradient_from: t[:from], gradient_to: t[:to], position: i)
+                                multiplier: t[:multiplier], gradient_from: t[:from], gradient_to: t[:to],
+                                pill_bg: t[:pill_bg], pill_fg: t[:pill_fg], pill_border: t[:pill_border],
+                                position: i)
       end
 
       if program.gamification_enabled && workspace.spin_wheel.nil?
