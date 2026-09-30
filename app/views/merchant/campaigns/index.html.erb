@@ -1,62 +1,128 @@
 <% content_for :title, t("merchant.nav.campaigns") %>
 <% content_for :title_en, "CAMPAIGNS" %>
+<% c = ->(k, **o) { t("merchant.campaigns.#{k}", **o) } %>
 
-<div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
-  <%= link_to t("merchant.campaigns.create"), new_merchant_campaign_path, class: "l-btn l-btn-primary" %>
+<div class="m-sec">
+  <div>
+    <h3><%= c.(:list_title) %></h3>
+    <div class="sub"><%= c.(:list_sub) %></div>
+  </div>
+  <%= link_to c.(:create), new_merchant_campaign_path, class: "l-btn l-btn-primary" %>
 </div>
 
-<% if @campaigns.empty? %>
+<% if @campaigns.empty? && !@filtered %>
   <div class="l-panel" style="text-align:center; padding:48px;">
     <div style="font-size:40px;">◈</div>
-    <h3 class="l-display" style="font-size:20px; margin-top:8px;"><%= t("merchant.campaigns.empty") %></h3>
-    <p style="color:var(--ink-2);"><%= t("merchant.campaigns.empty_sub") %></p>
+    <h3 class="l-display" style="font-size:20px; margin-top:8px;"><%= c.(:empty) %></h3>
+    <p style="color:var(--ink-2);"><%= c.(:empty_sub) %></p>
   </div>
 <% else %>
-  <div class="l-panel" style="padding:0;">
-    <div style="overflow-x:auto;">
-      <table class="m-table" style="min-width:880px;">
-        <thead>
-          <tr>
-            <th style="padding-left:18px;"><%= t("merchant.campaigns.col_campaign") %></th>
-            <th><%= t("merchant.campaigns.col_status") %></th>
-            <th><%= t("merchant.campaigns.col_type") %></th>
-            <th><%= t("merchant.campaigns.col_audience") %></th>
-            <th style="padding-right:18px;"><%= t("merchant.campaigns.col_performance") %></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @campaigns.each do |c| %>
-            <% pc = c.promo_codes.first %>
-            <tr>
-              <td style="padding-left:18px;">
-                <%= link_to merchant_campaign_path(c), style: "font-weight:600; color:var(--primary-ink); text-decoration:none;" do %>
-                  <%= c.name %>
-                <% end %>
-                <% if c.reward %>
-                  <div style="font-size:12px; color:var(--ink-2);"><%= c.reward.title %></div>
-                <% end %>
-              </td>
-              <td>
-                <span class="m-badge <%= 'up' if c.status == 'running' %>"><%= c.status_label %></span>
-              </td>
-              <td style="color:var(--ink-2); font-size:12.5px;"><%= c.type_label %></td>
-              <td style="color:var(--ink-2); font-size:12.5px;"><%= c.audience_label %></td>
-              <td style="padding-right:18px; font-size:12.5px;">
-                <% if pc %>
-                  <%# Scans, claims and uses are three different things: a code
-                      scanned but never claimed is a different problem from one
-                      claimed but never used. %>
-                  <span class="m-num"><%= pc.scan_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_scans") %></span>
-                  · <span class="m-num"><%= pc.claims_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_claims") %></span>
-                  · <span class="m-num" style="color:var(--good);"><%= pc.used_count %></span> <span style="color:var(--ink-2);"><%= t("merchant.campaigns.w_uses") %></span>
-                <% else %>
-                  <span style="color:var(--ink-2);">—</span>
-                <% end %>
-              </td>
-            </tr>
+  <div class="l-panel" style="padding:0; overflow:hidden;">
+    <%= form_with url: merchant_campaigns_path, method: :get, data: { turbo: false } do %>
+      <div class="m-filters">
+        <input type="search" name="q" value="<%= @q %>" class="l-field grow"
+               placeholder="<%= c.(:search_ph) %>" aria-label="<%= c.(:search_ph) %>">
+        <select name="status" class="l-field" onchange="this.form.requestSubmit()" aria-label="<%= c.(:col_status) %>">
+          <option value=""><%= c.(:filter_status_all) %></option>
+          <% Campaign::STATUSES.each do |s| %>
+            <option value="<%= s %>" <%= "selected" if @status == s %>><%= t("merchant.campaign_statuses.#{s}") %></option>
           <% end %>
-        </tbody>
-      </table>
-    </div>
+        </select>
+        <select name="type" class="l-field" onchange="this.form.requestSubmit()" aria-label="<%= c.(:col_type) %>">
+          <option value=""><%= c.(:filter_type_all) %></option>
+          <% Campaign::TYPES.each do |k| %>
+            <option value="<%= k %>" <%= "selected" if @type == k %>><%= t("merchant.campaign_types.#{k}") %></option>
+          <% end %>
+        </select>
+        <select name="audience" class="l-field" onchange="this.form.requestSubmit()" aria-label="<%= c.(:col_audience) %>">
+          <option value=""><%= c.(:filter_audience_all) %></option>
+          <% Campaign::AUDIENCES.each do |k| %>
+            <option value="<%= k %>" <%= "selected" if @audience == k %>><%= t("merchant.campaign_audiences.#{k}") %></option>
+          <% end %>
+        </select>
+        <%= submit_tag c.(:filter_apply), class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" %>
+      </div>
+    <% end %>
+
+    <% if @campaigns.empty? %>
+      <div style="padding:40px 20px; text-align:center; color:var(--ink-2); font-size:14px;">
+        <%= c.(:none_match) %>
+        <%= link_to c.(:clear_filters), merchant_campaigns_path, style: "color:var(--primary); font-weight:600; text-decoration:none;" %>
+      </div>
+    <% else %>
+      <div style="overflow-x:auto;">
+        <table class="m-table" style="min-width:980px;">
+          <thead>
+            <tr>
+              <th style="padding-left:18px;"><%= c.(:col_campaign) %></th>
+              <th><%= c.(:col_status) %></th>
+              <th><%= c.(:col_type) %></th>
+              <th><%= c.(:col_audience) %></th>
+              <th><%= c.(:col_schedule) %></th>
+              <th><%= c.(:col_performance) %></th>
+              <th style="padding-right:18px;"><%= c.(:col_actions) %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @campaigns.each do |cp| %>
+              <% pc = cp.promo_codes.first %>
+              <tr>
+                <td style="padding-left:18px;">
+                  <%= link_to merchant_campaign_path(cp), style: "font-weight:600; color:var(--primary-ink); text-decoration:none;" do %>
+                    <%= cp.name %>
+                  <% end %>
+                  <% if cp.reward %>
+                    <div style="font-size:12px; color:var(--ink-2);"><%= cp.reward.title %></div>
+                  <% end %>
+                </td>
+                <td>
+                  <span class="m-badge <%= 'up' if cp.status == 'running' %>"><%= cp.status_label %></span>
+                </td>
+                <td style="color:var(--ink-2); font-size:12.5px;"><%= cp.type_label %></td>
+                <td style="color:var(--ink-2); font-size:12.5px;"><%= cp.audience_label %></td>
+                <td style="color:var(--ink-2); font-size:12.5px; white-space:nowrap;"><%= campaign_schedule_text(cp) %></td>
+                <td style="font-size:12.5px;">
+                  <% if pc %>
+                    <%# Scans, claims and uses are three different things: a code
+                        scanned but never claimed is a different problem from one
+                        claimed but never used. %>
+                    <span class="m-num"><%= pc.scan_count %></span> <span style="color:var(--ink-2);"><%= c.(:w_scans) %></span>
+                    · <span class="m-num"><%= pc.claims_count %></span> <span style="color:var(--ink-2);"><%= c.(:w_claims) %></span>
+                    · <span class="m-num" style="color:var(--good);"><%= pc.used_count %></span> <span style="color:var(--ink-2);"><%= c.(:w_uses) %></span>
+                  <% else %>
+                    <span style="color:var(--ink-2);">—</span>
+                  <% end %>
+                </td>
+                <td style="padding-right:18px;">
+                  <% if current_membership&.can_manage? %>
+                    <div class="m-rowact">
+                      <%= link_to edit_merchant_campaign_path(cp), title: c.(:edit), "aria-label": c.(:edit) do %>
+                        <%= ui_icon(:edit, size: 16) %>
+                      <% end %>
+                      <% if cp.status == "running" %>
+                        <%= button_to pause_merchant_campaign_path(cp), method: :patch,
+                              title: c.(:act_pause), "aria-label": c.(:act_pause) do %>
+                          <%= ui_icon(:pause, size: 16) %>
+                        <% end %>
+                      <% else %>
+                        <%= button_to resume_merchant_campaign_path(cp), method: :patch,
+                              title: c.(:act_start), "aria-label": c.(:act_start) do %>
+                          <%= ui_icon(:play, size: 16) %>
+                        <% end %>
+                      <% end %>
+                      <%= button_to merchant_campaign_path(cp), method: :delete, class: "danger",
+                            form: { data: { turbo_confirm: c.(:delete_confirm, name: cp.name) } },
+                            title: c.(:act_delete), "aria-label": c.(:act_delete) do %>
+                        <%= ui_icon(:trash, size: 16) %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
   </div>
 <% end %>

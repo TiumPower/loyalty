@@ -95,4 +95,15 @@ module MerchantHelper
   # Icon per automation, same idea.
   AUTOMATION_ICONS = { "welcome" => :user, "birthday" => :gift, "winback" => :refresh }.freeze
   def automation_icon(key) = AUTOMATION_ICONS.fetch(key.to_s, :bell)
+
+  # The campaign's run window in one line for the list ("24 thg 1 – 26 thg 1"),
+  # saying plainly when either end is open rather than printing a blank cell.
+  def campaign_schedule_text(campaign)
+    from = campaign.starts_at
+    to   = campaign.ends_at
+    return t("merchant.campaigns.sched_none") if from.nil? && to.nil?
+    return t("merchant.campaigns.sched_until", to: l(to.to_date, format: :short)) if from.nil?
+    return t("merchant.campaigns.sched_open", from: l(from.to_date, format: :short)) if to.nil?
+    "#{l(from.to_date, format: :short)} – #{l(to.to_date, format: :short)}"
+  end
 end

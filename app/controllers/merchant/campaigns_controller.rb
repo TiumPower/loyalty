@@ -6,7 +6,18 @@ module Merchant
 
     def index
       return render_locked_feature(:campaigns) if feature_locked?(:campaigns)
-      @campaigns = current_workspace.campaigns.recent.includes(:reward).to_a
+      @q        = params[:q].to_s.strip
+      @status   = params[:status].to_s.presence_in(Campaign::STATUSES)
+      @type     = params[:type].to_s.presence_in(Campaign::TYPES)
+      @audience = params[:audience].to_s.presence_in(Campaign::AUDIENCES)
+      @filtered = [@q.presence, @status, @type, @audience].any?
+
+      scope = current_workspace.campaigns.recent.includes(:reward, :promo_codes)
+      scope = scope.where(status: @status)       if @status
+      scope = scope.where(campaign_type: @type)  if @type
+      scope = scope.where(audience: @audience)   if @audience
+      scope = scope.where("campaigns.name ILIKE ?", "%#{sanitize_sql_like(@q)}%") if @q.present?
+      @campaigns = scope.to_a
     end
 
     def new
@@ -215,6 +226,10 @@ module Merchant
     def set_campaign
       @campaign = current_workspace.campaigns.find(params[:id])
     end
+
+    # ILIKE is a pattern match: a name containing % or _ would otherwise search
+    # for something the merchant did not type.
+    def sanitize_sql_like(term) = ActiveRecord::Base.sanitize_sql_like(term)
 
     # How many customers each audience currently holds, so the editor can show
     # what a campaign is about to reach before it is saved.

@@ -18,6 +18,7 @@ module IconsHelper
     eye:     %(<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>),
     eye_off: %(<path d="M3 3l18 18" stroke-linecap="round"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.4A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5a10 10 0 0 0 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>),
     pause:   %(<rect x="7" y="5" width="3.4" height="14" rx="1.2"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.2"/>),
+    play:    %(<path d="M7.5 4.9 19 12 7.5 19.1Z" stroke-linejoin="round"/>),
     check:   %(<path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-linecap="round"/>),
     launch:  %(<path d="M14 4h6v6" stroke-linecap="round"/><path d="M20 4 10 14" stroke-linecap="round"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5" stroke-linecap="round"/>),
     trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>),
