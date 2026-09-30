@@ -870,7 +870,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-iconpick-btn:hover { border-color:var(--primary); transform:translateY(-1px); }
 /* Reward create/edit modal */
 .l-modal { position:fixed; inset:0; margin:auto; border:none; border-radius:22px; padding:0;
-  width:min(600px, calc(100vw - 32px)); height:fit-content; max-height:calc(100dvh - 40px);
+  width:min(600px, calc(100vw - 32px));
+  /* The reward editor carries a preview column beside the form. */
+  &:has(.m-editor) { width:min(1000px, calc(100vw - 32px)); } height:fit-content; max-height:calc(100dvh - 40px);
   background:var(--surface); color:var(--ink); box-shadow:0 30px 70px rgba(20,12,8,.32); }
 .l-modal::backdrop { background:rgba(24,15,9,.45); }
 .l-modal-card { padding:24px 24px 26px; max-height:calc(100dvh - 60px); overflow-y:auto; }
@@ -1243,3 +1245,31 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 /* Two-column operational row: table left, actions right. */
 .m-ops { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:16px; align-items:start; }
 @media (max-width:1000px){ .m-ops { grid-template-columns:minmax(0,1fr); } }
+
+/* ---------- merchant editors ---------- */
+/* The admin design edits a programme in two columns: the form on the left in
+   labelled sections, and a phone showing what the customer will end up seeing. */
+.m-editor { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:20px; align-items:start; }
+@media (max-width:1000px){ .m-editor { grid-template-columns:minmax(0,1fr); } }
+.m-section { border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; background:#fff; }
+.m-section > .hd { margin-bottom:12px; }
+.m-section > .hd .t { font-weight:700; font-size:15px; }
+.m-section > .hd .s { font-size:12.5px; color: var(--ink-2); margin-top:3px; line-height:1.45; }
+/* Save row that stays put while a long form scrolls past it. */
+.m-savebar { position:sticky; bottom:0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 0 2px; background:linear-gradient(transparent, var(--surface) 22%); }
+
+/* A phone-shaped preview of the customer app, for merchant screens (the real
+   customer styles are scoped to .pwa-app and must not leak in here). */
+.m-phone { border:1px solid var(--line); border-radius:22px; background: var(--surface); padding:14px;
+  box-shadow: var(--shadow); }
+.m-phone .scr { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+.m-phone .art { aspect-ratio:16/10; background: var(--surface-2); display:grid; place-items:center; font-size:38px; }
+.m-phone .art img { width:100%; height:100%; object-fit:cover; display:block; }
+.m-phone .bd { padding:14px; }
+.m-phone .tt { font-weight:700; font-size:15px; letter-spacing:-.015em; }
+.m-phone .ds { font-size:12.5px; color: var(--ink-2); margin-top:5px; line-height:1.5; }
+.m-phone .cta { margin-top:12px; padding:10px; border-radius:11px; background: var(--primary);
+  color: var(--on-primary); text-align:center; font-weight:700; font-size:13.5px; }
+.m-previewlabel { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color: var(--ink-2); margin-bottom:8px; }

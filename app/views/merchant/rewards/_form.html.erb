@@ -6,8 +6,20 @@
       rewardform_percent_ph_value: t("merchant.reward_units.percent_ph"),
       rewardform_item_ph_value: t("merchant.reward_units.item_ph") } do |f| %>
   <% if reward.errors.any? %>
-    <div class="l-chip" style="background:#F3DDD7; color:#B4402F; margin-bottom:12px;"><%= reward.errors.full_messages.to_sentence %></div>
+    <div class="l-note warn" style="margin-bottom:14px;">
+      <%= ui_icon(:shield, size: 16) %><span><%= reward.errors.full_messages.to_sentence %></span>
+    </div>
   <% end %>
+
+  <%# The design edits in two columns: grouped sections on the left, and a phone
+      showing what the customer ends up seeing on the right. %>
+  <div class="m-editor">
+    <div>
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= t("merchant.rewards.sec_what") %></div>
+          <div class="s"><%= t("merchant.rewards.sec_what_sub") %></div>
+        </div>
   <label class="l-label"><%= t("merchant.rewards.name") %></label>
   <%= f.text_field :title, class: "l-field", placeholder: t("merchant.rewards.name_ph") %>
 
@@ -48,7 +60,14 @@
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px;">
+      </div>
+
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= t("merchant.rewards.sec_cost") %></div>
+          <div class="s"><%= t("merchant.rewards.sec_cost_sub") %></div>
+        </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
     <div>
       <label class="l-label"><%= t("merchant.rewards.cost") %></label>
       <%= f.number_field :cost_points, class: "l-field", placeholder: "300" %>
@@ -70,9 +89,15 @@
     <%= f.number_field :stock, class: "l-field", placeholder: "∞" %>
   </div>
 
-  <%# ---- Time: availability window + voucher validity ---- %>
-  <div style="margin-top:14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px;"
-       data-controller="expirymode">
+      </div>
+
+      <%# ---- Time: availability window + voucher validity ---- %>
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= t("merchant.rewards.sec_time") %></div>
+          <div class="s"><%= t("merchant.rewards.sec_time_sub") %></div>
+        </div>
+  <div data-controller="expirymode">
     <div style="font-size:15px; font-weight:800; color:var(--ink); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;"><%= t("merchant.rewards.time_title") %></div>
 
     <%# 1) Availability window: when customers can redeem this offer %>
@@ -130,12 +155,52 @@
     <p style="color:var(--ink-2); font-size:12px; margin-top:8px;"><%= t("merchant.rewards.sched_hint") %></p>
   </div>
 
-  <label class="l-label" style="margin-top:12px;"><%= t("merchant.rewards.description") %></label>
+      </div>
+
+      <div class="m-section">
+        <div class="hd">
+          <div class="t"><%= t("merchant.rewards.sec_copy") %></div>
+          <div class="s"><%= t("merchant.rewards.sec_copy_sub") %></div>
+        </div>
+  <label class="l-label"><%= t("merchant.rewards.description") %></label>
   <%= f.text_area :description, class: "l-field", rows: 2, placeholder: t("merchant.rewards.description_ph") %>
 
-  <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px;">
-    <%= f.check_box :active %> <%= t("merchant.rewards.active") %>
-  </label>
+      </div>
 
-  <%= f.submit submit_label, class: "l-btn l-btn-primary", style: "margin-top:14px;" %>
+      <div class="m-savebar">
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px; flex:1; min-width:180px;">
+          <%= f.check_box :active %> <%= t("merchant.rewards.active") %>
+        </label>
+        <%= f.submit submit_label, class: "l-btn l-btn-primary", style: "flex:none;" %>
+      </div>
+    </div>
+
+    <%# ---- What the customer will see ---- %>
+    <div>
+      <div class="m-previewlabel"><%= t("merchant.rewards.preview_label") %></div>
+      <div class="m-phone">
+        <div class="scr">
+          <div class="art"><%= reward_art(reward, size: 420, emoji_size: 38) %></div>
+          <div class="bd">
+            <div class="tt"><%= reward.title.presence || t("merchant.rewards.preview_untitled") %></div>
+            <% if reward.description.present? %>
+              <div class="ds"><%= truncate(reward.description, length: 90) %></div>
+            <% end %>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
+              <% if reward.cost_points.to_i.positive? %>
+                <span class="l-chip l-chip-brand" style="font-size:11.5px;"><%= t("merchant.rewards.points_n", n: number_with_delimiter(reward.cost_points)) %></span>
+              <% end %>
+              <% if reward.persisted? && reward.value.to_i.positive? %>
+                <span class="l-chip" style="font-size:11.5px;"><%= reward.value_label %></span>
+              <% end %>
+            </div>
+            <div class="cta"><%= t("customer.reward.redeem_cta") %></div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--ink-2); line-height:1.5; margin-top:10px;">
+        <%= t("merchant.rewards.preview_note") %>
+      </p>
+    </div>
+  </div>
 <% end %>

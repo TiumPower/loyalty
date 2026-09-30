@@ -129,12 +129,21 @@
         </summary>
         <div class="sc-body">
           <%= form_with model: c, url: merchant_stamp_card_path(c), method: :patch, scope: :stamp_card do |f| %>
-            <%= f.text_field :title, class: "l-field", style: "margin:4px 0 8px;" %>
-            <div style="display:grid; grid-template-columns:80px 1fr; gap:8px;">
-              <%= f.number_field :target_count, class: "l-field" %>
-              <%= f.select :reward_id, @rewards.map { |r| [reward_option_label(r), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
+            <%# These were four bare inputs with nothing saying which was which. %>
+            <label class="l-label" style="margin-top:4px;"><%= t("merchant.gami.f_stamp_title") %></label>
+            <%= f.text_field :title, class: "l-field" %>
+            <div style="display:grid; grid-template-columns:110px 1fr; gap:10px; margin-top:12px;">
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_target") %></label>
+                <%= f.number_field :target_count, class: "l-field" %>
+              </div>
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_reward") %></label>
+                <%= f.select :reward_id, @rewards.map { |r| [reward_option_label(r), r.id] }, { include_blank: t("merchant.gami.reward_blank") }, class: "l-field" %>
+              </div>
             </div>
-            <div style="margin-top:8px;"><%= render "merchant/shared/icon_field", name: "stamp_card[icon]", value: c.icon, placeholder: "🧋" %></div>
+            <label class="l-label" style="margin-top:12px;"><%= t("merchant.gami.f_icon") %></label>
+            <%= render "merchant/shared/icon_field", name: "stamp_card[icon]", value: c.icon, placeholder: "🧋" %>
             <%# Tạm dừng / Chạy đã có nút riêng ở hàng tiêu đề (lưu ngay). %>
             <div style="display:flex; gap:8px; margin:12px 0 4px;">
               <%= f.submit t("merchant.gami.save"), class: "l-btn l-btn-primary" %>
@@ -199,17 +208,31 @@
         <div class="sc-body">
           <%= form_with model: m, url: merchant_mission_path(m), method: :patch, scope: :mission,
                 data: { controller: "missionform" } do |f| %>
-            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:start;">
-              <%= f.text_field :title, class: "l-field", placeholder: t("merchant.gami.mission_title_ph") %>
-              <div style="width:120px;"><%= render "merchant/shared/icon_field", name: "mission[icon]", value: m.icon, placeholder: "🎯" %></div>
+            <%# Title, type and period were unlabelled selects; the goal and points
+                below them already had labels, so the top half read as guesswork. %>
+            <div style="display:grid; grid-template-columns:1fr 130px; gap:10px; align-items:start;">
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_mission_title") %></label>
+                <%= f.text_field :title, class: "l-field", placeholder: t("merchant.gami.mission_title_ph") %>
+              </div>
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_icon") %></label>
+                <%= render "merchant/shared/icon_field", name: "mission[icon]", value: m.icon, placeholder: "🎯" %>
+              </div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_type") %></label>
               <%= f.select :mission_type,
                     [["Check-in", "checkin"], [t("merchant.gami.mtype_spend"), "spend"], [t("merchant.gami.mtype_visit"), "visit"],
                      [t("merchant.gami.mtype_review"), "review"], [t("merchant.gami.mtype_social"), "social_share"]],
                     {}, class: "l-field",
                     data: { missionform_target: "type", action: "change->missionform#typeChanged" } %>
-              <%= f.select :period, [[t("merchant.gami.period_once"), "once"], [t("merchant.gami.daily"), "daily"], [t("merchant.gami.weekly"), "weekly"]], {}, class: "l-field", data: { missionform_target: "period" } %>
+              </div>
+              <div>
+                <label class="l-label"><%= t("merchant.gami.f_period") %></label>
+                <%= f.select :period, [[t("merchant.gami.period_once"), "once"], [t("merchant.gami.daily"), "daily"], [t("merchant.gami.weekly"), "weekly"]], {}, class: "l-field", data: { missionform_target: "period" } %>
+              </div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
               <div data-missionform-target="goalWrap">
