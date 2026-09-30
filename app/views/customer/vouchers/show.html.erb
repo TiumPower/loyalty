@@ -15,7 +15,7 @@
   <% if @voucher.state == "used" %>
     <%# ---- Redeemed: a receipt of what it was worth. ---- %>
     <div class="l-result">
-      <div class="halo"><%= ui_icon(:check, size: 40, stroke: 2.4) %></div>
+      <div class="halo solid"><%= ui_icon(:check, size: 34, stroke: 2.8) %></div>
       <h1><%= t("customer.voucher.used_title") %></h1>
       <p><%= @voucher.reward.title %></p>
     </div>

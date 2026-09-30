@@ -662,6 +662,12 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
   box-shadow: 0 0 0 11px var(--primary-soft), 0 0 0 22px color-mix(in srgb, var(--primary) 7%, transparent); }
 .l-result .halo.warn { color: var(--warn);
   box-shadow: 0 0 0 11px var(--warn-soft), 0 0 0 22px color-mix(in srgb, var(--warn) 7%, transparent); }
+/* The redeemed-voucher tick, as its own design frame draws it: a solid disc in
+   the shop's colour with a white glyph, so the mark and the button underneath
+   agree. The points screens keep the green treatment their frame uses — green
+   there means "you gained", which is a different thing to say. */
+.l-result .halo.solid { background: var(--primary); color: var(--on-primary);
+  box-shadow: 0 0 0 11px var(--primary-soft), 0 0 0 22px color-mix(in srgb, var(--primary) 7%, transparent); }
 .l-result h1 { font-size:24px; font-weight:700; letter-spacing:-.022em; line-height:1.2; margin-top:12px; }
 .l-result p { color: var(--ink-2); font-size:14px; line-height:1.5; margin-top:8px; max-width:300px; }
 
