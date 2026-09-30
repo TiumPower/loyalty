@@ -9,7 +9,7 @@
   <% end %>
   <div style="min-width:0;"><div class="t" style="font-size:18px;"><%= current_workspace.name %></div></div>
   <div class="sp">
-    <% if @avg.to_f.positive? %><span class="l-pill"><%= @avg %> ★</span><% end %>
+    <% if @public && @avg.to_f.positive? %><span class="l-pill"><%= @avg %> ★</span><% end %>
   </div>
 </header>
 
@@ -125,31 +125,100 @@
       <% end %>
     </div>
 
-    <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:26px;"><%= t("customer.shop.reviews") %></h3>
-    <div class="l-tile" style="margin-top:12px;">
-      <div style="display:flex; align-items:flex-start; gap:20px;">
-        <div style="flex:none; text-align:center;">
-          <div style="font-size:36px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
-          <span class="l-pill amber" style="margin-top:8px;"><%= @avg %> ★</span>
+    <%# The public half of this page. The merchant's "trang đánh giá công khai"
+        switch used to hide the whole screen — address, hours, menu and all —
+        which is two decisions made by one control. It now governs exactly what
+        it is named after: whether other customers' reviews are shown. %>
+    <% if @public %>
+      <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:26px;"><%= t("customer.shop.reviews") %></h3>
+      <div class="l-tile" style="margin-top:12px;">
+        <div style="display:flex; align-items:flex-start; gap:20px;">
+          <div style="flex:none; text-align:center;">
+            <div style="font-size:36px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
+            <span class="l-pill amber" style="margin-top:8px;"><%= @avg %> ★</span>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <% 5.downto(1) do |n| %>
+              <% pct = @count.positive? ? (@dist[n] * 100.0 / @count).round : 0 %>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                <span style="font-size:11.5px; color:var(--ink-2); width:8px; flex:none;"><%= n %></span>
+                <span class="l-bar" style="flex:1; height:6px;"><span style="width:<%= pct %>%;"></span></span>
+                <span style="font-size:11px; color:var(--ink-2); width:30px; text-align:right; flex:none;"><%= pct %>%</span>
+              </div>
+            <% end %>
+          </div>
         </div>
-        <div style="flex:1; min-width:0;">
-          <% 5.downto(1) do |n| %>
-            <% pct = @count.positive? ? (@dist[n] * 100.0 / @count).round : 0 %>
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-              <span style="font-size:11.5px; color:var(--ink-2); width:8px; flex:none;"><%= n %></span>
-              <span class="l-bar" style="flex:1; height:6px;"><span style="width:<%= pct %>%;"></span></span>
-              <span style="font-size:11px; color:var(--ink-2); width:30px; text-align:right; flex:none;"><%= pct %>%</span>
-            </div>
-          <% end %>
-        </div>
+        <% if @highlights.present? %>
+          <div style="height:1px; background:var(--line-soft); margin:14px 0;"></div>
+          <div class="l-chipset"><% @highlights.each { |h| %><span><%= h %></span><% } %></div>
+        <% end %>
       </div>
-      <% if @highlights.present? %>
-        <div style="height:1px; background:var(--line-soft); margin:14px 0;"></div>
-        <div class="l-chipset"><% @highlights.each { |h| %><span><%= h %></span><% } %></div>
-      <% end %>
-    </div>
+        <%# One list, newest first, as the design shows. A review of the member's own
+            is flagged inline and editable rather than hidden behind a second tab.
+            The list lives in its own frame so "see all" swaps the reviews in place
+            instead of reloading the page and throwing the reader back to the top. %>
+        <%= turbo_frame_tag "shop_reviews", class: "l-busy", style: "display:block; margin-top:14px;" do %>
+          <% if @ratings.empty? %>
+            <div class="l-empty">
+              <div class="ic"><%= ui_icon(:star, size: 26) %></div>
+              <div class="tt"><%= t("customer.shop.no_reviews") %></div>
+            </div>
+          <% else %>
+            <% @ratings.first(@shown).each do |r| %>
+              <% mine = r.member_id == current_member.id %>
+              <div class="l-tile" style="margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <%= member_avatar(r.member, klass: "", style: "width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;") %>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; font-size:14px;">
+                      <%= r.member&.display_name %><% if mine %><span style="color:var(--ink-2); font-weight:400;"> · <%= t("customer.shop.you") %></span><% end %>
+                    </div>
+                    <div style="font-size:11.5px; color:var(--ink-2); margin-top:2px;"><%= t("customer.notifications.ago", time: time_ago_in_words(r.created_at)) %></div>
+                  </div>
+                  <% if mine %>
+                    <%= link_to member_edit_review_path(r), class: "l-iconbtn sm", title: t("customer.shop.edit_review") do %>
+                      <%= ui_icon(:edit, size: 14) %>
+                    <% end %>
+                  <% end %>
+                  <span class="l-pill amber" style="flex:none;"><%= r.stars %> ★</span>
+                </div>
+                <% if r.comment.present? %>
+                  <div style="font-size:13.5px; margin-top:9px; line-height:1.55;"><%= r.comment %></div>
+                <% end %>
+                <%# Photos of the visit. They open full size, because a thumbnail of
+                    a coffee is not why the customer took the picture. %>
+                <% if r.photos.attached? %>
+                  <div class="l-reviewshots">
+                    <% r.photo_list.each do |att| %>
+                      <%= link_to url_for(att), target: "_blank", rel: "noopener" do %>
+                        <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+                <% if r.replied? %>
+                  <div style="margin-top:10px; padding:11px 13px; border-radius:12px; background:var(--surface-2); border-left:3px solid var(--primary);">
+                    <div style="font-size:12px; font-weight:700; color:var(--primary);">
+                      <%= t("customer.review_reply.from_shop", shop: current_workspace.name) %>
+                      <span style="font-weight:400; color:var(--ink-2);"> · <%= l(r.replied_at.to_date, format: :short) %></span>
+                    </div>
+                    <div style="font-size:13px; margin-top:4px; line-height:1.5;"><%= r.reply_body %></div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+            <% if @ratings.size > @shown %>
+              <%= link_to member_shop_about_path(all: 1), class: "l-btn l-btn-ghost l-btn-block",
+                    style: "margin-bottom:12px;", data: { turbo_frame: "shop_reviews" } do %>
+                <%= t("customer.shop.more_reviews", n: @ratings.size - @shown) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+    <% end %>
 
-    <%# Your own reviews, first.
+    <%# Your own reviews, shown whichever way the switch is set: a member who
+        left feedback needs a way back to it even when the public list is off.
         The redesign folded the old "Của bạn" tab into one list and flagged your
         rows inline — but the list shows three by default and caps at a hundred,
         so a member whose review had scrolled out of that window had no way back
@@ -175,69 +244,6 @@
           <% end %>
         <% end %>
       </div>
-    <% end %>
-
-    <%# One list, newest first, as the design shows. A review of the member's own
-        is flagged inline and editable rather than hidden behind a second tab.
-        The list lives in its own frame so "see all" swaps the reviews in place
-        instead of reloading the page and throwing the reader back to the top. %>
-    <%= turbo_frame_tag "shop_reviews", class: "l-busy", style: "display:block; margin-top:14px;" do %>
-      <% if @ratings.empty? %>
-        <div class="l-empty">
-          <div class="ic"><%= ui_icon(:star, size: 26) %></div>
-          <div class="tt"><%= t("customer.shop.no_reviews") %></div>
-        </div>
-      <% else %>
-        <% @ratings.first(@shown).each do |r| %>
-          <% mine = r.member_id == current_member.id %>
-          <div class="l-tile" style="margin-bottom:10px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <%= member_avatar(r.member, klass: "", style: "width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--ink-2);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none;") %>
-              <div style="flex:1; min-width:0;">
-                <div style="font-weight:700; font-size:14px;">
-                  <%= r.member&.display_name %><% if mine %><span style="color:var(--ink-2); font-weight:400;"> · <%= t("customer.shop.you") %></span><% end %>
-                </div>
-                <div style="font-size:11.5px; color:var(--ink-2); margin-top:2px;"><%= t("customer.notifications.ago", time: time_ago_in_words(r.created_at)) %></div>
-              </div>
-              <% if mine %>
-                <%= link_to member_edit_review_path(r), class: "l-iconbtn sm", title: t("customer.shop.edit_review") do %>
-                  <%= ui_icon(:edit, size: 14) %>
-                <% end %>
-              <% end %>
-              <span class="l-pill amber" style="flex:none;"><%= r.stars %> ★</span>
-            </div>
-            <% if r.comment.present? %>
-              <div style="font-size:13.5px; margin-top:9px; line-height:1.55;"><%= r.comment %></div>
-            <% end %>
-            <%# Photos of the visit. They open full size, because a thumbnail of
-                a coffee is not why the customer took the picture. %>
-            <% if r.photos.attached? %>
-              <div class="l-reviewshots">
-                <% r.photo_list.each do |att| %>
-                  <%= link_to url_for(att), target: "_blank", rel: "noopener" do %>
-                    <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
-                  <% end %>
-                <% end %>
-              </div>
-            <% end %>
-            <% if r.replied? %>
-              <div style="margin-top:10px; padding:11px 13px; border-radius:12px; background:var(--surface-2); border-left:3px solid var(--primary);">
-                <div style="font-size:12px; font-weight:700; color:var(--primary);">
-                  <%= t("customer.review_reply.from_shop", shop: current_workspace.name) %>
-                  <span style="font-weight:400; color:var(--ink-2);"> · <%= l(r.replied_at.to_date, format: :short) %></span>
-                </div>
-                <div style="font-size:13px; margin-top:4px; line-height:1.5;"><%= r.reply_body %></div>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-        <% if @ratings.size > @shown %>
-          <%= link_to member_shop_about_path(all: 1), class: "l-btn l-btn-ghost l-btn-block",
-                style: "margin-bottom:12px;", data: { turbo_frame: "shop_reviews" } do %>
-            <%= t("customer.shop.more_reviews", n: @ratings.size - @shown) %>
-          <% end %>
-        <% end %>
-      <% end %>
     <% end %>
 
     <%= link_to member_new_review_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:4px;" do %>

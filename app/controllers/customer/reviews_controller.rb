@@ -4,14 +4,32 @@ module Customer
   class ReviewsController < BaseController
     before_action :require_workspace!
     before_action :require_member!
-    before_action :ensure_public!, only: [:index]
 
     # How often one member can receive the automatic "sorry about that" reward.
     # Without this, a member could farm vouchers by leaving 1-star reviews.
     APOLOGY_COOLDOWN = 90.days
 
+    # The shop's own page: where it is, when it opens, what it serves, and —
+    # when the merchant allows it — what other customers said.
+    #
+    # The whole screen used to sit behind `feedback_public`, so a merchant who
+    # only wanted to keep other people's reviews off the app also took away
+    # their address, opening hours, amenities and menu. Those are two different
+    # decisions; the switch now makes only the second one.
     def index
-      @outlets  = current_workspace.outlets.order(:id).to_a
+      @outlets = current_workspace.outlets.order(:id).to_a
+      @public  = current_workspace.feedback_public?
+      # A member's own reviews are their own: they can read and edit them even
+      # when the public list is off, or there is no way back to something they
+      # wrote.
+      @mine     = Rating.where(member: current_member).recent.to_a
+      @my_count = @mine.size
+
+      unless @public
+        @count, @avg, @dist, @ratings, @shown, @highlights = 0, 0, (1..5).index_with { 0 }, [], 0, []
+        return
+      end
+
       @count    = Rating.count
       @avg      = Rating.average(:stars)&.round(1) || 0
       # Star breakdown for the summary bars — one grouped count over the whole
@@ -25,8 +43,6 @@ module Customer
       counts    = Hash.new(0)
       Rating.where.not(tags: nil).pluck(:tags).each { |list| Array(list).each { |k| counts[k] += 1 if Rating::TAGS.include?(k) } }
       @highlights = counts.sort_by { |_, n| -n }.first(3).map { |k, _| t("customer.review.tag_#{k}") }
-      @mine     = Rating.where(member: current_member).recent.to_a
-      @my_count = @mine.size
     end
 
     def new
@@ -97,11 +113,7 @@ module Customer
     end
     # The chips post whatever is in the DOM, so keep only keys we know.
     def tags_param = Array(params[:tags]).map(&:to_s) & Rating::TAGS
-    def after_save_path = current_workspace.feedback_public? ? member_shop_about_path : member_profile_path
-
-    def ensure_public!
-      redirect_to member_root_path, alert: t("customer.review_reply.unavailable") unless current_workspace.feedback_public?
-    end
+    def after_save_path = member_shop_about_path
 
     # An unhappy customer who gets something back on the spot often stays. Only
     # fires when the merchant configured it, and at most once per cooldown.

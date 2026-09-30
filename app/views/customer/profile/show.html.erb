@@ -120,12 +120,10 @@
     <% end %>
 
     <%# "Help & Support" → the shop itself, which is who can actually help. %>
-    <% if current_workspace.feedback_public? %>
-      <%= link_to member_shop_about_path do %>
-        <span class="ic"><%= ui_icon(:help, size: 20) %></span>
-        <span style="flex:1; min-width:0;"><%= t("customer.profile.help") %></span>
-        <span class="tr"><%= current_workspace.name %><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
-      <% end %>
+    <%= link_to member_shop_about_path do %>
+      <span class="ic"><%= ui_icon(:help, size: 20) %></span>
+      <span style="flex:1; min-width:0;"><%= t("customer.profile.help") %></span>
+      <span class="tr"><%= current_workspace.name %><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>
     <% end %>
   </div>
 

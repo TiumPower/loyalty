@@ -1,7 +1,7 @@
 <% content_for :title, t("customer.review.new_title") %>
 <% content_for :tab, "" %>
 <header class="l-subhead">
-  <%= link_to (current_workspace.feedback_public? ? member_shop_about_path : member_profile_path),
+  <%= link_to member_shop_about_path,
         class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
