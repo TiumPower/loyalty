@@ -2011,6 +2011,46 @@ en:
       balance_pre: "Balance:"
       show_to_staff: "Show this code to staff to earn points on your bill."
       scan_shop_qr_sub: "Check in at the shop, or claim a campaign gift"
+    notices:
+      tier_up:
+        title: "%{tier} tier unlocked! 🎉"
+        body: "Congratulations on reaching %{tier} at %{shop} — see what it gets you."
+      referral_joined:
+        title: "Friend joined! 🤝"
+        body: "%{name} just made their first purchase at %{shop} — you earned %{n} points."
+      referral_welcome:
+        title: "Thanks for joining! 🤝"
+        body: "You earned %{n} points from %{name}'s invite."
+      stamp_reward:
+        title: "You got a reward! 🎁"
+        body: "Stamp card “%{card}” is complete — %{reward} is in your wallet."
+      stamp_held:
+        title: "Your stamp card is full ⏳"
+        body: "“%{card}” is full but “%{reward}” is out of stock. Your stamps are kept — the reward lands in your wallet as soon as the shop restocks."
+      badge_earned:
+        title: "New badge! %{icon_char}"
+        body: "You earned the “%{badge}” badge%{reward}"
+      referral_note_referrer: "Referral bonus"
+      referral_note_referred: "Welcome referral bonus"
+      badge_points: "+%{n} points"
+      badge_voucher: "%{reward} is in your wallet"
+      claim_reward:
+        title: "Offer claimed! 🎁"
+        body: "%{reward} is in your wallet — find it under Available."
+      welcome:
+        title: "Welcome! 🎁"
+        body: "%{reward} is in your wallet — thanks for joining!"
+      birthday:
+        title: "🎂 Happy birthday!"
+        body: "%{reward} is in your wallet — a small gift for your day!"
+      winback:
+        title: "Long time no see 👋"
+        body: "%{message}"
+      winback_gift: "%{shop} misses you! Come back for an offer."
+      winback_plain: "%{shop} misses you! Come back and see us."
+      points_expiring:
+        title: "%{n} points expiring soon"
+        body: "%{n} of your points expire on %{date} — redeem them before they go!"
     scan:
       recognised: "Recognised outlet"
       checkin_title: "Check in & claim"
@@ -2042,6 +2082,9 @@ en:
       campaign_gift: "Campaign gift"
       campaign_ready: "Scan a code on a poster, table or screen"
       campaign_explainer: "A shop can post its own QR for a campaign. Scanning it drops the reward straight into your wallet, and costs no points."
+      what_you_earn: "What you earn"
+      once_a_day: "1x per day"
+      done_today: "Already checked in today"
     pwa:
       notifications: "Push notifications"
       push_on: "On — you'll get offers & reminders"
@@ -2202,8 +2245,6 @@ en:
       complete_to_get_html: "Complete to get <strong>%{reward}</strong>"
       held_title: "Card full — waiting for the shop to restock"
       held_body: "Your stamps stay put. “%{reward}” is out of stock for now; you get it as soon as the shop restocks — no need to start over."
-      held_notice_title: "Your stamp card is full ⏳"
-      held_notice_body: "“%{card}” is full but “%{reward}” is out of stock. Your stamps are kept — the reward lands in your wallet as soon as the shop restocks."
       redeemed_times: " · redeemed %{n}×"
     badges:
       detail_title: "Badge details"

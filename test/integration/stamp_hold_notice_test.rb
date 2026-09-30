@@ -24,7 +24,7 @@ class StampHoldNoticeTest < ActionDispatch::IntegrationTest
       2.times { Gamification.advance_stamps(@member, @ws) }
       notices = Notification.where(member_id: @member.id).to_a
       assert_equal 1, notices.size
-      assert_equal I18n.t("customer.stamps.held_notice_title"), notices.first.title
+      assert_equal I18n.t("customer.notices.stamp_held.title"), notices.first.title
 
       alerts = MerchantAlert.where(kind: "reward_stock").to_a
       assert_equal 1, alerts.size

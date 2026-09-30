@@ -5,6 +5,10 @@ module Customer
 
     def show
       @member = current_member
+      # What a check-in is actually worth, and whether today's is already spent.
+      # The screen used to promise "nhận điểm" without ever naming a number.
+      @checkin_points = current_workspace.missions.active.where(mission_type: "checkin").sum(:reward_points)
+      @checked_in_today = current_member.last_checkin_at&.to_date == Date.current
     end
 
     # Multi-purpose resolver (§6.2 POS earn + §6.6 promo claim). Reached from the
@@ -74,12 +78,8 @@ module Customer
     # the one-time success screen (also nudges the wallet "Khả dụng" badge).
     def notify_claim(voucher)
       return unless voucher
-      Notification.create!(workspace: current_workspace, member: current_member, kind: "reward",
-        title: "Bạn vừa nhận ưu đãi! 🎁",
-        body: "#{voucher.reward&.title} đã vào ví của bạn — xem trong mục Khả dụng.",
-        icon: "🎁", deep_link: "/vouchers/#{voucher.id}")
-    rescue => e
-      Rails.logger.error("[Scan] notify_claim: #{e.class} #{e.message}")
+      MemberNotifier.notify(current_member, "claim_reward", icon: "🎁",
+                            link: "/vouchers/#{voucher.id}", reward: voucher.reward&.title)
     end
 
     # ---- POS self-scan earn (§6.2) ----

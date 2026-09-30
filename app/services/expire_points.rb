@@ -37,10 +37,9 @@ module ExpirePoints
     amt, date = member.points_expiring_soon(within: REMIND_WITHIN)
     return 0 if amt <= 0
     return 0 if member.notifications.where(kind: "reminder").where("created_at > ?", 6.days.ago).exists?
-    member.notifications.create!(workspace: member.workspace, kind: "reminder", icon: "⏳",
-      title: "#{amt} điểm sắp hết hạn",
-      body: "#{amt} điểm của bạn sẽ hết hạn vào #{I18n.l(date.to_date, format: :short)} — đổi quà ngay kẻo lỡ!",
-      deep_link: "/wallet?tab=rewards")
+    MemberNotifier.notify(member, "points_expiring", kind: "reminder", icon: "⏳",
+                          link: "/wallet?tab=rewards", n: amt,
+                          date: I18n.l(date.to_date, format: :short))
     1
   rescue => e
     Rails.logger.error("[ExpirePoints] remind: #{e.class} #{e.message}")

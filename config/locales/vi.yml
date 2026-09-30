@@ -2052,6 +2052,46 @@ vi:
       balance_pre: "Số dư:"
       show_to_staff: "Đưa mã này cho nhân viên quét để tích điểm vào hoá đơn của %{term}."
       scan_shop_qr_sub: "Check-in tại quán hoặc nhận quà từ chiến dịch"
+    notices:
+      tier_up:
+        title: "Lên hạng %{tier}! 🎉"
+        body: "Chúc mừng bạn đã đạt hạng %{tier} tại %{shop} — xem quyền lợi mới của bạn."
+      referral_joined:
+        title: "Bạn bè đã tham gia! 🤝"
+        body: "%{name} vừa mua hàng lần đầu tại %{shop} — bạn được cộng %{n} điểm."
+      referral_welcome:
+        title: "Cảm ơn bạn đã tham gia! 🤝"
+        body: "Bạn được cộng %{n} điểm nhờ lời mời của %{name}."
+      stamp_reward:
+        title: "Bạn vừa nhận quà! 🎁"
+        body: "Thẻ tem “%{card}” đã hoàn thành — %{reward} đã vào ví của bạn."
+      stamp_held:
+        title: "Thẻ tem của bạn đã đầy ⏳"
+        body: "Thẻ “%{card}” đã đủ tem nhưng quà “%{reward}” tạm hết suất. Số tem được giữ nguyên — quán bổ sung là quà vào ví bạn ngay."
+      badge_earned:
+        title: "Huy hiệu mới! %{icon_char}"
+        body: "Bạn vừa đạt huy hiệu “%{badge}”%{reward}"
+      referral_note_referrer: "Thưởng giới thiệu bạn"
+      referral_note_referred: "Thưởng khi được giới thiệu"
+      badge_points: "+%{n} điểm"
+      badge_voucher: "%{reward} đã vào ví"
+      claim_reward:
+        title: "Bạn vừa nhận ưu đãi! 🎁"
+        body: "%{reward} đã vào ví của bạn — xem trong mục Khả dụng."
+      welcome:
+        title: "Chào mừng bạn! 🎁"
+        body: "%{reward} đã vào ví của bạn — cảm ơn bạn đã tham gia!"
+      birthday:
+        title: "🎂 Chúc mừng sinh nhật!"
+        body: "%{reward} đã vào ví của bạn — món quà nhỏ mừng sinh nhật bạn!"
+      winback:
+        title: "Lâu rồi không gặp bạn 👋"
+        body: "%{message}"
+      winback_gift: "%{shop} nhớ bạn! Ghé lại nhận ưu đãi nhé."
+      winback_plain: "%{shop} nhớ bạn! Ghé lại nhé."
+      points_expiring:
+        title: "%{n} điểm sắp hết hạn"
+        body: "%{n} điểm của bạn sẽ hết hạn vào %{date} — đổi quà ngay kẻo lỡ!"
     scan:
       recognised: "Đã nhận mã của quán"
       checkin_title: "Check-in & nhận quà"
@@ -2083,6 +2123,9 @@ vi:
       campaign_gift: "Quà từ chiến dịch"
       campaign_ready: "Quét mã trên poster, bàn hoặc màn hình"
       campaign_explainer: "Quán có thể treo mã QR riêng cho một chiến dịch. Quét mã đó là ưu đãi vào ví bạn ngay, không trừ điểm."
+      what_you_earn: "Bạn nhận được"
+      once_a_day: "1 lần/ngày"
+      done_today: "Hôm nay đã check-in"
     pwa:
       notifications: "Thông báo đẩy"
       push_on: "Đang bật — bạn sẽ nhận ưu đãi & nhắc nhở"
@@ -2243,8 +2286,6 @@ vi:
       complete_to_get_html: "Hoàn thành để nhận <strong>%{reward}</strong>"
       held_title: "Thẻ đã đầy — chờ quán bổ sung quà"
       held_body: "Bạn giữ nguyên số tem nhé. Quà “%{reward}” đang tạm hết suất; quán bổ sung là bạn nhận được ngay, không phải tích lại."
-      held_notice_title: "Thẻ tem của bạn đã đầy ⏳"
-      held_notice_body: "Thẻ “%{card}” đã đủ tem nhưng quà “%{reward}” tạm hết suất. Số tem được giữ nguyên — quán bổ sung là quà vào ví bạn ngay."
       redeemed_times: " · đã nhận %{n} lần"
     badges:
       detail_title: "Chi tiết huy hiệu"

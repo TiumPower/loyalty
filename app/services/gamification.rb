@@ -94,28 +94,15 @@ module Gamification
 
   # The card is full and waiting — nothing was taken from the customer.
   def notify_stamp_held(member, ws, card)
-    title = I18n.t("customer.stamps.held_notice_title")
-    body  = I18n.t("customer.stamps.held_notice_body", card: card.title,
-                                                       reward: card.reward&.title)
-    Notification.create!(workspace: ws, member: member, kind: "system",
-                         title: title, body: body, icon: "⏳", deep_link: "/stamps")
-    PushJob.perform_later(ws.id, [member.id], title, body, "/stamps") if PushSender.configured?
-  rescue => e
-    Rails.logger.error("[Gamification] notify_stamp_held: #{e.class} #{e.message}")
+    MemberNotifier.notify(member, "stamp_held", kind: "system", icon: "⏳", link: "/stamps",
+                          card: card.title, reward: card.reward&.title)
   end
 
   # Let the customer know a stamp card completed and a reward landed in their
   # wallet (in-app inbox + push) — otherwise the voucher appears silently.
   def notify_stamp_reward(member, ws, card, voucher)
-    reward_name = voucher.reward&.title
-    title = "Bạn vừa nhận quà! 🎁"
-    body  = "Thẻ tem “#{card.title}” đã hoàn thành — #{reward_name} đã vào ví của bạn."
-    Notification.create!(workspace: ws, member: member, kind: "reward",
-                         title: title, body: body, icon: "🎁",
-                         deep_link: "/vouchers/#{voucher.id}")
-    PushJob.perform_later(ws.id, [member.id], title, body, "/vouchers/#{voucher.id}") if PushSender.configured?
-  rescue => e
-    Rails.logger.error("[Gamification] notify_stamp_reward: #{e.class} #{e.message}")
+    MemberNotifier.notify(member, "stamp_reward", icon: "🎁", link: "/vouchers/#{voucher.id}",
+                          card: card.title, reward: voucher.reward&.title)
   end
 
   def advance_missions(member, ws, purchase)
@@ -157,18 +144,15 @@ module Gamification
   # its reward would appear silently. Deep-links to the voucher when one was gifted,
   # otherwise to the badges screen.
   def notify_badge_earned(member, ws, badge, voucher)
-    parts = []
-    parts << "+#{badge.reward_points} điểm" if badge.reward_points.to_i.positive?
-    parts << "#{voucher.reward&.title} đã vào ví" if voucher
-    reward_line = parts.any? ? " — #{parts.join(" · ")}." : "."
-    title = "Huy hiệu mới! #{badge.display_icon}"
-    body  = "Bạn vừa đạt huy hiệu “#{badge.name}”#{reward_line}"
-    deep_link = voucher ? "/vouchers/#{voucher.id}" : "/badges"
-    Notification.create!(workspace: ws, member: member, kind: "reward",
-                         title: title, body: body, icon: badge.display_icon,
-                         deep_link: deep_link)
-    PushJob.perform_later(ws.id, [member.id], title, body, deep_link) if PushSender.configured?
-  rescue => e
-    Rails.logger.error("[Gamification] notify_badge_earned: #{e.class} #{e.message}")
+    parts = I18n.with_locale(MemberNotifier.locale_for(member)) do
+      list = []
+      list << I18n.t("customer.notices.badge_points", n: badge.reward_points) if badge.reward_points.to_i.positive?
+      list << I18n.t("customer.notices.badge_voucher", reward: voucher.reward&.title) if voucher
+      list
+    end
+    MemberNotifier.notify(member, "badge_earned", icon: badge.display_icon,
+                          link: (voucher ? "/vouchers/#{voucher.id}" : "/badges"),
+                          badge: badge.name, icon_char: badge.display_icon,
+                          reward: (parts.any? ? " — #{parts.join(" · ")}." : "."))
   end
 end

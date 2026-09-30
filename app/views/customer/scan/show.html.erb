@@ -63,6 +63,20 @@
         </div>
       </div>
       <p style="font-size:13px; color:var(--ink-2); line-height:1.5; margin-top:10px;"><%= t("customer.scan.checkin_explainer") %></p>
+
+      <%# What it is worth. The design names a number here; this screen used to
+          say only "để nhận điểm", which is not a reason to open a camera. %>
+      <% if @checkin_points.to_i.positive? %>
+        <div class="l-delta" style="margin-top:12px;">
+          <div>
+            <div class="k"><%= t("customer.scan.what_you_earn") %></div>
+            <div class="v hi">+<%= t("customer.common.points_count", n: number_with_delimiter(@checkin_points)) %></div>
+          </div>
+          <span class="l-pill <%= @checked_in_today ? "" : "good" %>" style="flex:none;">
+            <%= @checked_in_today ? t("customer.scan.done_today") : t("customer.scan.once_a_day") %>
+          </span>
+        </div>
+      <% end %>
     </div>
 
     <%# The other thing this camera does. The screen used to name only check-in,

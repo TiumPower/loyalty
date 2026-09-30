@@ -56,6 +56,22 @@ class ScanGutterTest < ActionDispatch::IntegrationTest
     assert_match I18n.t("customer.scan.campaign_explainer"), response.body
   end
 
+  # "Để nhận điểm" is not a reason to open a camera. The design names a number.
+  test "the scanner says what a check-in is actually worth" do
+    get "#{base}/scan"
+    assert_response :success
+    assert_match I18n.t("customer.scan.what_you_earn"), response.body
+    assert_match "20", response.body
+    assert_match I18n.t("customer.scan.once_a_day"), response.body
+
+    # After today's check-in the same row has to stop inviting one.
+    checkin = ActsAsTenant.with_tenant(@ws) { Checkin.encode(@ws, @outlet) }
+    get "#{base}/scan/resolve", params: { checkin: checkin }
+    get "#{base}/scan"
+    assert_match I18n.t("customer.scan.done_today"), response.body
+    refute_match I18n.t("customer.scan.once_a_day"), response.body
+  end
+
   test "the my-code sheet's scan button says what else the camera is for" do
     get "#{base}/my-code"
     assert_response :success

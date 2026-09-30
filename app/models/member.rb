@@ -107,12 +107,40 @@ class Member < ApplicationRecord
   # Recompute cached balance / lifetime / tier from the ledger. Call after any
   # point movement.
   def recompute_points!
+    was = tier_key
     self.points_balance  = point_transactions.sum(:amount)
     # Lifetime = everything ever credited, less anything a voided bill took back
     # (a "void" row is negative, so summing it in is the reversal).
     self.lifetime_points = point_transactions.where("amount > 0 OR kind = 'void'").sum(:amount)
     self.tier_key        = tier_for(cycle_points)&.key
+    # Reaching a new rung was silent: the row simply changed and the customer
+    # found out the next time they happened to open the tier screen. The design
+    # announces it ("Gold tier unlocked 🎉"), so announce it.
+    @promoted_to = (tier_key if climbed?(was, tier_key))
     save!(validate: false)
+  end
+
+  # True only when the new tier sits *above* the old one. A cycle rolling over,
+  # or a voided bill, moves the key downwards — that is not a promotion, and
+  # congratulating someone for losing a rung would be worse than saying nothing.
+  def climbed?(from, to)
+    return false if to.blank? || from == to
+    rank = ->(key) { ordered_tiers.index { |t| t.key == key } }
+    a, b = rank.call(from), rank.call(to)
+    b.present? && (a.nil? || b > a)
+  end
+
+  # Fired after the row is committed, so the push job never runs against a
+  # transaction that is still open (or one that rolls back).
+  after_commit :announce_promotion, on: :update
+
+  def announce_promotion
+    key = @promoted_to
+    @promoted_to = nil
+    return if key.blank?
+    name = ordered_tiers.detect { |t| t.key == key }&.name or return
+    MemberNotifier.notify(self, "tier_up", icon: "🏆", link: "/tier",
+                          tier: name, shop: workspace.name)
   end
 
   # FIFO points expiry: debits (redeem/expire) consume the oldest credit lots

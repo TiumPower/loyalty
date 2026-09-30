@@ -12,7 +12,7 @@ module Automations
     reward = ws.rewards.find_by(id: cfg["reward_id"])
     return unless reward
     return unless issue_reward(member, reward, source: "campaign")
-    notify(member, "Chào mừng bạn! 🎁", "#{reward.title} đã vào ví của bạn — cảm ơn bạn đã tham gia!", "/wallet?tab=owned")
+    MemberNotifier.notify(member, "welcome", icon: "🎁", link: "/wallet?tab=owned", reward: reward.title)
   rescue => e
     Rails.logger.error("[Automations] on_signup: #{e.class} #{e.message}")
   end
@@ -31,7 +31,7 @@ module Automations
         # present that is not in their wallet.
         next unless issue_reward(m, reward, source: "birthday")
         m.update_columns(settings: m.settings.merge("birthday_year" => today.year))
-        notify(m, "🎂 Chúc mừng sinh nhật!", "#{reward.title} đã vào ví của bạn — món quà nhỏ mừng sinh nhật bạn!", "/wallet?tab=owned")
+        MemberNotifier.notify(m, "birthday", icon: "🎂", link: "/wallet?tab=owned", reward: reward.title)
         count += 1
       end
     end
@@ -52,8 +52,10 @@ module Automations
         next if recent?(m.settings["winback_at"], 60.days, now)          # don't nag
         gifted = reward ? issue_reward(m, reward, source: "campaign") : nil
         body = cfg["message"].presence ||
-               (gifted ? "#{ws.name} nhớ bạn! Ghé lại nhận ưu đãi nhé." : "#{ws.name} nhớ bạn! Ghé lại nhé.")
-        notify(m, "Lâu rồi không gặp bạn 👋", body, "/")
+               I18n.with_locale(MemberNotifier.locale_for(m)) {
+                 I18n.t("customer.notices.winback_#{gifted ? 'gift' : 'plain'}", shop: ws.name)
+               }
+        MemberNotifier.notify(m, "winback", icon: "👋", link: "/", message: body)
         m.update_columns(settings: m.settings.merge("winback_at" => now.iso8601))
         count += 1
       end
@@ -84,14 +86,6 @@ module Automations
     Voucher.create!(workspace: member.workspace, member: member, reward: reward,
                     source: source, state: "active", points_spent: 0,
                     expires_at: (reward.valid_days || 30).days.from_now)
-  end
-
-  def notify(member, title, body, path)
-    member.notifications.create!(workspace: member.workspace, kind: "reward",
-                                 title: title, body: body, icon: "🎁", deep_link: path)
-    PushJob.perform_later(member.workspace_id, [member.id], title, body, path) if PushSender.configured?
-  rescue => e
-    Rails.logger.error("[Automations] notify: #{e.class} #{e.message}")
   end
 
   def recent?(iso, window, now)

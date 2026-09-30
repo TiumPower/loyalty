@@ -27,13 +27,26 @@ module Referrals
 
     pts = program.referral_points
     Referral.transaction do
-      award(referral.referrer, pts, "Thưởng giới thiệu bạn")
-      award(referral.referred, pts, "Thưởng khi được giới thiệu")
+      award(referral.referrer, pts, I18n.t("customer.notices.referral_note_referrer"))
+      award(referral.referred, pts, I18n.t("customer.notices.referral_note_referred"))
       referral.update!(state: "completed", reward_points: pts, completed_at: Time.current)
       advance_refer_missions(referral.referrer)
     end
+    # Both sides were paid in silence: the referrer saw a number change on a
+    # screen they had no reason to open. The design puts it in the inbox
+    # ("Friend joined!"), which is also the only place the invitee learns why
+    # they started with points.
+    announce(referral, pts)
   rescue => e
     Rails.logger.error("[Referrals] #{e.class}: #{e.message}")
+  end
+
+  def announce(referral, points)
+    shop = referral.workspace.name
+    MemberNotifier.notify(referral.referrer, "referral_joined", icon: "🤝", link: "/refer",
+                          name: referral.referred&.display_name, shop: shop, n: points)
+    MemberNotifier.notify(referral.referred, "referral_welcome", icon: "🤝", link: "/history",
+                          name: referral.referrer&.display_name, n: points)
   end
 
   def award(member, points, note)
