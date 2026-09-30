@@ -1,0 +1,16 @@
+{
+  "env": {
+    "IMPECCABLE_HOOK_DISABLED": "1"
+  },
+  "enabledPlugins": {
+    "impeccable@impeccable": true
+  },
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    }
+  }
+}

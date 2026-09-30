@@ -6,7 +6,7 @@
       Staff-scanner layouts override it via content_for(:apple_title). %>
   <meta name="apple-mobile-web-app-title" content="<%= content_for?(:apple_title) ? yield(:apple_title) : current_workspace.name %>">
 <% end %>
-<title><%= content_for?(:title) ? yield(:title) : "Dynamic Loyalty" %></title>
+<title><%= content_for?(:title) ? yield(:title) : "Quenly" %></title>
 <% if content_for?(:pwa_manifest_href) %>
   <link rel="manifest" href="<%= yield(:pwa_manifest_href) %>">
 <% end %>

@@ -15,11 +15,14 @@
   </head>
   <body>
     <div class="l-auth">
+      <div style="width:100%; max-width:400px;">
+      <a href="/" style="display:block; width:fit-content; margin:0 auto 22px;"><%= image_tag "quenly-lockup.png", alt: "Quenly", width: 449, height: 160, style: "height:44px; width:auto;" %></a>
       <div class="l-auth-card">
         <% if flash[:notice] || flash[:alert] %>
           <div class="l-chip l-chip-brand" style="margin-bottom:16px;"><%= flash[:notice] || flash[:alert] %></div>
         <% end %>
         <%= yield %>
+      </div>
       </div>
     </div>
   </body>

@@ -1,4 +1,4 @@
-# Dynamic Loyalty — Tài liệu mô tả tính năng
+# Quenly — Tài liệu mô tả tính năng
 
 > Nền tảng **Loyalty-as-a-Service** đa workspace (multi-tenant) cho chuỗi F&B / bán lẻ / dịch vụ.
 > Một lần cài, phục vụ nhiều cửa hàng; mỗi cửa hàng có tên miền, bộ nhận diện, chương trình

@@ -3,7 +3,7 @@ module Pwa
   #
   # This is a white-label product, yet every shop without an uploaded logo was
   # falling back to /icon.png — the PLATFORM's sparkle. Their customers saw
-  # Dynamic Loyalty on the login screen, in the browser tab, and as the icon on
+  # Quenly on the login screen, in the browser tab, and as the icon on
   # their home screen after installing the shop's app. At the time of writing
   # that was every shop in production.
   class IconsController < ApplicationController

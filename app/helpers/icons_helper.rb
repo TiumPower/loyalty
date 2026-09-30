@@ -20,8 +20,17 @@ module IconsHelper
     pause:   %(<rect x="7" y="5" width="3.4" height="14" rx="1.2"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.2"/>),
     check:   %(<path d="M4.5 12.5 9.5 17.5 19.5 6.5" stroke-linecap="round"/>),
     launch:  %(<path d="M14 4h6v6" stroke-linecap="round"/><path d="M20 4 10 14" stroke-linecap="round"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5" stroke-linecap="round"/>),
-    trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>)
-  }.freeze
+    trash:   %(<path d="M4 7h16" stroke-linecap="round"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6" stroke-linecap="round"/>),
+    menu:    %(<path d="M4 6h16M4 12h16M4 18h16"/>),
+    close:   %(<path d="M6 6l12 12M18 6L6 18"/>),
+    lock:    %(<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>),  }.freeze
+
+  # Hand-drawn marketing doodle, drawn client-side by sketch_controller (Rough.js).
+  # Decorative only; draws itself in on reveal. Shapes: see RECIPES in that controller.
+  def doodle(shape, klass: nil, i: 0)
+    tag.svg(class: klass, style: ("--i:#{i}" if i.positive?), aria: { hidden: true },
+            data: { controller: "sketch", sketch_shape_value: shape, reveal: "sketch" })
+  end
 
   def ui_icon(name, size: 24, klass: nil, stroke: 1.8)
     body = ICONS[name.to_sym] or return "".html_safe
