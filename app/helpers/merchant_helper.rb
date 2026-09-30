@@ -16,8 +16,7 @@ module MerchantHelper
       ] },
       { key: :operations, icon: :store, label: t("merchant.nav.sec_operations"), items: [
         [:scanner,      t("merchant.nav.scanner"),      merchant_scanner_path,      true],
-        [:transactions, t("merchant.nav.transactions"), merchant_transactions_path, true],
-        [:outlets,      t("merchant.nav.outlets"),      merchant_outlets_path,      manage]
+        [:transactions, t("merchant.nav.transactions"), merchant_transactions_path, true]
       ] },
       { key: :loyalty, icon: :award, label: t("merchant.nav.sec_loyalty"), items: [
         [:program,        t("merchant.nav.program"),      merchant_loyalty_program_path, manage],
@@ -39,12 +38,14 @@ module MerchantHelper
         [:campaigns, t("merchant.nav.campaigns"), merchant_campaigns_path,  manage],
         [:messages,  t("merchant.nav.messages"),  merchant_broadcasts_path, true]
       ] },
+      # Five tabs, as in the design. The merchant's own account is not one of
+      # them: it lives on the sidebar footer chip, where the design puts it.
       { key: :settings, icon: :gear, label: t("merchant.nav.sec_settings"), items: [
         [:appearance, t("merchant.nav.appearance"), merchant_appearance_path,   manage],
+        [:outlets,    t("merchant.nav.outlets"),    merchant_outlets_path,      manage],
         [:staff,      t("merchant.nav.staff"),      merchant_staff_index_path,  manage],
         [:domain,     t("merchant.nav.domain"),     merchant_domain_path,       manage],
-        [:billing,    t("merchant.nav.billing"),    merchant_billing_path,      manage],
-        [:account,    t("merchant.nav.account"),    merchant_account_path,      true]
+        [:billing,    t("merchant.nav.billing"),    merchant_billing_path,      manage]
       ] }
     ].map { |sec| sec.merge(items: sec[:items].select { |it| it[3] }) }
      .reject { |sec| sec[:items].empty? }

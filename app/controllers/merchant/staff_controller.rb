@@ -3,8 +3,21 @@ module Merchant
     before_action :require_manager!, except: [:index]
 
     def index
-      @memberships = current_workspace.memberships.includes(:user, :outlet).to_a
-      @outlets = current_workspace.outlets.order(:name).to_a
+      @q    = params[:q].to_s.strip
+      @role = params[:role].to_s.presence_in(Membership::ROLES)
+
+      scope = current_workspace.memberships.includes(:user, :outlet)
+      scope = scope.where(role: @role) if @role
+      if @q.present?
+        like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"
+        scope = scope.joins(:user).where("users.name ILIKE :q OR users.email ILIKE :q", q: like)
+      end
+      @memberships = scope.to_a
+      @filtered    = @q.present? || @role.present?
+      @outlets     = current_workspace.outlets.order(:name).to_a
+      @all_roles   = current_workspace.memberships.group(:role).count
+      @total_count = @all_roles.values.sum
+      @unassigned  = current_workspace.memberships.where(outlet_id: nil).count
     end
 
     # Invite a staff member by email (creates the user if new + a membership).

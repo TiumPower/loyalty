@@ -1,161 +1,221 @@
 <% content_for :title, t("merchant.nav.appearance") %>
 <% content_for :title_en, "BRANDING" %>
+<% ap = ->(k, **a) { t("merchant.appearance.#{k}", **a) } %>
+<% ws = current_workspace %>
+
+<div class="m-sec">
+  <div>
+    <h3><%= ap.(:page_title) %></h3>
+    <div class="sub"><%= ap.(:page_sub) %></div>
+  </div>
+</div>
+
+<%# A failed save re-rendered this page with no explanation at all — the
+    merchant saw their change simply not take. %>
+<% if @workspace.errors.any? %>
+  <div class="l-note warn" style="margin-bottom:14px;">
+    <%= ui_icon(:shield, size: 16) %><span><%= @workspace.errors.full_messages.to_sentence %></span>
+  </div>
+<% end %>
 
 <div data-controller="theme-preview themeai"
-     data-themeai-url-value="<%= suggest_theme_merchant_appearance_path %>"
-     class="l-work wide">
-  <%# ---------------- Controls ---------------- %>
-  <div>
-    <%# A failed save re-rendered this page with no explanation at all — the
-        merchant saw their change simply not take. %>
-    <% if @workspace.errors.any? %>
-      <div style="background:#F7E0DA; color:#B4402F; border-radius:12px; padding:11px 14px; font-size:14px; margin-bottom:16px;">
-        <%= @workspace.errors.full_messages.to_sentence %>
-      </div>
-    <% end %>
-    <div class="l-panel" style="margin-bottom:16px;">
-      <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.presets_title") %></h3>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:10px;"><%= t("merchant.appearance.presets_note") %></p>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
-        <% @presets.each do |key, p| %>
-          <%= button_to merchant_appearance_path, method: :patch, params: { preset: key }, class: "l-preset" do %>
-            <span class="sw">
-              <span style="background:<%= p['theme']['primary'] %>"></span>
-              <span style="background:<%= p['theme']['primary_2'] %>"></span>
-              <span style="background:<%= p['theme']['surface_2'] %>"></span>
-            </span>
-            <strong style="font-size:13px;"><%= p["label"] %></strong>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-
-    <%= form_with url: merchant_appearance_path, method: :patch, multipart: true do %>
-      <%# ---- Logo (first: colours can be synced from it via AI) ---- %>
-      <div class="l-panel" style="margin-bottom:16px;">
-        <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.logo_title") %></h3>
-        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.appearance.logo_note") %></p>
-        <div style="display:flex; align-items:center; gap:14px;" data-controller="upload">
-          <div data-upload-target="preview" style="width:64px; height:64px; border-radius:16px; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; flex:none;">
-            <% if current_workspace.logo.attached? %>
-              <%= image_tag url_for(current_workspace.logo), style: "width:100%; height:100%; object-fit:cover;" %>
-            <% else %>
-              <span class="l-display" style="font-size:22px; color:var(--ink-2);"><%= current_workspace.logo_initials %></span>
-            <% end %>
+     data-themeai-url-value="<%= suggest_theme_merchant_appearance_path %>">
+  <%# One form for the whole screen. The presets are submit buttons of this same
+      form rather than little forms of their own: a form inside a form is not
+      valid HTML, and the browser drops the inner one. %>
+  <%= form_with url: merchant_appearance_path, method: :patch, multipart: true do %>
+    <div class="m-editor">
+      <div>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= ap.(:sec_assets) %></div>
+            <div class="s"><%= ap.(:sec_assets_sub) %></div>
           </div>
-          <button type="button" class="l-upload" data-action="upload#pick" style="flex:1;">
-            <%= ui_icon(:launch, size: 18) %>
-            <span data-upload-target="name"><%= t("merchant.appearance.pick_logo") %></span>
-          </button>
-          <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"
-                 data-upload-target="input" data-action="upload#changed themeai#logoPicked" hidden>
-        </div>
-      </div>
 
-      <%# ---- Shop cover photo. The customer app leads with it on the home
-              card and at the top of the shop page. ---- %>
-      <div class="l-panel" style="margin-bottom:16px;">
-        <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.cover_title") %></h3>
-        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.appearance.cover_note") %></p>
-        <div style="display:flex; align-items:center; gap:14px;" data-controller="upload">
-          <div data-upload-target="preview" style="width:112px; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; flex:none;">
-            <% if current_workspace.cover.attached? %>
-              <%= image_tag current_workspace.cover.variant(resize_to_limit: [480, 270]), style: "width:100%; height:100%; object-fit:cover;" %>
-            <% else %>
-              <span style="font-size:22px; color:var(--ink-2);">🏬</span>
-            <% end %>
-          </div>
-          <div style="flex:1; min-width:0;">
-            <button type="button" class="l-upload" data-action="upload#pick" style="width:100%;">
-              <%= ui_icon(:launch, size: 18) %>
-              <span data-upload-target="name"><%= t("merchant.appearance.pick_cover") %></span>
-            </button>
-            <input type="file" name="cover" accept="image/png,image/jpeg,image/webp"
-                   data-upload-target="input" data-action="upload#changed" hidden>
-            <% if current_workspace.cover.attached? %>
-              <label style="display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:13px; color:var(--ink-2); cursor:pointer;">
-                <input type="checkbox" name="remove_cover" value="1" style="margin:0;"> <%= t("merchant.appearance.cover_remove") %>
-              </label>
-            <% end %>
-          </div>
-        </div>
-      </div>
-
-      <div class="l-panel" style="margin-bottom:16px;">
-        <h3 class="l-display" style="font-size:18px; margin-bottom:2px;"><%= t("merchant.appearance.colors_title") %></h3>
-        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.appearance.colors_note_html").html_safe %></p>
-
-        <%# AI: derive the whole palette from the logo. Only shown when a logo
-            exists; revealed via JS the moment a logo file is picked. %>
-        <button type="button" class="l-btn l-btn-primary" style="width:100%; margin-bottom:14px;"
-                data-themeai-target="button" data-action="themeai#suggest"
-                <%= "hidden" unless current_workspace.logo.attached? %>>
-          ✨ <%= t("merchant.appearance.ai_suggest") %>
-        </button>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-          <% [["primary", t("merchant.appearance.c_primary")], ["primary_2", t("merchant.appearance.c_accent")], ["surface", t("merchant.appearance.c_surface")], ["ink", t("merchant.appearance.c_ink")]].each do |k, label| %>
-            <div>
-              <label class="l-label"><%= label %></label>
-              <label style="display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:6px 10px 6px 6px; background:#fff; cursor:pointer;">
-                <input type="color" name="theme[<%= k %>]" value="<%= current_workspace.theme_value(k) %>"
-                       data-theme-preview-target="<%= k %>"
-                       data-action="input->theme-preview#update input->theme-preview#hex"
-                       data-hex-for="<%= k %>"
-                       style="width:44px; height:36px; border:none; border-radius:8px; padding:0; background:none; cursor:pointer;">
-                <span class="l-mono" data-hex="<%= k %>" style="font-size:13px; color:var(--ink-2); text-transform:uppercase;"><%= current_workspace.theme_value(k) %></span>
-              </label>
+          <label class="l-label"><%= ap.(:logo_title) %></label>
+          <div style="display:flex; align-items:center; gap:14px;" data-controller="upload">
+            <div data-upload-target="preview" style="width:64px; height:64px; border-radius:16px; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; flex:none;">
+              <% if ws.logo.attached? %>
+                <%= image_tag url_for(ws.logo), style: "width:100%; height:100%; object-fit:cover;" %>
+              <% else %>
+                <span class="l-display" style="font-size:22px; color:var(--ink-2);"><%= ws.logo_initials %></span>
+              <% end %>
             </div>
-          <% end %>
+            <button type="button" class="l-upload" data-action="upload#pick" style="flex:1;">
+              <%= ui_icon(:launch, size: 18) %>
+              <span data-upload-target="name"><%= ap.(:pick_logo) %></span>
+            </button>
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"
+                   data-upload-target="input" data-action="upload#changed themeai#logoPicked" hidden>
+          </div>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= ap.(:logo_note) %></p>
+
+          <%# The customer app leads with the cover on the home card and at the
+              top of the shop page. %>
+          <label class="l-label" style="margin-top:16px;"><%= ap.(:cover_title) %></label>
+          <div style="display:flex; align-items:center; gap:14px;" data-controller="upload">
+            <div data-upload-target="preview" style="width:112px; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:var(--surface-2); display:grid; place-items:center; flex:none;">
+              <% if ws.cover.attached? %>
+                <%= image_tag ws.cover.variant(resize_to_limit: [480, 270]), style: "width:100%; height:100%; object-fit:cover;" %>
+              <% else %>
+                <span style="font-size:22px; color:var(--ink-2);">🏬</span>
+              <% end %>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <button type="button" class="l-upload" data-action="upload#pick" style="width:100%;">
+                <%= ui_icon(:launch, size: 18) %>
+                <span data-upload-target="name"><%= ap.(:pick_cover) %></span>
+              </button>
+              <input type="file" name="cover" accept="image/png,image/jpeg,image/webp"
+                     data-upload-target="input" data-action="upload#changed" hidden>
+              <% if ws.cover.attached? %>
+                <label style="display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:13px; color:var(--ink-2); cursor:pointer;">
+                  <input type="checkbox" name="remove_cover" value="1" style="margin:0;"> <%= ap.(:cover_remove) %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= ap.(:cover_note) %></p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;">
+            <div>
+              <label class="l-label"><%= ap.(:shop_name) %></label>
+              <%= text_field_tag :name, ws.name, class: "l-field", required: true %>
+            </div>
+            <div>
+              <label class="l-label"><%= ap.(:customer_term) %></label>
+              <%= text_field_tag "branding[customer_term]", ws.branding_value("customer_term"),
+                    class: "l-field", placeholder: t("merchant.onboarding.customer_term_ph") %>
+            </div>
+          </div>
+          <label class="l-label" style="margin-top:12px;"><%= ap.(:tagline) %></label>
+          <%= text_field_tag "branding[tagline]", ws.branding_value("tagline"), class: "l-field" %>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= ap.(:shop_name_hint) %></p>
         </div>
 
-        <label class="l-label" style="margin-top:14px;"><%= t("merchant.appearance.radius") %></label>
-        <input type="range" name="theme[radius]" min="8" max="30"
-               value="<%= current_workspace.theme_value('radius').to_i %>"
-               data-theme-preview-target="radius" data-action="input->theme-preview#update"
-               style="width:100%;">
+        <div class="m-section">
+          <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="flex:1; min-width:0;">
+              <div class="t"><%= ap.(:colors_title) %></div>
+              <div class="s"><%= ap.(:colors_note_html).html_safe %></div>
+            </div>
+            <%# Only shown when a logo exists; revealed the moment one is picked. %>
+            <button type="button" class="l-btn l-btn-soft" style="flex:none; padding:7px 13px; font-size:13px; white-space:nowrap;"
+                    data-themeai-target="button" data-action="themeai#suggest"
+                    <%= "hidden" unless ws.logo.attached? %>>
+              ✨ <%= ap.(:ai_suggest) %>
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <% [["primary", ap.(:c_primary)], ["primary_2", ap.(:c_accent)], ["surface", ap.(:c_surface)], ["ink", ap.(:c_ink)]].each do |k, label| %>
+              <div>
+                <label class="l-label"><%= label %></label>
+                <label style="display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:6px 10px 6px 6px; background:#fff; cursor:pointer;">
+                  <input type="color" name="theme[<%= k %>]" value="<%= ws.theme_value(k) %>"
+                         data-theme-preview-target="<%= k %>"
+                         data-action="input->theme-preview#update input->theme-preview#hex"
+                         data-hex-for="<%= k %>"
+                         style="width:44px; height:36px; border:none; border-radius:8px; padding:0; background:none; cursor:pointer;">
+                  <span class="l-mono" data-hex="<%= k %>" style="font-size:13px; color:var(--ink-2); text-transform:uppercase;"><%= ws.theme_value(k) %></span>
+                </label>
+              </div>
+            <% end %>
+          </div>
+
+          <label class="l-label" style="margin-top:14px;"><%= ap.(:radius) %></label>
+          <input type="range" name="theme[radius]" min="8" max="30"
+                 value="<%= ws.theme_value('radius').to_i %>"
+                 data-theme-preview-target="radius" data-action="input->theme-preview#update"
+                 style="width:100%;">
+        </div>
+
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= ap.(:font_voice) %></div>
+            <div class="s"><%= ap.(:font_voice_sub) %></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label class="l-label"><%= ap.(:font_display) %></label>
+              <select name="theme[font_display]" class="l-field" data-theme-preview-target="fontDisplay" data-action="change->theme-preview#update">
+                <% Workspace::FONT_STACKS.keys.each do |fnt| %>
+                  <option value="<%= fnt %>" <%= "selected" if ws.theme_value('font_display') == fnt %>><%= fnt %></option>
+                <% end %>
+              </select>
+            </div>
+            <div>
+              <label class="l-label"><%= ap.(:font_body) %></label>
+              <select name="theme[font_body]" class="l-field" data-theme-preview-target="fontBody" data-action="change->theme-preview#update">
+                <% Workspace::FONT_STACKS.keys.each do |fnt| %>
+                  <option value="<%= fnt %>" <%= "selected" if ws.theme_value('font_body') == fnt %>><%= fnt %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="l-panel" style="margin-bottom:16px;">
-        <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.appearance.font_voice") %></h3>
-        <label class="l-label"><%= t("merchant.appearance.font_display") %></label>
-        <select name="theme[font_display]" class="l-field" data-theme-preview-target="fontDisplay" data-action="change->theme-preview#update">
-          <% Workspace::FONT_STACKS.keys.each do |fnt| %>
-            <option value="<%= fnt %>" <%= "selected" if current_workspace.theme_value('font_display') == fnt %>><%= fnt %></option>
-          <% end %>
-        </select>
-        <label class="l-label" style="margin-top:12px;"><%= t("merchant.appearance.font_body") %></label>
-        <select name="theme[font_body]" class="l-field" data-theme-preview-target="fontBody" data-action="change->theme-preview#update">
-          <% Workspace::FONT_STACKS.keys.each do |fnt| %>
-            <option value="<%= fnt %>" <%= "selected" if current_workspace.theme_value('font_body') == fnt %>><%= fnt %></option>
-          <% end %>
-        </select>
+      <div>
+        <div class="m-section">
+          <div class="hd">
+            <div class="t"><%= ap.(:presets_title) %></div>
+            <div class="s"><%= ap.(:presets_note) %></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <% @presets.each do |key, p| %>
+              <button type="submit" name="preset" value="<%= key %>" class="l-preset">
+                <span class="sw">
+                  <span style="background:<%= p['theme']['primary'] %>"></span>
+                  <span style="background:<%= p['theme']['primary_2'] %>"></span>
+                  <span style="background:<%= p['theme']['surface_2'] %>"></span>
+                </span>
+                <strong style="font-size:13px;"><%= p["label"] %></strong>
+              </button>
+            <% end %>
+          </div>
+          <p style="font-size:12px; color:var(--ink-2); margin-top:10px; line-height:1.45;"><%= ap.(:presets_hint) %></p>
+        </div>
 
-        <label class="l-label" style="margin-top:12px;"><%= t("merchant.appearance.customer_term") %></label>
-        <input type="text" name="branding[customer_term]" value="<%= current_workspace.branding_value('customer_term') %>" class="l-field" placeholder="<%= t("merchant.onboarding.customer_term_ph") %>">
-        <label class="l-label" style="margin-top:12px;"><%= t("merchant.appearance.tagline") %></label>
-        <input type="text" name="branding[tagline]" value="<%= current_workspace.branding_value('tagline') %>" class="l-field">
-      </div>
+        <div class="m-previewlabel" style="margin-top:18px;"><%= ap.(:preview_label) %></div>
+        <div data-theme-preview-target="frame"
+             style="border-radius:24px; border:1px solid var(--line); padding:14px; background:var(--pv-surface, #FBF6EF); box-shadow:var(--shadow-lg);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="width:36px; height:36px; border-radius:12px; overflow:hidden; background:var(--pv-primary,#8C4A2F); color:#fff; display:grid; place-items:center; font-weight:700; font-family:var(--pv-fd,'Fraunces'); flex:none;">
+              <% if ws.logo.attached? %>
+                <%= image_tag url_for(ws.logo), style: "width:100%; height:100%; object-fit:cover;" %>
+              <% else %><%= ws.logo_initials %><% end %>
+            </div>
+            <div style="min-width:0;">
+              <strong style="display:block; color:var(--pv-ink,#3A2A20); font-family:var(--pv-fb,'Plus Jakarta Sans'); font-size:14px;"><%= ws.name %></strong>
+              <% if ws.branding_value("tagline").present? %>
+                <span style="font-size:11.5px; color:var(--pv-ink,#3A2A20); opacity:.6; font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= ws.branding_value("tagline") %></span>
+              <% end %>
+            </div>
+          </div>
 
-      <%= submit_tag t("merchant.appearance.save"), class: "l-btn l-btn-primary" %>
-    <% end %>
-  </div>
+          <%# The cover is what a customer sees first on the home screen. %>
+          <div style="border-radius:var(--pv-radius,22px); overflow:hidden; aspect-ratio:16/9; background:rgba(0,0,0,.06); margin-bottom:12px; display:grid; place-items:center;">
+            <% if ws.cover.attached? %>
+              <%= image_tag ws.cover.variant(resize_to_limit: [640, 360]), style: "width:100%; height:100%; object-fit:cover;" %>
+            <% else %>
+              <span style="font-size:26px; opacity:.5;">🏬</span>
+            <% end %>
+          </div>
 
-  <%# ---------------- Live preview ---------------- %>
-  <div style="position:sticky; top:90px;">
-    <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.appearance.preview_label") %></div>
-    <div data-theme-preview-target="frame"
-         style="border-radius:26px; border:1px solid var(--line); padding:16px; background:var(--pv-surface, #FBF6EF); box-shadow:var(--shadow-lg);">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-        <div style="width:38px; height:38px; border-radius:12px; background:var(--pv-primary,#8C4A2F); color:#fff; display:grid; place-items:center; font-weight:700; font-family:var(--pv-fd,'Fraunces');"><%= current_workspace.logo_initials %></div>
-        <strong style="color:var(--pv-ink,#3A2A20); font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= current_workspace.name %></strong>
+          <div style="border-radius:var(--pv-radius,22px); padding:18px; color:#fff; background:linear-gradient(135deg, var(--pv-primary,#8C4A2F), color-mix(in srgb, var(--pv-primary,#8C4A2F) 55%, #000)); box-shadow:var(--shadow-lg);">
+            <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; opacity:.85;"><%= ap.(:pv_points) %></div>
+            <div style="font-family:var(--pv-fd,'Fraunces'); font-size:38px; line-height:1;">2.480</div>
+            <div style="margin-top:12px; font-weight:600; letter-spacing:.04em; font-size:13px;">NGUYỄN THUỲ LINH</div>
+          </div>
+          <div style="margin-top:12px; width:100%; padding:12px; border-radius:14px; color:#fff; font-weight:600; text-align:center; background:var(--pv-primary,#8C4A2F); font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= ap.(:pv_redeem) %></div>
+        </div>
       </div>
-      <div style="border-radius:var(--pv-radius,22px); padding:20px; color:#fff; background:linear-gradient(135deg, var(--pv-primary,#8C4A2F), color-mix(in srgb, var(--pv-primary,#8C4A2F) 55%, #000)); box-shadow:var(--shadow-lg);">
-        <div style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.85;"><%= t("merchant.appearance.pv_points") %></div>
-        <div style="font-family:var(--pv-fd,'Fraunces'); font-size:42px; line-height:1;">2.480</div>
-        <div style="margin-top:14px; font-weight:600; letter-spacing:.04em;">NGUYỄN THUỲ LINH</div>
-      </div>
-      <button style="margin-top:14px; width:100%; padding:12px; border:none; border-radius:14px; color:#fff; font-weight:600; background:var(--pv-primary,#8C4A2F); font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= t("merchant.appearance.pv_redeem") %></button>
     </div>
-  </div>
+
+    <div class="m-savebar">
+      <%= submit_tag ap.(:save), class: "l-btn l-btn-primary" %>
+      <span style="font-size:12.5px; color:var(--ink-2);"><%= ap.(:save_hint) %></span>
+    </div>
+  <% end %>
 </div>

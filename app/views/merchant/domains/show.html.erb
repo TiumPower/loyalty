@@ -1,24 +1,115 @@
 <% content_for :title, t("merchant.nav.domain") %>
 <% content_for :title_en, "DOMAIN" %>
+<% d = ->(k, **a) { t("merchant.domain.#{k}", **a) } %>
 <% ws = @workspace %>
+<% app_url = "https://#{@default_host}" %>
 
-<div style="max-width:680px;">
-  <div class="l-panel" style="margin-bottom:16px;">
-    <div class="l-eyebrow"><%= t("merchant.domain.default") %></div>
-    <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-      <span class="l-mono" style="font-size:18px; font-weight:700;"><%= @default_host %></span>
-      <span class="l-chip" style="background:var(--good)22; color:var(--good);"><%= t("merchant.domain.ready") %></span>
+<div class="m-sec">
+  <div>
+    <h3><%= d.(:page_title) %></h3>
+    <div class="sub"><%= d.(:page_sub) %></div>
+  </div>
+</div>
+
+<div class="m-editor">
+  <div>
+    <div class="m-section">
+      <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
+        <div style="flex:1; min-width:0;">
+          <div class="t"><%= d.(:default) %></div>
+          <div class="s"><%= d.(:default_note) %></div>
+        </div>
+        <span class="m-badge up" style="flex:none;"><%= d.(:ready) %></span>
+      </div>
+      <label class="l-label"><%= d.(:app_address) %></label>
+      <div style="display:flex; gap:8px; align-items:stretch;">
+        <div class="l-field l-mono" style="flex:1; min-width:0; display:flex; align-items:center; overflow-x:auto; white-space:nowrap;"><%= app_url %></div>
+        <div data-controller="clipboard" data-clipboard-text-value="<%= app_url %>" style="flex:none;">
+          <button type="button" class="l-btn l-btn-soft" data-action="clipboard#copy" style="height:100%; padding:0 14px; white-space:nowrap;">
+            <span data-clipboard-target="label"><%= d.(:copy) %></span>
+          </button>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--ink-2); margin-top:8px; line-height:1.5;"><%= d.(:default_hint) %></p>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <%= link_to app_url, target: "_blank", rel: "noopener", class: "l-btn l-btn-soft",
+              style: "padding:9px 16px; font-size:13.5px;" do %>
+          <%= ui_icon(:launch, size: 15) %> <%= d.(:open_app) %>
+        <% end %>
+        <%= link_to d.(:qr_poster), merchant_checkin_qr_path, class: "l-btn l-btn-ghost",
+              style: "padding:9px 16px; font-size:13.5px;" %>
+      </div>
     </div>
-    <p style="color:var(--ink-2); font-size:13px; margin-top:8px;"><%= t("merchant.domain.default_note") %></p>
+
+    <div class="m-section">
+      <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
+        <div style="flex:1; min-width:0;">
+          <div class="t"><%= d.(:custom_title) %></div>
+          <div class="s"><%= d.(:custom_note_html).html_safe %></div>
+        </div>
+        <span class="m-badge" style="flex:none;"><%= d.(:soon) %></span>
+      </div>
+      <%# Custom domains are provisioned by hand for now. Rather than show a DNS
+          table with invented targets, say plainly what the step involves and who
+          does it. %>
+      <div class="l-note amber">
+        <%= ui_icon(:shield, size: 16) %>
+        <span><strong><%= d.(:soon) %></strong> <%= d.(:soon_note) %></span>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="l-eyebrow" style="margin-bottom:8px;"><%= d.(:verify_label) %></div>
+        <div class="l-field l-mono" style="display:flex; align-items:center; overflow-x:auto; white-space:nowrap; font-size:12.5px;"><%= @verify_token %></div>
+        <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.5;"><%= d.(:verify_hint) %></p>
+      </div>
+    </div>
   </div>
 
-  <div class="l-panel">
-    <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.domain.custom_title") %></h3>
-    <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.domain.custom_note_html").html_safe %></p>
+  <div>
+    <div class="m-section">
+      <div class="hd" style="display:flex; align-items:flex-start; gap:12px;">
+        <div style="flex:1; min-width:0;"><div class="t"><%= d.(:tls_title) %></div></div>
+        <span class="m-badge up" style="flex:none;"><%= d.(:tls_on) %></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:12px; flex:none; display:grid; place-items:center; background:var(--good-soft); color:var(--good);">
+          <%= ui_icon(:lock, size: 19) %>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:14px;"><%= d.(:tls_status) %></div>
+          <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px; line-height:1.45;"><%= d.(:tls_detail) %></div>
+        </div>
+      </div>
+    </div>
 
-    <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; background:var(--surface-2);">
-      <span class="l-chip" style="background:var(--primary)22; color:var(--primary-ink); font-weight:600; flex:none;"><%= t("merchant.domain.soon") %></span>
-      <p style="font-size:13px; color:var(--ink-2); margin:0;"><%= t("merchant.domain.soon_note") %></p>
+    <%# The real manifest the customer's phone reads when they install the app. %>
+    <div class="m-section">
+      <div class="hd">
+        <div class="t"><%= d.(:pwa_title) %></div>
+        <div class="s"><%= d.(:pwa_sub) %></div>
+      </div>
+      <div style="border:1px solid var(--line); border-radius:12px; overflow:hidden;">
+        <% @manifest.each do |key, value| %>
+          <div style="display:flex; gap:10px; align-items:center; padding:9px 12px; font-size:12.5px; border-bottom:1px solid var(--line-soft);">
+            <span class="l-mono" style="flex:none; color:var(--ink-2); min-width:118px;"><%= key %></span>
+            <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;"><%= value %></span>
+            <% if key.end_with?("_color") %>
+              <span style="flex:none; width:16px; height:16px; border-radius:5px; border:1px solid var(--line); background:<%= value %>;"></span>
+            <% end %>
+          </div>
+        <% end %>
+        <div style="display:flex; gap:10px; align-items:center; padding:9px 12px; font-size:12.5px;">
+          <span class="l-mono" style="flex:none; color:var(--ink-2); min-width:118px;">icon</span>
+          <span style="flex:1;"><%= ws.logo.attached? ? d.(:pwa_icon_logo) : d.(:pwa_icon_initials) %></span>
+        </div>
+      </div>
+      <%= link_to pwa_manifest_path, target: "_blank", rel: "noopener", class: "l-btn l-btn-ghost",
+            style: "margin-top:12px; width:100%; justify-content:center; font-size:13.5px;" do %>
+        <%= d.(:pwa_view_manifest) %>
+      <% end %>
+      <p style="font-size:12px; color:var(--ink-2); margin-top:10px; line-height:1.5;">
+        <%= d.(:pwa_hint) %>
+        <%= link_to d.(:pwa_change), merchant_appearance_path, style: "color:var(--primary); font-weight:600; text-decoration:none;" %>
+      </p>
     </div>
   </div>
 </div>

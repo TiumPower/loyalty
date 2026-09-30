@@ -435,22 +435,26 @@ a.l-pill:hover, button.l-pill:hover { filter:brightness(.97); }
 
 /* Segmented control — Catalog / My Vouchers, Daily / Weekly / One-time. */
 .l-seg { display:flex; gap:6px; align-items:center; }
-.l-seg > * { flex:1; }
-.l-seg button, .l-seg a { display:block; width:100%; text-align:center; border:1px solid transparent;
-  background:transparent; padding:9px 10px; border-radius:999px; font-size:13.5px; font-weight:600;
+/* Every child is a pill, whatever element it is. The current tab is often a
+   plain <span> rather than a link — it has nowhere to go — and selecting only
+   `button, a` left that one tab rendering as bare text next to real pills. */
+.l-seg > * { flex:1; display:block; width:100%; text-align:center; border:1px solid transparent;
+  background:transparent; padding:9px 10px; border-radius:999px; font-size:13.5px; font-weight:700;
   color: var(--ink-2); cursor:pointer; text-decoration:none; font-family:inherit; transition:.15s; }
-.l-seg button:hover, .l-seg a:hover { color: var(--ink); }
-.l-seg button.active, .l-seg a.active { background: var(--primary); color: var(--on-primary); }
+.l-seg > a:hover, .l-seg > button:hover { color: var(--ink); }
+.l-seg > .active { background: var(--primary); color: var(--on-primary); }
 /* Variant sitting on a white card: inactive tabs get a card background. */
 .l-seg.boxed { background: var(--card); border:1px solid var(--line); border-radius:999px; padding:5px; gap:4px; }
-.l-seg.boxed button.active, .l-seg.boxed a.active { box-shadow:0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent); }
-/* Chips that are not full width (auto-sized pills). The base rule stretches
-   each control to the track; here they size to their label instead, so the
-   width:100% above has to be undone or every chip fills the row. */
+.l-seg.boxed > .active { box-shadow:0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent); }
+/* Chips that are not full width (auto-sized pills), sitting straight on the
+   page. The base rule stretches each control to the track; here they size to
+   their label instead, so the width:100% above has to be undone or every chip
+   fills the row. Inactive chips are cards, as in the design — on the tinted
+   page background a grey chip reads as disabled. */
 .l-seg.auto { flex-wrap:wrap; }
-.l-seg.auto > * { flex:0 0 auto; }
-.l-seg.auto button, .l-seg.auto a { width:auto; padding:8px 16px; }
-.l-seg.auto button:not(.active), .l-seg.auto a:not(.active) { background: var(--surface-2); }
+.l-seg.auto > * { flex:0 0 auto; width:auto; padding:9px 18px; }
+.l-seg.auto > *:not(.active) { background: var(--card); color: var(--ink);
+  border-color: var(--line-soft); box-shadow: var(--shadow-sm); }
 
 /* ---------- list rows ---------- */
 /* A tappable row: tinted icon square, title + meta, trailing value or chevron. */
@@ -1201,6 +1205,8 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-sec h3 { font-size:17px; font-weight:700; letter-spacing:-.015em; }
 .m-sec .sub { font-size:12.5px; color: var(--ink-2); margin-top:3px; }
 .m-sec .act { font-size:13px; font-weight:600; color: var(--primary); text-decoration:none; flex:none; }
+/* The section action is a verb, not a paragraph: it keeps to one line. */
+.m-sec > .l-btn { flex:none; white-space:nowrap; }
 
 /* Tabs under the page title. */
 .m-subnav { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -1339,3 +1345,42 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-rowact a:hover, .m-rowact button:hover { background: var(--surface-2); color: var(--ink); }
 .m-rowact .danger:hover { background: var(--warn-soft); color: var(--warn); }
 .m-rowact form { display:inline-flex; margin:0; }
+
+/* Four numbers that describe a list before you read it — the design opens every
+   settings directory with this strip. */
+.m-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px;
+  background: var(--line-soft); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+@media (max-width:760px){ .m-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.m-summary > div { background:#fff; padding:16px; }
+.m-summary .v { font-size:24px; font-weight:700; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.m-summary .k { font-size:12.5px; font-weight:600; color: var(--ink-2); margin-top:4px; }
+.m-summary .d { font-size:11.5px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
+
+/* One role and what it may do. Used by the staff screen's permission key. */
+.m-role { display:flex; gap:11px; align-items:flex-start; padding:11px 0; }
+.m-role + .m-role { border-top:1px solid var(--line-soft); }
+.m-role .dot { width:9px; height:9px; border-radius:50%; flex:none; margin-top:5px; background: var(--primary); }
+.m-role .nm { font-size:13.5px; font-weight:700; }
+.m-role .ds { font-size:12.5px; color: var(--ink-2); margin-top:3px; line-height:1.5; }
+
+/* A limit you are eating into. The bar turns amber near the cap and red at it,
+   so "4 / 5 outlets" reads as a warning before the next one is refused. */
+.m-usage + .m-usage { margin-top:14px; }
+.m-usage .row { display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  font-size:13px; margin-bottom:6px; }
+.m-usage .k { font-weight:600; }
+.m-usage .v { font-variant-numeric:tabular-nums; color: var(--ink-2); font-weight:600; }
+.m-usage .track { height:7px; border-radius:999px; background: var(--surface-2); overflow:hidden; }
+.m-usage .bar { height:100%; border-radius:999px; background: var(--primary); transition:width .2s; }
+.m-usage.near .bar { background: var(--amber); }
+.m-usage.near .v { color: var(--amber); }
+.m-usage.full .bar { background: var(--warn); }
+.m-usage.full .v { color: var(--warn); }
+
+/* What a plan turns on, ticked or not. */
+.m-flags { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+@media (max-width:560px){ .m-flags { grid-template-columns:1fr; } }
+.m-flags > div { display:flex; align-items:center; gap:8px; font-size:13px; }
+.m-flags .on  { color: var(--good); flex:none; }
+.m-flags .off { color: var(--ink-2); opacity:.55; flex:none; }
+.m-flags .muted { color: var(--ink-2); text-decoration:line-through; text-decoration-thickness:1px; }

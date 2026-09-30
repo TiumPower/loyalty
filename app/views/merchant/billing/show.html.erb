@@ -1,7 +1,14 @@
 <% content_for :title, t("merchant.nav.billing") %>
 <% content_for :title_en, "BILLING" %>
 
-<div style="max-width:820px;">
+<div class="m-sec">
+  <div>
+    <h3><%= t("merchant.billing.page_title") %></h3>
+    <div class="sub"><%= t("merchant.billing.page_sub") %></div>
+  </div>
+</div>
+
+<div style="max-width:880px;">
   <div class="l-panel" style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
     <div style="flex:1;">
       <div class="l-eyebrow"><%= t("merchant.billing.current_plan") %></div>
@@ -67,18 +74,72 @@
     <% end %>
   </div>
 
+
+  <%# ---- What this shop is using against what the plan allows ---- %>
+  <div class="l-panel" style="margin-bottom:20px;">
+    <div class="m-sec" style="margin-bottom:14px;">
+      <div>
+        <h3 style="font-size:16px;"><%= t("merchant.billing.usage_title") %></h3>
+        <div class="sub"><%= t("merchant.billing.usage_sub") %></div>
+      </div>
+    </div>
+    <% @usage.each do |u| %>
+      <% cap = u[:cap] %>
+      <% pct = cap && cap.to_i.positive? ? [(u[:used].to_f / cap * 100).round, 100].min : nil %>
+      <% state = pct.nil? ? "" : (pct >= 100 ? "full" : (pct >= 80 ? "near" : "")) %>
+      <div class="m-usage <%= state %>">
+        <div class="row">
+          <span class="k"><%= t("merchant.billing.u_#{u[:key]}") %></span>
+          <span class="v">
+            <%= number_with_delimiter(u[:used]) %>
+            <%= cap ? "/ #{number_with_delimiter(cap)}" : "· #{t('merchant.billing.unlimited')}" %>
+          </span>
+        </div>
+        <%# No cap, no bar: a full track beside "no limit" reads as "you are at
+            the limit", which is the opposite of the truth. %>
+        <% if pct %>
+          <div class="track"><div class="bar" style="width:<%= pct %>%;"></div></div>
+        <% end %>
+        <% if pct && pct >= 80 %>
+          <div style="font-size:12px; margin-top:6px; color:var(--ink-2);"><%= t("merchant.billing.u_near_cap") %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line-soft);">
+      <div style="font-size:13.5px; font-weight:700; margin-bottom:10px;"><%= t("merchant.billing.flags_title", plan: @plan.name) %></div>
+      <div class="m-flags">
+        <% @flags.each do |name, on| %>
+          <div>
+            <span class="<%= on ? 'on' : 'off' %>"><%= ui_icon(on ? :check : :close, size: 15) %></span>
+            <span class="<%= 'muted' unless on %>"><%= t("merchant.billing.f_#{name}") %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
   <% if @invoices.any? %>
     <div class="l-panel" style="margin-bottom:20px;">
       <div class="l-eyebrow" style="margin-bottom:8px;"><%= t("merchant.billing.invoices") %></div>
       <%# The invoice table has four columns and a button; give it its own
           scroller so it can never push the page sideways on a phone. %>
       <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:340px;">
+      <table class="m-table" style="min-width:420px;">
+        <thead>
+          <tr>
+            <th><%= t("merchant.billing.col_period") %></th>
+            <th><%= t("merchant.billing.col_plan") %></th>
+            <th><%= t("merchant.billing.col_amount") %></th>
+            <th><%= t("merchant.billing.col_status") %></th>
+          </tr>
+        </thead>
+        <tbody>
         <% @invoices.each do |inv| %>
-          <tr style="border-top:1px solid var(--line);">
-            <td style="padding:8px 4px;"><%= inv.period_label %></td>
-            <td><%= inv.plan %></td>
-            <td style="text-align:right; font-weight:600;"><%= number_with_delimiter(inv.amount) %>đ</td>
+          <tr>
+            <td><%= inv.period_label %></td>
+            <td style="color:var(--ink-2);"><%= inv.plan %></td>
+            <td style="text-align:right;" class="m-num"><%= number_with_delimiter(inv.amount) %>đ</td>
             <td style="text-align:right;">
               <% color = { "paid" => "var(--good)", "pending" => "var(--primary)", "failed" => "var(--warn)", "cancelled" => "var(--ink-2)" }[inv.status] %>
               <span class="l-chip" style="background:<%= color %>22; color:<%= color %>;"><%= { "paid"=>t("merchant.billing.st_paid"),"pending"=>t("merchant.billing.st_pending"),"failed"=>t("merchant.billing.st_failed"),"cancelled"=>t("merchant.billing.st_cancelled") }[inv.status] %></span>
@@ -88,6 +149,7 @@
             </td>
           </tr>
         <% end %>
+        </tbody>
       </table>
       </div>
     </div>

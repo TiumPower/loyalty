@@ -1,48 +1,160 @@
 <% content_for :title, t("merchant.nav.outlets") %>
 <% content_for :title_en, "OUTLETS" %>
+<% o = ->(k, **a) { t("merchant.outlets.#{k}", **a) } %>
+<% manage = current_membership&.can_manage? %>
 
-<div class="l-work">
-  <div>
+<div data-controller="modal" data-modal-open-value="<%= @outlet.errors.any? %>">
+  <div class="m-sec">
+    <div>
+      <h3><%= o.(:list_title) %></h3>
+      <div class="sub"><%= o.(:list_sub) %></div>
+    </div>
+    <% if manage %>
+      <button type="button" class="l-btn l-btn-primary" data-action="modal#open">＋ <%= o.(:add) %></button>
+    <% end %>
+  </div>
+
+  <div class="m-summary" style="margin-bottom:16px;">
+    <div>
+      <div class="v"><%= @total_count %></div>
+      <div class="k"><%= o.(:sum_total) %></div>
+      <div class="d"><%= current_workspace.outlet_limit ? o.(:sum_limit, n: current_workspace.outlet_limit) : o.(:sum_limit_none) %></div>
+    </div>
+    <div>
+      <div class="v"><%= @active_count %></div>
+      <div class="k"><%= o.(:sum_active) %></div>
+      <div class="d"><%= o.(:sum_active_hint) %></div>
+    </div>
+    <div>
+      <div class="v"><%= @staff_by_outlet.values.sum %></div>
+      <div class="k"><%= o.(:sum_staff) %></div>
+      <div class="d"><%= o.(:sum_staff_hint, n: @unassigned_staff) %></div>
+    </div>
+    <div>
+      <div class="v"><%= number_with_delimiter(@today_total) %></div>
+      <div class="k"><%= o.(:sum_today) %></div>
+      <div class="d"><%= o.(:sum_today_hint) %></div>
+    </div>
+  </div>
+
+  <div class="l-panel" style="padding:0; overflow:hidden;">
+    <%= form_with url: merchant_outlets_path, method: :get, data: { turbo: false } do %>
+      <div class="m-filters">
+        <input type="search" name="q" value="<%= @q %>" class="l-field grow"
+               placeholder="<%= o.(:search_ph) %>" aria-label="<%= o.(:search_ph) %>">
+        <%= submit_tag o.(:search_btn), class: "l-btn l-btn-soft", style: "flex:none; padding:9px 16px; font-size:13.5px;" %>
+      </div>
+    <% end %>
+
     <% if @outlets.empty? %>
-      <div class="l-panel" style="text-align:center; padding:40px; color:var(--ink-2);"><%= t("merchant.outlets.empty") %></div>
+      <div style="padding:40px 20px; text-align:center; color:var(--ink-2); font-size:14px;">
+        <%= @q.present? ? o.(:none_match) : o.(:empty) %>
+        <%= link_to o.(:clear_filters), merchant_outlets_path, style: "color:var(--primary); font-weight:600; text-decoration:none;" if @q.present? %>
+      </div>
     <% else %>
-      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px;">
-        <% @outlets.each do |o| %>
-          <div class="l-outlet-card" style="<%= 'opacity:.55;' unless o.active? %>">
-            <%= link_to "", merchant_outlet_path(o), class: "l-outlet-hit", "aria-label": o.name %>
-            <div style="display:flex; align-items:flex-start; gap:10px;">
-              <span style="width:38px; height:38px; border-radius:11px; background:var(--surface-2); display:grid; place-items:center; font-size:19px; flex:none;">🏬</span>
-              <strong style="flex:1; font-size:15px; line-height:1.3;"><%= o.name %></strong>
-              <% if o.code.present? %><span class="l-chip"><%= o.code %></span><% end %>
+      <div style="overflow-x:auto;">
+        <table class="m-table" style="min-width:880px;">
+          <thead>
+            <tr>
+              <th style="padding-left:18px;"><%= o.(:col_outlet) %></th>
+              <th><%= o.(:col_contact) %></th>
+              <th><%= o.(:col_staff) %></th>
+              <th><%= o.(:col_today) %></th>
+              <th style="padding-right:18px;"><%= o.(:col_actions) %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @outlets.each do |out| %>
+              <tr style="<%= 'opacity:.6;' unless out.active? %>">
+                <td style="padding-left:18px;">
+                  <div class="m-who">
+                    <span class="av" style="border-radius:10px; background:var(--surface-2);"><%= ui_icon(:store, size: 16) %></span>
+                    <div style="min-width:0;">
+                      <div class="nm">
+                        <%= link_to out.name, merchant_outlet_path(out), style: "color:inherit; text-decoration:none;" %>
+                        <% unless out.active? %><span class="m-badge" style="margin-left:6px;"><%= o.(:inactive) %></span><% end %>
+                      </div>
+                      <div class="sub"><%= out.code.presence || o.(:no_code) %></div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-size:12.5px; color:var(--ink-2);">
+                  <div><%= out.address.presence || "—" %></div>
+                  <% if out.phone.present? %><div style="margin-top:2px;"><%= out.phone %></div><% end %>
+                </td>
+                <td>
+                  <span class="m-num"><%= @staff_by_outlet[out.id].to_i %></span>
+                  <span style="color:var(--ink-2); font-size:12.5px;"><%= o.(:w_staff) %></span>
+                </td>
+                <td>
+                  <span class="m-num"><%= @today_by_outlet[out.id].to_i %></span>
+                  <span style="color:var(--ink-2); font-size:12.5px;"><%= o.(:w_bills) %></span>
+                </td>
+                <td style="padding-right:18px;">
+                  <div class="m-rowact">
+                    <%= link_to merchant_outlet_path(out), title: o.(:view), "aria-label": o.(:view) do %>
+                      <%= ui_icon(:eye, size: 16) %>
+                    <% end %>
+                    <% if manage %>
+                      <%= link_to edit_merchant_outlet_path(out), title: o.(:edit), "aria-label": o.(:edit) do %>
+                        <%= ui_icon(:edit, size: 16) %>
+                      <% end %>
+                      <%# A branch that has traded cannot be deleted — the database
+                          protects its history — so it is offered as "turn off". %>
+                      <% if out.destroyable? %>
+                        <%= button_to merchant_outlet_path(out), method: :delete, class: "danger",
+                              form: { data: { turbo_confirm: o.(:delete_confirm) } },
+                              title: o.(:delete), "aria-label": o.(:delete) do %>
+                          <%= ui_icon(:trash, size: 16) %>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:12px 18px; border-top:1px solid var(--line-soft); font-size:12.5px; color:var(--ink-2);">
+        <%= o.(:footer_count, shown: @outlets.size, total: @total_count) %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="l-note" style="margin-top:16px;">
+    <%= ui_icon(:shield, size: 16) %>
+    <span><strong><%= o.(:note_title) %></strong> <%= o.(:note_sub) %></span>
+  </div>
+
+  <% if manage %>
+    <dialog class="l-modal" data-modal-target="dialog" data-action="click->modal#backdrop">
+      <div class="l-modal-card">
+        <div class="l-modal-head">
+          <h3 class="l-display" style="font-size:19px; margin:0;"><%= o.(:add) %></h3>
+          <button type="button" class="l-modal-x" data-action="modal#close" aria-label="<%= t("merchant.campaigns.ed_cancel") %>">✕</button>
+        </div>
+        <%= form_with model: @outlet, url: merchant_outlets_path, method: :post do |f| %>
+          <% if @outlet.errors.any? %>
+            <div class="l-note warn" style="margin-bottom:12px;">
+              <%= ui_icon(:shield, size: 16) %><span><%= @outlet.errors.full_messages.to_sentence %></span>
             </div>
-            <div style="font-size:13px; color:var(--ink-2); margin-top:10px; min-height:20px;">
-              <% if o.address.present? %><div><%= o.address %></div><% end %>
-              <% if o.phone.present? %><div style="margin-top:2px;">📞 <%= o.phone %></div><% end %>
-            </div>
-            <div class="l-outlet-actions" style="display:flex; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line);">
-              <%= link_to t("merchant.outlets.view"), merchant_outlet_path(o), class: "l-btn l-btn-soft", style: "padding:6px 12px; font-size:13px;" %>
-              <%= link_to t("merchant.outlets.edit"), edit_merchant_outlet_path(o), class: "l-btn l-btn-ghost", style: "padding:6px 12px; font-size:13px;" %>
-              <%= button_to t("merchant.outlets.delete"), merchant_outlet_path(o), method: :delete, class: "l-btn l-btn-ghost", style: "padding:6px 12px; font-size:13px; color:var(--warn);", form: { data: { turbo_confirm: t("merchant.outlets.delete_confirm") }, style: "display:inline;" } %>
-            </div>
+          <% end %>
+          <label class="l-label"><%= o.(:name) %></label>
+          <%= f.text_field :name, class: "l-field", placeholder: o.(:name_ph) %>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+            <div><label class="l-label"><%= o.(:code) %></label><%= f.text_field :code, class: "l-field", placeholder: "Q1" %></div>
+            <div><label class="l-label"><%= o.(:phone) %></label><%= f.telephone_field :phone, class: "l-field" %></div>
+          </div>
+          <label class="l-label" style="margin-top:12px;"><%= o.(:address) %></label>
+          <%= f.text_field :address, class: "l-field" %>
+          <%= f.hidden_field :active, value: true %>
+          <div style="display:flex; gap:10px; margin-top:18px;">
+            <%= f.submit o.(:add), class: "l-btn l-btn-primary" %>
+            <button type="button" class="l-btn l-btn-ghost" data-action="modal#close"><%= t("merchant.campaigns.ed_cancel") %></button>
           </div>
         <% end %>
       </div>
-    <% end %>
-  </div>
-
-  <div class="l-panel" style="position:sticky; top:90px;">
-    <h3 class="l-display" style="font-size:18px; margin-bottom:12px;"><%= t("merchant.outlets.add") %></h3>
-    <%= form_with model: @outlet, url: merchant_outlets_path, method: :post do |f| %>
-      <label class="l-label"><%= t("merchant.outlets.name") %></label>
-      <%= f.text_field :name, class: "l-field", placeholder: t("merchant.outlets.name_ph") %>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
-        <div><label class="l-label"><%= t("merchant.outlets.code") %></label><%= f.text_field :code, class: "l-field", placeholder: "Q1" %></div>
-        <div><label class="l-label"><%= t("merchant.outlets.phone") %></label><%= f.telephone_field :phone, class: "l-field" %></div>
-      </div>
-      <label class="l-label" style="margin-top:12px;"><%= t("merchant.outlets.address") %></label>
-      <%= f.text_field :address, class: "l-field" %>
-      <%= f.hidden_field :active, value: true %>
-      <%= f.submit t("merchant.outlets.add"), class: "l-btn l-btn-primary", style: "margin-top:14px;" %>
-    <% end %>
-  </div>
+    </dialog>
+  <% end %>
 </div>

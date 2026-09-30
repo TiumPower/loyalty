@@ -6,9 +6,13 @@ import { Controller } from "@hotwired/stimulus"
 // redirect back to the list; a validation error re-renders the form as a page.
 export default class extends Controller {
   static targets = ["dialog", "frame"]
+  // A form that failed validation re-renders the whole page, so the dialog it
+  // was in has to come back open with the errors still shown.
+  static values = { open: Boolean }
 
   connect() {
     this.loadingHTML = this.hasFrameTarget ? this.frameTarget.innerHTML : ""
+    if (this.openValue) this.open()
     this.onLoad = () => this.open()
     if (this.hasFrameTarget) this.frameTarget.addEventListener("turbo:frame-load", this.onLoad)
   }

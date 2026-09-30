@@ -5,8 +5,15 @@ module Merchant
     before_action :set_outlet, only: [:show, :edit, :update, :destroy, :checkin_qr]
 
     def index
-      @outlets = current_workspace.outlets.order(:name)
+      @q = params[:q].to_s.strip
+      scope = current_workspace.outlets.order(:name)
+      if @q.present?
+        like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"
+        scope = scope.where("outlets.name ILIKE :q OR outlets.code ILIKE :q OR outlets.address ILIKE :q", q: like)
+      end
+      @outlets = scope.to_a
       @outlet  = Outlet.new(active: true)
+      load_directory_stats
     end
 
     # Branch detail: this outlet's performance, staff and recent activity.
@@ -40,7 +47,8 @@ module Merchant
       if @outlet.save
         redirect_to merchant_outlets_path, notice: "Đã thêm chi nhánh “#{@outlet.name}”."
       else
-        @outlets = current_workspace.outlets.order(:name)
+        @outlets = current_workspace.outlets.order(:name).to_a
+        load_directory_stats
         render :index, status: :unprocessable_entity
       end
     end
@@ -72,6 +80,19 @@ module Merchant
     private
 
     def nav_key = :outlets
+
+    # The numbers above the directory, and the per-row staff count — one grouped
+    # query each rather than a pair of counts per row.
+    def load_directory_stats
+      all          = current_workspace.outlets.to_a
+      @total_count = all.size
+      @active_count = all.count(&:active?)
+      @staff_by_outlet = current_workspace.memberships.where.not(outlet_id: nil).group(:outlet_id).count
+      @unassigned_staff = current_workspace.memberships.where(outlet_id: nil).count
+      @today_by_outlet = Purchase.not_voided.where(created_at: Time.zone.now.all_day)
+                                 .where.not(outlet_id: nil).group(:outlet_id).count
+      @today_total = @today_by_outlet.values.sum
+    end
 
     def set_outlet
       @outlet = current_workspace.outlets.find(params[:id])

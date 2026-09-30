@@ -56,6 +56,9 @@ module Merchant
         end
         @workspace.theme    = (@workspace.theme || {}).merge(colors)
         @workspace.branding = (@workspace.branding || {}).merge(branding_params.to_h)
+        # The shop name shows on the customer's home screen, in the installed
+        # app and in every notification, but could only be set at signup.
+        @workspace.name = params[:name].to_s.strip if params.key?(:name)
         # Check the upload BEFORE attaching. Attaching first and letting the
         # model validation fail leaves an unsaved blob on the record, and
         # re-rendering this page then raises "Cannot get a signed_id for a new
