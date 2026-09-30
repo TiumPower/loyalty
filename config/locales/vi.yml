@@ -2105,6 +2105,9 @@ vi:
       already_msg: "Mỗi ngày chỉ check-in được 1 lần. Hẹn gặp lại ngày mai nhé!"
       none_title: "Chưa có nhiệm vụ check-in"
       none_msg: "Cửa hàng hiện chưa bật nhiệm vụ check-in. Bạn vẫn có thể tích điểm khi mua hàng."
+      success_sub: "Điểm đã được cộng vào lịch sử điểm của bạn tại %{shop}."
+      kind: "Hình thức"
+      daily: "Check-in hằng ngày"
     earn_success:
       tier_unlocks: "Hạng %{tier} mở khoá ở %{n} điểm"
       bill: "Giá trị hoá đơn"

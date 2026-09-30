@@ -653,13 +653,15 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 
 /* ---------- centred result screens (earned / redeemed / unlocked) ---------- */
 .l-result { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:22px; }
-.l-result .halo { width:96px; height:96px; border-radius:50%; display:grid; place-items:center;
-  background: var(--good-soft); color: var(--good); margin-bottom:16px;
-  box-shadow: 0 0 0 10px color-mix(in srgb, var(--good) 8%, transparent); }
-.l-result .halo.brand { background: var(--primary-soft); color: var(--primary);
-  box-shadow: 0 0 0 10px color-mix(in srgb, var(--primary) 7%, transparent); }
-.l-result .halo.warn { background: var(--warn-soft); color: var(--warn);
-  box-shadow: 0 0 0 10px color-mix(in srgb, var(--warn) 7%, transparent); }
+/* A white disc inside a soft ring, as the design draws it — a flat tinted
+   circle swallows the glyph sitting on it. */
+.l-result .halo { width:78px; height:78px; border-radius:50%; display:grid; place-items:center;
+  background:#fff; color: var(--good); margin:0 0 28px;
+  box-shadow: 0 0 0 11px var(--good-soft), 0 0 0 22px color-mix(in srgb, var(--good) 7%, transparent); }
+.l-result .halo.brand { color: var(--primary);
+  box-shadow: 0 0 0 11px var(--primary-soft), 0 0 0 22px color-mix(in srgb, var(--primary) 7%, transparent); }
+.l-result .halo.warn { color: var(--warn);
+  box-shadow: 0 0 0 11px var(--warn-soft), 0 0 0 22px color-mix(in srgb, var(--warn) 7%, transparent); }
 .l-result h1 { font-size:24px; font-weight:700; letter-spacing:-.022em; line-height:1.2; margin-top:12px; }
 .l-result p { color: var(--ink-2); font-size:14px; line-height:1.5; margin-top:8px; max-width:300px; }
 

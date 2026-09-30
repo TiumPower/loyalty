@@ -2,8 +2,8 @@
 <% content_for :tab, "" %>
 <div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
   <div class="l-result">
-    <div class="halo"><%= ui_icon(:sparkles, size: 38) %></div>
-    <span class="l-pill good" style="margin-top:2px;"><%= t("customer.earn_success.verified") %></span>
+    <div class="halo"><%= ui_icon(:sparkles, size: 34) %></div>
+    <span class="l-pill good"><%= t("customer.earn_success.verified") %></span>
     <h1><%= t("customer.earn_success.heading_points", n: number_with_delimiter(@result.points)) %></h1>
     <p><%= t("customer.earn_success.subtitle", shop: current_workspace.name) %></p>
   </div>
@@ -28,16 +28,7 @@
     </div>
   </div>
 
-  <%# How much closer this purchase brought them — the design's "tier hint". %>
-  <% if current_member.next_tier %>
-    <div class="l-note brand" style="margin-top:12px;">
-      <%= ui_icon(:medal, size: 17) %>
-      <span>
-        <strong><%= t("customer.tiers.to_next_short", n: number_with_delimiter(current_member.points_to_next), tier: current_member.next_tier.name) %></strong><br>
-        <%= t("customer.earn_success.tier_unlocks", tier: current_member.next_tier.name, n: number_with_delimiter(current_member.next_tier.threshold_points)) %>
-      </span>
-    </div>
-  <% end %>
+  <%= render "customer/scan/next_tier" %>
 
   <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
     <%= link_to t("customer.common.home_back"), member_root_path, class: "l-btn l-btn-primary l-btn-block" %>

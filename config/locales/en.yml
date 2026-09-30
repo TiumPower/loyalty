@@ -2064,6 +2064,9 @@ en:
       already_msg: "Only one check-in per day. See you again tomorrow!"
       none_title: "No check-in mission"
       none_msg: "This store hasn't enabled a check-in mission yet. You can still earn points on purchases."
+      success_sub: "The points have been added to your point history at %{shop}."
+      kind: "Type"
+      daily: "Daily check-in"
     earn_success:
       tier_unlocks: "%{tier} unlocks at %{n} PTS"
       bill: "Purchase total"

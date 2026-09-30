@@ -11,12 +11,12 @@
 
 <div class="l-screen" style="text-align:center;">
   <%# ---- the crest ---- %>
-  <%# The crest is drawn with a white outlined star whatever the tier: the tier
-      is already said by the colour of the hexagon and by the name inside it.
-      The per-tier glyphs live on the badge pills, which is where the design
-      draws them. %>
+  <%# The tier's own glyph — a hexagon, a star, an eight-point burst, a diamond
+      — outlined in white, which is how the design draws the emblem. Outlined
+      and white, not filled and inked: the star and the name are two colours in
+      the design, and painting both the same turns the crest into a smudge. %>
   <div class="l-crest lg" style="background: <%= @current&.crest_gradient || 'linear-gradient(180deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
-    <span class="em"><%= ui_icon(:star, size: 48, stroke: 2.2) %></span>
+    <span class="em"><%= ui_icon(tier_icon(@current), size: 46, stroke: 2.2) %></span>
     <div class="nm"><%= @current&.name %></div>
   </div>
   <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>

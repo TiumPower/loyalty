@@ -2,18 +2,48 @@
 <% content_for :tab, "" %>
 <div class="l-screen no-tabs" data-controller="pointburst sfx" style="padding-top:24px;">
   <div class="l-result">
-    <div class="halo"><%= ui_icon(:pin, size: 38) %></div>
+    <div class="halo"><%= ui_icon(:sparkles, size: 34) %></div>
     <% if @points.to_i.positive? %>
-      <span class="l-pill good" style="margin-top:2px;"><%= t("customer.checkin.checked_in") %></span>
+      <span class="l-pill good"><%= t("customer.checkin.checked_in") %></span>
       <h1><%= t("customer.earn_success.heading_points", n: number_with_delimiter(@points)) %></h1>
-      <p><%= t("customer.checkin.success_points", n: number_with_delimiter(current_member.points_balance)) %></p>
+      <p><%= t("customer.checkin.success_sub", shop: current_workspace.name) %></p>
     <% else %>
+      <span class="l-pill good"><%= t("customer.checkin.checked_in") %></span>
       <h1><%= t("customer.checkin.success_heading") %></h1>
       <p><%= t("customer.checkin.success_recorded") %></p>
     <% end %>
   </div>
-  <div style="display:flex; flex-direction:column; gap:10px; margin-top:26px;">
+
+  <%# The receipt: where, when, and what it was worth — the same card the
+      purchase success screen shows, so the two read as one family. %>
+  <div class="l-tile" style="margin-top:22px;">
+    <div style="display:flex; align-items:center; gap:11px;">
+      <%= workspace_avatar(current_workspace, klass: "", style: "width:40px; height:40px; border-radius:12px; flex:none; font-size:14px;") %>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:14.5px;">
+          <%= current_workspace.name %><%= " · #{@outlet.name}" if @outlet %>
+        </div>
+        <div style="font-size:12px; color:var(--ink-2); margin-top:2px;"><%= l(Time.current, format: :short) %></div>
+      </div>
+      <% if @points.to_i.positive? %>
+        <span class="l-pill good" style="flex:none;">+<%= number_with_delimiter(@points) %></span>
+      <% end %>
+    </div>
+    <div style="margin-top:12px; padding-top:4px;">
+      <div class="l-kv"><span class="k"><%= t("customer.checkin.kind") %></span><span class="v"><%= t("customer.checkin.daily") %></span></div>
+    </div>
+    <div class="l-delta" style="margin-top:10px;">
+      <div><div class="k"><%= t("customer.earn_success.new_balance") %></div></div>
+      <div style="text-align:right;">
+        <div class="v hi"><%= t("customer.common.points_count", n: number_with_delimiter(current_member.points_balance)) %></div>
+      </div>
+    </div>
+  </div>
+
+  <%= render "customer/scan/next_tier" %>
+
+  <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
     <%= link_to t("customer.common.home_back"), member_root_path, class: "l-btn l-btn-primary l-btn-block" %>
-    <%= link_to t("customer.missions.title"), member_missions_path, class: "l-btn l-btn-outline l-btn-block" %>
+    <%= link_to t("customer.home.view_history"), member_history_path, class: "l-btn l-btn-outline l-btn-block" %>
   </div>
 </div>

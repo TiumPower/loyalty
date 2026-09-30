@@ -47,6 +47,9 @@ module Customer
       outlet = outlet_id.present? ? current_workspace.outlets.find_by(id: outlet_id) : nil
       status, points = Checkin.check_in!(current_member, current_workspace, outlet)
       @points = points
+      # Which branch they checked in at — the success screen names it, as the
+      # design's receipt card does.
+      @outlet = outlet
       case status
       when :done    then render :checkin_success
       when :already then render :checkin_already, status: :unprocessable_entity
