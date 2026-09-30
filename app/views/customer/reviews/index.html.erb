@@ -19,14 +19,33 @@
     <div class="cap"><%= current_workspace.name %></div>
   </div>
 
-  <div style="padding:0 20px;">
+  <%# The distance is worked out in the browser from coordinates already in the
+      page — the customer's position is never sent anywhere. %>
+  <div style="padding:0 20px;" data-controller="distance"
+       data-distance-km-label-value="<%= t("customer.shop.km_away") %>"
+       data-distance-m-label-value="<%= t("customer.shop.m_away") %>"
+       data-distance-failed-value="<%= t("customer.shop.distance_failed") %>">
     <%# ---- the facts: where it is and how to reach it ---- %>
     <div style="padding:16px 0;">
       <% if main&.address.present? %>
         <div class="l-inforow"><span class="ic"><%= ui_icon(:pin, size: 14) %></span><span><%= main.address %></span></div>
       <% end %>
+      <% if main&.located? %>
+        <div class="l-inforow" data-distance-target="place" data-lat="<%= main.latitude %>" data-lng="<%= main.longitude %>">
+          <span class="ic"><%= ui_icon(:navigate, size: 14) %></span>
+          <span>
+            <span data-role="dist"></span>
+            <button type="button" class="l-linkbtn" data-distance-target="ask" data-action="distance#locate">
+              <%= t("customer.shop.show_distance") %>
+            </button>
+          </span>
+        </div>
+        <div class="l-inforow" data-distance-target="status" hidden>
+          <span class="ic"><%= ui_icon(:clock, size: 14) %></span><span><%= t("customer.shop.locating") %></span>
+        </div>
+      <% end %>
       <% if @outlets.size > 1 %>
-        <div class="l-inforow"><span class="ic"><%= ui_icon(:navigate, size: 14) %></span><span><%= t("customer.shop.n_outlets", n: @outlets.size) %></span></div>
+        <div class="l-inforow"><span class="ic"><%= ui_icon(:store, size: 14) %></span><span><%= t("customer.shop.n_outlets", n: @outlets.size) %></span></div>
       <% end %>
       <%# Open or closed, and until when — drawn only when the branch has said. %>
       <% if (state = shop_open_state(main)) %>
@@ -79,8 +98,11 @@
       <h3 style="font-size:17px; font-weight:700; letter-spacing:-.015em; margin-top:24px;"><%= t("customer.shop.outlets") %></h3>
       <div class="l-chipset" style="margin-top:10px;">
         <% @outlets.each do |o| %>
-          <%= link_to o.name, "https://maps.google.com/?q=#{CGI.escape("#{o.name} #{o.address}")}",
-                target: "_blank", rel: "noopener", style: "text-decoration:none;" %>
+          <%= link_to "https://maps.google.com/?q=#{CGI.escape("#{o.name} #{o.address}")}",
+                target: "_blank", rel: "noopener", style: "text-decoration:none;",
+                data: (o.located? ? { distance_target: "place", lat: o.latitude, lng: o.longitude } : {}) do %>
+            <%= o.name %><% if o.located? %><span data-role="dist" style="color:var(--ink-2); margin-left:6px;"></span><% end %>
+          <% end %>
         <% end %>
       </div>
     <% end %>

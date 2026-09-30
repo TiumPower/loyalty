@@ -19,6 +19,12 @@ class Outlet < ApplicationRecord
 
   validates :name, presence: true
   validate  :open_hours_look_like_times
+  validates :latitude,  numericality: { greater_than_or_equal_to: -90,  less_than_or_equal_to: 90 },  allow_nil: true
+  validates :longitude, numericality: { greater_than_or_equal_to: -180, less_than_or_equal_to: 180 }, allow_nil: true
+
+  # Look the address up whenever it changes — and on the first save, so a branch
+  # added today has coordinates without anyone thinking about it.
+  after_commit :geocode_later, on: [:create, :update], if: :should_geocode?
 
   scope :active, -> { where(active: true) }
 
@@ -51,7 +57,21 @@ class Outlet < ApplicationRecord
     closes_at > opens_at ? (now >= opens_at && now < closes_at) : (now >= opens_at || now < closes_at)
   end
 
+  def located? = latitude.present? && longitude.present?
+
+  # Coordinates for the customer app to measure against, as plain floats.
+  def coords = located? ? [latitude.to_f, longitude.to_f] : nil
+
   private
+
+  def should_geocode?
+    return false if geocode_manual?
+    return false if address.blank?
+    # Re-run when the address moved, or when we have never looked.
+    saved_change_to_address? || latitude.blank?
+  end
+
+  def geocode_later = GeocodeOutletJob.perform_later(id)
 
   def open_hours_look_like_times
     return unless settings.is_a?(Hash) && settings["open_hours"].present?

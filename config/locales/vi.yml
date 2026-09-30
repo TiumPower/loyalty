@@ -1125,6 +1125,11 @@ vi:
       hours: "Giờ mở cửa"
       hours_to: "đến"
       hours_hint: "Để trống nếu chưa muốn hiện. Khách sẽ thấy “Mở tới 22:00” hoặc “Mở lại lúc 07:00” trên ứng dụng."
+      coords: "Toạ độ (vĩ độ · kinh độ)"
+      coords_manual: "Bạn đã tự nhập toạ độ này — hệ thống sẽ không tự ghi đè."
+      coords_auto: "Tự tìm từ địa chỉ ngày %{when}. Nếu lệch, nhập tay để sửa."
+      coords_pending: "Sẽ tự tìm từ địa chỉ sau khi lưu. Khách dùng toạ độ này để xem khoảng cách."
+      coords_reset: "Bỏ toạ độ tự nhập, để hệ thống tìm lại"
     campaigns:
       col_campaign: "Chiến dịch"
       col_status: "Trạng thái"
@@ -1760,6 +1765,11 @@ vi:
       closed: "Đang đóng"
       menu_highlights: "Món nổi bật"
       amenities: "Tiện ích"
+      km_away: "cách bạn %{n} km"
+      m_away: "cách bạn %{n} m"
+      show_distance: "Xem khoảng cách"
+      locating: "Đang lấy vị trí…"
+      distance_failed: "Không lấy được vị trí — hãy cho phép quyền vị trí rồi thử lại."
     void_notice:
       title: "Điều chỉnh điểm"
       body: "Một hoá đơn ghi nhầm vừa được quán hoàn tác — %{n} điểm đã được trừ lại. Xem lịch sử để biết chi tiết."

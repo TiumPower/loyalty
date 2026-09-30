@@ -1122,6 +1122,11 @@ en:
       hours: "Opening hours"
       hours_to: "to"
       hours_hint: "Leave blank to show nothing. Customers see “Open until 10 PM” or “Opens at 7 AM” in the app."
+      coords: "Coordinates (latitude · longitude)"
+      coords_manual: "You set these by hand — the automatic lookup will not overwrite them."
+      coords_auto: "Found from the address on %{when}. Type over them if they are off."
+      coords_pending: "Looked up from the address after you save. Customers use it to see how far away you are."
+      coords_reset: "Drop my coordinates and look them up again"
     campaigns:
       col_campaign: "Campaign"
       col_status: "Status"
@@ -1719,6 +1724,11 @@ en:
       closed: "Closed"
       menu_highlights: "Menu highlights"
       amenities: "Amenities"
+      km_away: "%{n} km away"
+      m_away: "%{n} m away"
+      show_distance: "Show distance"
+      locating: "Getting your location…"
+      distance_failed: "Could not get your location — allow location access and try again."
     void_notice:
       title: "Points adjusted"
       body: "A bill entered by mistake was reversed by the shop — %{n} points were taken back. See your history for details."

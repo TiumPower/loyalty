@@ -26,6 +26,31 @@
       <input type="time" name="outlet[open_hours][close]" value="<%= @outlet.closes_at %>" class="l-field" style="max-width:150px;">
     </div>
     <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;"><%= t("merchant.outlets.hours_hint") %></p>
+    <%# Coordinates. Filled in automatically from the address; the fields are
+        here because Vietnamese street names repeat across the country and the
+        automatic answer is sometimes the wrong street. Typing one marks the
+        branch as set by hand, and the automatic lookup then leaves it alone. %>
+    <label class="l-label" style="margin-top:16px;"><%= t("merchant.outlets.coords") %></label>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <%= f.text_field :latitude,  class: "l-field", placeholder: "10.8012", inputmode: "decimal" %>
+      <%= f.text_field :longitude, class: "l-field", placeholder: "106.7360", inputmode: "decimal" %>
+    </div>
+    <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;">
+      <% if @outlet.geocode_manual? %>
+        <%= t("merchant.outlets.coords_manual") %>
+      <% elsif @outlet.located? %>
+        <%= t("merchant.outlets.coords_auto", when: (@outlet.geocoded_at ? l(@outlet.geocoded_at.to_date, format: :short) : "—")) %>
+      <% else %>
+        <%= t("merchant.outlets.coords_pending") %>
+      <% end %>
+    </p>
+    <% if @outlet.geocode_manual? %>
+      <label style="display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:13px; color:var(--ink-2);">
+        <%= check_box_tag :reset_geocode, "1", false, style: "margin:0;" %>
+        <%= t("merchant.outlets.coords_reset") %>
+      </label>
+    <% end %>
+
     <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px;">
       <%= f.check_box :active %> <%= t("merchant.outlets.active") %>
     </label>

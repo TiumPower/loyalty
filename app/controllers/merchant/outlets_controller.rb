@@ -56,6 +56,14 @@ module Merchant
     def edit; end
 
     def update
+      # Typing a coordinate claims it: the automatic lookup must not undo the
+      # merchant's correction on the next address edit. Ticking "use the
+      # automatic one again" hands it back.
+      if params[:reset_geocode] == "1"
+        @outlet.assign_attributes(geocode_manual: false, latitude: nil, longitude: nil)
+      elsif coordinates_typed?
+        @outlet.geocode_manual = true
+      end
       if @outlet.update(outlet_params)
         redirect_to merchant_outlets_path, notice: "Đã cập nhật chi nhánh."
       else
@@ -94,12 +102,21 @@ module Merchant
       @today_total = @today_by_outlet.values.sum
     end
 
+    # Did this request actually change a coordinate, as opposed to posting back
+    # the one the lookup already found?
+    def coordinates_typed?
+      p = params[:outlet] || {}
+      return false if p[:latitude].blank? && p[:longitude].blank?
+      p[:latitude].to_s != @outlet.latitude.to_s || p[:longitude].to_s != @outlet.longitude.to_s
+    end
+
     def set_outlet
       @outlet = current_workspace.outlets.find(params[:id])
     end
 
     def outlet_params
       params.require(:outlet).permit(:name, :code, :address, :phone, :active,
+                                     :latitude, :longitude,
                                      open_hours: [:open, :close])
     end
   end
