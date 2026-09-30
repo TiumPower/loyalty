@@ -1,147 +1,175 @@
 <% content_for :title, t("merchant.nav.feedback") %>
-<% content_for :title_en, "FEEDBACK" %>
+<% content_for :title_en, "REVIEWS" %>
 <% stars = ->(n) { "★" * n.round + "☆" * (5 - n.round) } %>
 
-<div>
-  <%# ---- Cài đặt trang đánh giá ---- %>
-  <%= form_with url: merchant_feedback_path, method: :patch do %>
-    <div class="l-panel">
-      <h3 class="l-display" style="font-size:17px; margin-bottom:2px;"><%= t("merchant.feedback.settings_title") %></h3>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.feedback.settings_note") %></p>
-
-      <input type="hidden" name="feedback_public" value="0">
-      <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; padding:8px 0;">
-        <input type="checkbox" name="feedback_public" value="1" <%= "checked" if current_workspace.feedback_public? %>
-               style="width:18px;height:18px; accent-color:var(--primary);">
-        <span>
-          <strong><%= t("merchant.feedback.public_title") %></strong>
-          <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.feedback.public_note") %></span>
-        </span>
-      </label>
-
-      <div style="margin-top:14px;">
-        <label class="l-label"><%= t("merchant.feedback.google_label") %></label>
-        <%= text_field_tag :google_review_url, current_workspace.google_review_url,
-              class: "l-field", placeholder: "https://g.page/r/…/review" %>
-        <p style="color:var(--ink-2); font-size:12.5px; margin-top:5px;"><%= t("merchant.feedback.google_note") %></p>
-      </div>
-
-      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
-        <% low = current_workspace.automation(:low_rating) %>
-        <input type="hidden" name="low_rating_enabled" value="0">
-        <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer;">
-          <input type="checkbox" name="low_rating_enabled" value="1" <%= "checked" if low["enabled"] %>
-                 style="width:18px;height:18px; accent-color:var(--primary);">
-          <span>
-            <strong><%= t("merchant.feedback.apology_title") %></strong>
-            <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.feedback.apology_note") %></span>
-          </span>
-        </label>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <div style="flex:1; min-width:200px;">
-            <label class="l-label"><%= t("merchant.feedback.apology_reward") %></label>
-            <select name="low_rating_reward_id" class="l-field">
-              <option value=""><%= t("merchant.feedback.apology_none") %></option>
-              <% @rewards.each do |rw| %>
-                <option value="<%= rw.id %>" <%= "selected" if low["reward_id"].to_s == rw.id.to_s %>><%= rw.title %></option>
-              <% end %>
-            </select>
-          </div>
-          <div style="width:160px;">
-            <label class="l-label"><%= t("merchant.feedback.apology_threshold") %></label>
-            <select name="low_rating_threshold" class="l-field">
-              <% (1..4).each do |n| %>
-                <option value="<%= n %>" <%= "selected" if (low["threshold"].presence || 3).to_i == n %>>≤ <%= n %> ★</option>
-              <% end %>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <%= submit_tag t("merchant.feedback.save"), class: "l-btn l-btn-primary", style: "margin-top:16px;" %>
-    </div>
+<div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+  <div style="flex:1; min-width:220px;">
+    <h2 class="l-display" style="font-size:22px;"><%= t("merchant.nav.feedback") %></h2>
+    <p style="color:var(--ink-2); font-size:13.5px; margin-top:4px;"><%= t("merchant.feedback.page_sub") %></p>
+  </div>
+  <% if @unanswered.to_i.positive? %>
+    <span class="m-badge down" style="font-size:12px; padding:5px 12px;"><%= t("merchant.feedback.n_unanswered", n: @unanswered) %></span>
   <% end %>
+</div>
 
-  <%# ---- Summary ---- %>
-  <div style="display:grid; grid-template-columns:200px 1fr; gap:16px; margin-top:16px; align-items:start;">
-    <div class="l-panel" style="text-align:center;">
-      <div class="l-num" style="font-size:44px; line-height:1;"><%= @avg %></div>
-      <div style="color:var(--primary-2,#E08A3C); font-size:18px; letter-spacing:2px;"><%= stars.call(@avg) %></div>
-      <div style="color:var(--ink-2); font-size:13px; margin-top:4px;"><%= t("merchant.feedback.reviews_count", n: @count) %></div>
-    </div>
-    <div class="l-panel">
-      <% (5).downto(1) do |s| %>
-        <% n = @dist[s] || 0; pct = @count.zero? ? 0 : (n.to_f / @count * 100).round %>
-        <div style="display:flex; align-items:center; gap:10px; padding:4px 0;">
-          <span style="width:34px; font-size:13px; color:var(--ink-2);"><%= s %> ★</span>
-          <div style="flex:1; height:8px; border-radius:999px; background:var(--surface-2); overflow:hidden;"><span style="display:block; height:100%; width:<%= pct %>%; background:var(--primary-2,#E08A3C);"></span></div>
-          <span style="width:30px; text-align:right; font-size:12px; color:var(--ink-2);"><%= n %></span>
-        </div>
-      <% end %>
-    </div>
+<%# ---- Score, spread, and the settings that shape both ---- %>
+<div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1.5fr) minmax(0,1.2fr); gap:16px; align-items:stretch; margin-bottom:16px;">
+  <div class="l-panel" style="text-align:center;">
+    <div style="font-size:42px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
+    <div style="color:var(--primary-2); font-size:17px; letter-spacing:2px; margin-top:6px;"><%= stars.call(@avg) %></div>
+    <div style="color:var(--ink-2); font-size:13px; margin-top:6px;"><%= t("merchant.feedback.reviews_count", n: @count) %></div>
   </div>
 
-  <%# ---- All feedback ---- %>
-  <div class="l-panel" style="margin-top:16px;">
-    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-      <h3 class="l-display" style="font-size:17px; margin:0;"><%= t("merchant.feedback.all_reviews") %></h3>
-      <div style="margin-left:auto; display:flex; gap:6px;">
-        <% [[nil, t("merchant.feedback.filter_all")],
-            ["unanswered", t("merchant.feedback.filter_unanswered")],
-            ["low", t("merchant.feedback.filter_low")]].each do |key, label| %>
-          <%= link_to label, merchant_feedback_path(filter: key),
-                class: "l-btn #{@filter == key ? 'l-btn-primary' : 'l-btn-soft'}",
-                style: "padding:5px 12px; font-size:12.5px;" %>
-        <% end %>
+  <div class="l-panel">
+    <% (5).downto(1) do |s| %>
+      <% n = @dist[s] || 0; pct = @count.zero? ? 0 : (n.to_f / @count * 100).round %>
+      <div style="display:flex; align-items:center; gap:10px; padding:5px 0;">
+        <span style="width:34px; font-size:13px; color:var(--ink-2);"><%= s %> ★</span>
+        <span class="l-bar" style="flex:1; height:8px;"><span style="width:<%= pct %>%;"></span></span>
+        <span style="width:34px; text-align:right; font-size:12px; color:var(--ink-2);"><%= n %></span>
+      </div>
+    <% end %>
+  </div>
+
+<%= form_with url: merchant_feedback_path, method: :patch do %>
+  <div class="l-panel" style="height:100%;">
+    <h3 class="l-display" style="font-size:17px; margin-bottom:2px;"><%= t("merchant.feedback.settings_title") %></h3>
+    <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.feedback.settings_note") %></p>
+
+    <input type="hidden" name="feedback_public" value="0">
+    <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; padding:8px 0;">
+      <input type="checkbox" name="feedback_public" value="1" <%= "checked" if current_workspace.feedback_public? %>
+             style="width:18px;height:18px; accent-color:var(--primary);">
+      <span>
+        <strong><%= t("merchant.feedback.public_title") %></strong>
+        <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.feedback.public_note") %></span>
+      </span>
+    </label>
+
+    <div style="margin-top:14px;">
+      <label class="l-label"><%= t("merchant.feedback.google_label") %></label>
+      <%= text_field_tag :google_review_url, current_workspace.google_review_url,
+            class: "l-field", placeholder: "https://g.page/r/…/review" %>
+      <p style="color:var(--ink-2); font-size:12.5px; margin-top:5px;"><%= t("merchant.feedback.google_note") %></p>
+    </div>
+
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
+      <% low = current_workspace.automation(:low_rating) %>
+      <input type="hidden" name="low_rating_enabled" value="0">
+      <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer;">
+        <input type="checkbox" name="low_rating_enabled" value="1" <%= "checked" if low["enabled"] %>
+               style="width:18px;height:18px; accent-color:var(--primary);">
+        <span>
+          <strong><%= t("merchant.feedback.apology_title") %></strong>
+          <span style="display:block; color:var(--ink-2); font-size:12.5px;"><%= t("merchant.feedback.apology_note") %></span>
+        </span>
+      </label>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <div style="flex:1; min-width:200px;">
+          <label class="l-label"><%= t("merchant.feedback.apology_reward") %></label>
+          <select name="low_rating_reward_id" class="l-field">
+            <option value=""><%= t("merchant.feedback.apology_none") %></option>
+            <% @rewards.each do |rw| %>
+              <option value="<%= rw.id %>" <%= "selected" if low["reward_id"].to_s == rw.id.to_s %>><%= rw.title %></option>
+            <% end %>
+          </select>
+        </div>
+        <div style="width:160px;">
+          <label class="l-label"><%= t("merchant.feedback.apology_threshold") %></label>
+          <select name="low_rating_threshold" class="l-field">
+            <% (1..4).each do |n| %>
+              <option value="<%= n %>" <%= "selected" if (low["threshold"].presence || 3).to_i == n %>>≤ <%= n %> ★</option>
+            <% end %>
+          </select>
+        </div>
       </div>
     </div>
-    <% if @ratings.empty? %>
-      <p style="color:var(--ink-2); font-size:13px;"><%= t("merchant.feedback.no_reviews") %></p>
-    <% else %>
-      <% @ratings.each do |r| %>
-        <div style="padding:12px 0; border-bottom:1px solid var(--line);">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-weight:600;"><%= r.member&.display_name %></div>
-            <div style="color:var(--primary-2,#E08A3C); font-size:13px; letter-spacing:1px;"><%= stars.call(r.stars) %></div>
-            <div style="margin-left:auto; font-size:12px; color:var(--ink-2);"><%= l(r.created_at, format: :short) %></div>
-          </div>
-          <% if r.comment.present? %><div style="font-size:14px; margin-top:6px;"><%= r.comment %></div><% end %>
 
-          <%# ---- Trả lời ---- %>
-          <details style="margin-top:8px;" <%= "open" if r.replied? %>>
-            <summary style="cursor:pointer; font-size:12.5px; color:var(--primary-ink); font-weight:600; list-style:none;">
-              <%= r.replied? ? t("merchant.feedback.reply_edit") : t("merchant.feedback.reply_cta") %>
-            </summary>
-            <% if r.replied? %>
-              <div style="font-size:12px; color:var(--ink-2); margin-top:6px;">
-                <%= t("merchant.feedback.replied_by", name: r.replied_by&.name || current_workspace.name,
-                      time: l(r.replied_at, format: :short)) %>
-              </div>
-            <% end %>
-            <%= form_with url: merchant_reply_feedback_path(r), method: :patch do %>
-              <%= text_area_tag :reply_body, r.reply_body, class: "l-field", rows: 2,
-                    style: "margin-top:6px;", placeholder: t("merchant.feedback.reply_ph") %>
-              <div style="display:flex; gap:8px; margin-top:8px;">
-                <%= submit_tag t("merchant.feedback.reply_save"), class: "l-btn l-btn-primary",
-                      style: "padding:6px 14px; font-size:13px;" %>
-              </div>
-            <% end %>
-          </details>
-        </div>
+    <%= submit_tag t("merchant.feedback.save"), class: "l-btn l-btn-primary", style: "margin-top:16px;" %>
+  </div>
+<% end %>
+
+</div>
+
+<%# ---- Inbox: the list on the left, one review open on the right ---- %>
+<div class="m-subnav" style="margin-bottom:16px;">
+  <% [[nil, t("merchant.feedback.filter_all")],
+      ["unanswered", t("merchant.feedback.filter_unanswered")],
+      ["low", t("merchant.feedback.filter_low")]].each do |key, label| %>
+    <%= link_to label, merchant_feedback_path(filter: key), class: ("active" if @filter == key) %>
+  <% end %>
+</div>
+
+<% if @ratings.empty? %>
+  <div class="l-panel" style="text-align:center; padding:44px; color:var(--ink-2);"><%= t("merchant.feedback.no_reviews") %></div>
+<% else %>
+  <div class="m-ops" style="grid-template-columns:minmax(0,420px) minmax(0,1fr);">
+    <div class="l-panel">
+      <% @ratings.each do |r| %>
+        <% on = @selected && r.id == @selected.id %>
+        <%= link_to merchant_feedback_path(filter: @filter, page: (@page if @page > 1), id: r.id),
+              class: "l-row", style: "margin-top:8px; align-items:flex-start; #{'border-color:var(--primary);' if on}" do %>
+          <span class="ic muted" style="border-radius:50%;"><%= r.member&.initials %></span>
+          <div class="bd">
+            <div class="tt"><%= r.member&.display_name %></div>
+            <div class="mt"><%= truncate(r.comment.to_s.presence || t("merchant.feedback.no_comment"), length: 54) %></div>
+          </div>
+          <div class="tr" style="flex-direction:column; align-items:flex-end; gap:4px;">
+            <span class="m-badge <%= 'down' if r.stars <= 2 %>"><%= r.stars %> ★</span>
+            <% unless r.replied? %><span style="font-size:11px; color:var(--warn);"><%= t("merchant.feedback.needs_reply") %></span><% end %>
+          </div>
+        <% end %>
       <% end %>
 
-      <%# ---- Pagination ---- %>
       <% if @page > 1 || @has_more %>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--line);">
           <% if @page > 1 %>
-            <%= link_to t("merchant.pagination.prev"), merchant_feedback_path(request.query_parameters.merge(page: @page - 1)), class: "l-btn l-btn-soft" %>
+            <%= link_to t("merchant.pagination.prev"), merchant_feedback_path(request.query_parameters.except("id").merge(page: @page - 1)), class: "l-btn l-btn-soft" %>
           <% else %><span></span><% end %>
           <span style="font-size:13px; color:var(--ink-2);"><%= t("merchant.pagination.page", n: @page) %></span>
           <% if @has_more %>
-            <%= link_to t("merchant.pagination.next"), merchant_feedback_path(request.query_parameters.merge(page: @page + 1)), class: "l-btn l-btn-soft" %>
+            <%= link_to t("merchant.pagination.next"), merchant_feedback_path(request.query_parameters.except("id").merge(page: @page + 1)), class: "l-btn l-btn-soft" %>
           <% else %><span></span><% end %>
         </div>
       <% end %>
+    </div>
+
+    <% if (r = @selected) %>
+      <div class="l-panel">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center;
+                       background:var(--surface-2); color:var(--ink-2); font-weight:700;"><%= r.member&.initials %></span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:16px;"><%= r.member&.display_name %></div>
+            <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= l(r.created_at, format: :short) %></div>
+          </div>
+          <span style="color:var(--primary-2); font-size:17px; letter-spacing:2px; flex:none;"><%= stars.call(r.stars) %></span>
+        </div>
+
+        <% if r.comment.present? %>
+          <p style="font-size:15px; line-height:1.6; margin-top:16px;"><%= r.comment %></p>
+        <% else %>
+          <p style="font-size:14px; color:var(--ink-2); margin-top:16px;"><%= t("merchant.feedback.no_comment") %></p>
+        <% end %>
+
+        <%# A low score answered in public is worth more than one answered fast. %>
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
+          <h3 style="font-size:15px; font-weight:700;">
+            <%= r.replied? ? t("merchant.feedback.reply_edit") : t("merchant.feedback.reply_cta") %>
+          </h3>
+          <% if r.replied? %>
+            <div style="font-size:12.5px; color:var(--ink-2); margin-top:4px;">
+              <%= t("merchant.feedback.replied_by", name: r.replied_by&.name || current_workspace.name,
+                    time: l(r.replied_at, format: :short)) %>
+            </div>
+          <% end %>
+          <%= form_with url: merchant_reply_feedback_path(r), method: :patch do %>
+            <%= text_area_tag :reply_body, r.reply_body, class: "l-field", rows: 4,
+                  style: "margin-top:10px;", placeholder: t("merchant.feedback.reply_ph") %>
+            <%= submit_tag t("merchant.feedback.reply_save"), class: "l-btn l-btn-primary", style: "margin-top:12px;" %>
+          <% end %>
+        </div>
+      </div>
     <% end %>
   </div>
-</div>
+<% end %>

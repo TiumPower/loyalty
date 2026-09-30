@@ -343,6 +343,12 @@ vi:
       page: "Trang %{n}"
       summary: "%{from}–%{to} / %{total}"
     customers:
+      th_visits: "Lượt ghé"
+      th_last_visit: "Ghé gần nhất"
+      quick_preview: "Xem nhanh"
+      recent_activity: "Hoạt động gần đây"
+      open_profile: "Mở hồ sơ đầy đủ"
+      send_message: "Gửi tin nhắn"
       send_group: "✉ Gửi thông báo cho nhóm này"
       compose: "✉ Soạn thông báo"
       count: "%{n} khách"
@@ -358,6 +364,7 @@ vi:
       branch_all: "Tất cả chi nhánh"
       tier_all: "Tất cả hạng"
     customer:
+      context: "Thông tin liên hệ"
       joined: "Tham gia %{date}"
       kpi_balance: "Điểm hiện tại"
       kpi_lifetime: "Tổng tích luỹ"
@@ -784,6 +791,10 @@ vi:
       confirm_pw: "Nhập lại mật khẩu mới"
       save_pw: "Đổi mật khẩu"
     feedback:
+      page_sub: "Đọc và trả lời đánh giá của khách."
+      n_unanswered: "%{n} chưa trả lời"
+      needs_reply: "Chưa trả lời"
+      no_comment: "(khách chỉ chấm sao, không viết gì)"
       settings_title: "Cài đặt trang đánh giá"
       settings_note: "Quyết định khách thấy gì sau khi đánh giá, và điều gì xảy ra khi họ chấm thấp."
       save: "Lưu cài đặt"

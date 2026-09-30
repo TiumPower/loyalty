@@ -340,6 +340,12 @@ en:
       page: "Page %{n}"
       summary: "%{from}–%{to} / %{total}"
     customers:
+      th_visits: "Visits"
+      th_last_visit: "Last visit"
+      quick_preview: "Quick preview"
+      recent_activity: "Recent activity"
+      open_profile: "Open full profile"
+      send_message: "Send message"
       send_group: "✉ Notify this group"
       compose: "✉ Compose broadcast"
       count: "%{n} customers"
@@ -355,6 +361,7 @@ en:
       branch_all: "All branches"
       tier_all: "All tiers"
     customer:
+      context: "Contact details"
       joined: "Joined %{date}"
       kpi_balance: "Current points"
       kpi_lifetime: "Lifetime"
@@ -781,6 +788,10 @@ en:
       confirm_pw: "Confirm new password"
       save_pw: "Change password"
     feedback:
+      page_sub: "Read and answer what customers said."
+      n_unanswered: "%{n} unanswered"
+      needs_reply: "Needs a reply"
+      no_comment: "(rated without a comment)"
       settings_title: "Review page settings"
       settings_note: "What a customer sees after rating you, and what happens when the score is low."
       save: "Save settings"

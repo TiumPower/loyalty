@@ -19,14 +19,6 @@
         <% end %>
       </select>
     <% end %>
-    <% if @tiers.present? %>
-      <select name="tier" class="l-field" style="max-width:180px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.customers.th_tier') %>">
-        <option value=""><%= t('merchant.customers.tier_all') %></option>
-        <% @tiers.each do |ti| %>
-          <option value="<%= ti.key %>" <%= 'selected' if @tier == ti.key %>><%= ti.name %></option>
-        <% end %>
-      </select>
-    <% end %>
     <select name="sort" class="l-field" style="max-width:200px;" onchange="this.form.requestSubmit()" aria-label="<%= t('merchant.segments.sort_label') %>">
       <option value="recent" <%= 'selected' unless %w[points spend].include?(@sort) %>><%= t('merchant.segments.sort_recent') %></option>
       <option value="points" <%= 'selected' if @sort == 'points' %>><%= t('merchant.segments.sort_points') %></option>
@@ -44,6 +36,20 @@
   </div>
 <% end %>
 
+<%# Tier is the filter a shop reaches for most, so it gets pills rather than a
+    fourth dropdown in the row above. %>
+<% if @tiers.present? %>
+  <div class="m-subnav" style="margin-bottom:16px;">
+    <%= link_to t("merchant.customers.tier_all"), merchant_customers_path(request.query_parameters.except("tier", "page", "preview")),
+          class: ("active" if @tier.blank?) %>
+    <% @tiers.each do |ti| %>
+      <%= link_to ti.name, merchant_customers_path(request.query_parameters.except("page", "preview").merge(tier: ti.key)),
+            class: ("active" if @tier == ti.key) %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="m-ops" style="grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);">
 <div class="l-panel">
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
     <strong><%= MemberSegments.icon(@segment) %> <%= MemberSegments.label(@segment) %></strong>
@@ -54,25 +60,45 @@
       "Vàng" while the column beside it said "Gold". Indexed from @tiers, which
       is already loaded, rather than Member#tier's per-row lookup. %>
   <% tier_names = @tiers.index_by(&:key).transform_values(&:name) %>
-  <table style="width:100%; border-collapse:collapse;">
-    <thead><tr style="text-align:left; color:var(--ink-2); font-size:12px; text-transform:uppercase; letter-spacing:.08em;">
-      <th style="padding:10px 8px;"><%= t("merchant.customers.th_name") %></th><th>Email</th><th><%= t("merchant.customers.th_phone") %></th><th><%= t("merchant.customers.th_points") %></th><th><%= t("merchant.customers.th_tier") %></th><th><%= t("merchant.customers.th_birthday") %></th><th><%= t("merchant.customers.th_joined") %></th>
-    </tr></thead>
-    <tbody>
-      <% @members.each do |m| %>
-        <tr style="border-top:1px solid var(--line); cursor:pointer;">
-          <td style="padding:12px 8px; font-weight:600;"><%= link_to m.display_name, merchant_customer_path(m), style: "color:var(--primary-ink); text-decoration:none;" %></td>
-          <td class="l-mono"><%= m.email.presence || "—" %></td>
-          <td class="l-mono"><%= m.phone.presence || "—" %></td>
-          <td><%= number_with_delimiter(m.points_balance) %></td>
-          <td><%= tier_names[m.tier_key] || "—" %></td>
-          <td style="color:var(--ink-2);"><%= m.birthday ? l(m.birthday, format: :short) : "—" %></td>
-          <td style="color:var(--ink-2); display:flex; align-items:center; gap:8px;"><%= l(m.created_at.to_date, format: :short) %> <%= link_to t("merchant.customers.view"), merchant_customer_path(m), class: "l-chip", style: "font-size:11px;" %></td>
+  <div style="overflow-x:auto;">
+    <table class="m-table" style="min-width:640px;">
+      <thead>
+        <tr>
+          <th><%= t("merchant.customers.th_name") %></th>
+          <th><%= t("merchant.customers.th_tier") %></th>
+          <th><%= t("merchant.customers.th_points") %></th>
+          <th><%= t("merchant.customers.th_visits") %></th>
+          <th><%= t("merchant.customers.th_last_visit") %></th>
         </tr>
-      <% end %>
-      <% if @members.empty? %><tr><td colspan="7" style="padding:20px; text-align:center; color:var(--ink-2);"><%= t("merchant.customers.empty") %></td></tr><% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% @members.each do |m| %>
+          <% v = @visits[m.id] || { count: 0, last: nil } %>
+          <tr style="<%= 'background:var(--primary-soft);' if @preview && m.id == @preview.id %>">
+            <td>
+              <%= link_to merchant_customers_path(request.query_parameters.merge(preview: m.id)),
+                    class: "m-who", style: "text-decoration:none; color:inherit;" do %>
+                <span class="av"><%= m.initials %></span>
+                <div style="min-width:0;">
+                  <div class="nm"><%= m.display_name %></div>
+                  <div class="sub"><%= m.email.presence || m.phone.presence || "—" %></div>
+                </div>
+              <% end %>
+            </td>
+            <td><span class="m-badge"><%= tier_names[m.tier_key] || "—" %></span></td>
+            <td class="m-num"><%= number_with_delimiter(m.points_balance) %></td>
+            <td class="m-num"><%= v[:count] %></td>
+            <td style="color:var(--ink-2); white-space:nowrap;">
+              <%= v[:last] ? t("customer.notifications.ago", time: time_ago_in_words(v[:last])) : "—" %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @members.empty? %>
+          <tr><td colspan="5" style="padding:24px; text-align:center; color:var(--ink-2);"><%= t("merchant.customers.empty") %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
 
   <%# ---- Pagination ---- %>
   <% if @page > 1 || @has_more %>
@@ -86,4 +112,60 @@
       <% else %><span></span><% end %>
     </div>
   <% end %>
+</div>
+
+<%# ---- Quick preview: enough to decide whether to open the full profile ---- %>
+<% if (c = @preview) %>
+  <% v = @visits[c.id] || { count: 0, last: nil } %>
+  <div class="l-panel">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="width:48px; height:48px; border-radius:50%; flex:none; display:grid; place-items:center;
+                   background:var(--surface-2); color:var(--ink-2); font-weight:700;"><%= c.initials %></span>
+      <div style="flex:1; min-width:0;">
+        <div class="l-eyebrow"><%= t("merchant.customers.quick_preview") %></div>
+        <div style="font-weight:700; font-size:16px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= c.display_name %></div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;">
+      <% if c.tier_key %><span class="m-badge"><%= tier_names[c.tier_key] %></span><% end %>
+      <span style="font-size:12.5px; color:var(--ink-2); min-width:0; overflow:hidden; text-overflow:ellipsis;"><%= c.email.presence || c.phone.presence %></span>
+    </div>
+
+    <div style="display:flex; gap:18px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft);">
+      <div>
+        <div class="l-eyebrow"><%= t("merchant.customers.th_points") %></div>
+        <div style="font-size:19px; font-weight:700; letter-spacing:-.02em;"><%= number_with_delimiter(c.points_balance) %></div>
+      </div>
+      <div>
+        <div class="l-eyebrow"><%= t("merchant.customers.th_last_visit") %></div>
+        <div style="font-size:14px; font-weight:600; margin-top:4px;">
+          <%= v[:last] ? t("customer.notifications.ago", time: time_ago_in_words(v[:last])) : "—" %>
+        </div>
+      </div>
+    </div>
+
+    <% if @preview_purchases.present? %>
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--line-soft);">
+        <div style="font-size:13px; font-weight:700; margin-bottom:8px;"><%= t("merchant.customers.recent_activity") %></div>
+        <% @preview_purchases.each do |pu| %>
+          <div style="display:flex; align-items:center; gap:10px; padding:6px 0; font-size:13px;">
+            <div style="flex:1; min-width:0;">
+              <div style="color:var(--ink-2); font-size:12px;"><%= l(pu.created_at, format: :short) %><%= " · #{pu.outlet.name}" if pu.outlet %></div>
+            </div>
+            <span class="m-num" style="flex:none;"><%= number_with_delimiter(pu.amount) %>đ</span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+      <%= link_to merchant_customer_path(c), class: "l-btn l-btn-primary l-btn-block" do %>
+        <%= ui_icon(:arrow_right, size: 16) %><%= t("merchant.customers.open_profile") %>
+      <% end %>
+      <%= link_to t("merchant.customers.send_message"), new_merchant_broadcast_path(@compose_params),
+            class: "l-btn l-btn-ghost l-btn-block" %>
+    </div>
+  </div>
+<% end %>
 </div>

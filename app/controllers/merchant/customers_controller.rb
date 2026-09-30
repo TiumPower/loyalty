@@ -29,6 +29,23 @@ module Merchant
       @members  = apply_sort(base, @sort).limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
       @has_more = @total > @page * PER_PAGE
 
+      # Visits and last visit for the table, in one grouped query rather than
+      # two per row.
+      ids = @members.map(&:id)
+      if ids.any?
+        rows = Purchase.not_voided.where(member_id: ids).group(:member_id)
+                       .pluck(Arel.sql("member_id, COUNT(*), MAX(created_at)"))
+        @visits = rows.to_h { |mid, n, last| [mid, { count: n.to_i, last: last }] }
+      end
+      @visits ||= {}
+
+      # The design keeps a quick-preview panel beside the table; which customer
+      # it shows lives in the URL so the view is shareable and survives paging.
+      @preview = @members.find { |m| m.id.to_s == params[:preview].to_s } || @members.first
+      if @preview
+        @preview_purchases = @preview.purchases.not_voided.order(created_at: :desc).limit(2).to_a
+      end
+
       # Filters to carry into "Soạn thông báo" so the broadcast targets exactly the
       # audience shown here (segment + branch + tier + search), not the whole segment.
       @compose_params = { segment: @segment, outlet: @applied_outlet&.id, tier: @tier, q: @q.presence }.compact

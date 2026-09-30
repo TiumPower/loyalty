@@ -15,6 +15,10 @@ module Merchant
       @ratings = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
       @has_more = @count_filtered > @page * PER_PAGE
       @rewards = assignable_rewards(current_workspace.automation(:low_rating)["reward_id"])
+      # The design reads one review at a time beside the list, so which one is
+      # open lives in the URL.
+      @selected = @ratings.find { |r| r.id.to_s == params[:id].to_s } || @ratings.first
+      @unanswered = Rating.where(replied_at: nil).count
     end
 
     def update

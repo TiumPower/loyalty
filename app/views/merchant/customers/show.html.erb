@@ -2,65 +2,56 @@
 <% content_for :title_en, "CUSTOMER" %>
 <% merchant_back merchant_customers_path %>
 
-<div>
-  <%# ---- Header ---- %>
-  <div class="l-panel" style="margin-top:12px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-    <div class="av" style="width:56px; height:56px; border-radius:16px; background:<%= @member.tier&.gradient_css || 'var(--primary)' %>; color:#fff; display:grid; place-items:center; font-weight:700; font-size:20px; flex:none;"><%= @member.initials %></div>
-    <div style="flex:1; min-width:180px;">
-      <div style="font-size:20px; font-weight:700;"><%= @member.display_name %></div>
-      <div style="color:var(--ink-2); font-size:13px;"><%= [@member.email.presence, @member.phone.presence].compact.join(" · ").presence || "—" %></div>
-      <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
-        <% if @member.tier %><span class="l-chip l-chip-brand"><%= @member.tier.name %></span><% end %>
-        <% if @member.birthday %><span class="l-chip">🎂 <%= l(@member.birthday, format: :short) %></span><% end %>
-        <span class="l-chip"><%= t("merchant.customer.joined", date: l(@member.created_at.to_date, format: :short)) %></span>
-      </div>
-    </div>
+<%# ---- Who this is, and the three numbers that matter ---- %>
+<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+  <div style="width:56px; height:56px; border-radius:16px; flex:none; display:grid; place-items:center; font-weight:700; font-size:20px; color:#fff;
+              background:<%= @member.tier&.gradient_css || 'var(--primary)' %>;"><%= @member.initials %></div>
+  <div style="flex:1; min-width:200px;">
+    <div style="font-size:21px; font-weight:700; letter-spacing:-.02em;"><%= @member.display_name %></div>
+    <div style="color:var(--ink-2); font-size:13.5px; margin-top:3px;"><%= [@member.email.presence, @member.phone.presence].compact.join(" · ").presence || "—" %></div>
   </div>
+  <% if @member.tier %><span class="m-badge up" style="font-size:12px; padding:5px 12px;"><%= @member.tier.name %></span><% end %>
+</div>
 
-  <%# ---- KPIs ---- %>
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px;">
-    <% [[t("merchant.customer.kpi_balance"), number_with_delimiter(@member.points_balance)],
-        [t("merchant.customer.kpi_lifetime"), number_with_delimiter(@member.lifetime_points)],
-        [t("merchant.customer.kpi_purchases"), @purchase_count],
-        [t("merchant.customer.kpi_spend"), "#{number_with_delimiter(@total_spend.to_i)}đ"]].each do |label, val| %>
-      <div class="l-panel" style="padding:14px 16px;">
-        <div class="l-eyebrow"><%= label %></div>
-        <div class="l-num" style="font-size:26px; margin-top:4px;"><%= val %></div>
+<div class="m-metrics" style="grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:16px;">
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= t("merchant.customer.kpi_balance") %></span><span class="ic"><%= ui_icon(:sparkles, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@member.points_balance) %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= t("merchant.customer.kpi_purchases") %></span><span class="ic"><%= ui_icon(:receipt, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= @purchase_count %></span></div>
+  </div>
+  <div class="m-metric">
+    <div class="hd"><span class="k"><%= t("merchant.customer.kpi_spend") %></span><span class="ic"><%= ui_icon(:coins, size: 15) %></span></div>
+    <div class="row"><span class="v"><%= number_with_delimiter(@total_spend.to_i) %>đ</span></div>
+  </div>
+</div>
+
+<%# The design splits the screen: what the customer HAS DONE on the left, what
+    staff can DO about it on the right. %>
+<div class="m-ops" style="grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);">
+  <div>
+    <%# ---- Where they are on the tier ladder ---- %>
+    <% if @member.tier %>
+      <div class="l-panel" style="margin-bottom:16px;">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="flex:1; min-width:0;">
+            <div class="l-eyebrow"><%= t("merchant.tiers.title") %></div>
+            <div style="font-weight:700; font-size:16px; margin-top:3px;"><%= @member.tier.name %></div>
+          </div>
+          <span class="m-badge"><%= t("merchant.customer.kpi_lifetime") %>: <%= number_with_delimiter(@member.lifetime_points) %></span>
+        </div>
+        <% if @member.next_tier %>
+          <div class="l-bar thick" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+          <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--ink-2); margin-top:8px;">
+            <span><%= number_with_delimiter(@member.points_balance) %> / <%= number_with_delimiter(@member.next_tier.threshold_points) %></span>
+            <span><%= t("customer.tiers.to_next_short", n: number_with_delimiter(@member.points_to_next), tier: @member.next_tier.name) %></span>
+          </div>
+        <% end %>
       </div>
     <% end %>
-  </div>
 
-  <%# ---- Manual points adjustment (managers) ---- %>
-  <% if current_membership&.can_manage? %>
-    <div class="l-panel" style="margin-top:16px;">
-      <h3 class="l-display" style="font-size:17px; margin-bottom:4px;"><%= t("merchant.customer.adjust_title") %></h3>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.customer.adjust_note") %></p>
-      <%= form_with url: adjust_merchant_customer_path(@member), method: :post do %>
-        <%# Fixed three-column grid squeezed the reason box on a laptop. %>
-        <div style="display:grid; grid-template-columns:130px minmax(0,1fr) auto; gap:8px; align-items:end;">
-          <div>
-            <label class="l-label"><%= t("merchant.customer.amount") %></label>
-            <%= number_field_tag :amount, nil, class: "l-field", placeholder: "VD: 100 / -50",
-                  min: -Merchant::CustomersController::MAX_ADJUST, max: Merchant::CustomersController::MAX_ADJUST %>
-          </div>
-          <div>
-            <%# The reason is required — an unexplained manual change to what the
-                shop owes a customer is the one nobody can account for later. %>
-            <label class="l-label"><%= t("merchant.customer.reason") %> <span style="color:#B4402F;">*</span></label>
-            <%= text_field_tag :note, nil, class: "l-field", placeholder: "VD: Đền bù đồ uống lỗi", required: true %>
-          </div>
-          <%= submit_tag t("merchant.customer.apply"), class: "l-btn l-btn-primary" %>
-        </div>
-        <p style="color:var(--ink-2); font-size:12px; margin-top:8px;">
-          <%= t("merchant.customer.adjust_limits",
-                max: number_with_delimiter(Merchant::CustomersController::MAX_ADJUST),
-                balance: number_with_delimiter(@member.points_balance)) %>
-        </p>
-      <% end %>
-    </div>
-  <% end %>
-
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; align-items:start;">
     <%# ---- Points history ---- %>
     <div class="l-panel">
       <h3 class="l-display" style="font-size:17px; margin-bottom:10px;"><%= t("merchant.customer.history") %></h3>
@@ -81,6 +72,7 @@
     </div>
 
     <%# ---- Vouchers ---- %>
+
     <div class="l-panel">
       <h3 class="l-display" style="font-size:17px; margin-bottom:10px;"><%= t("merchant.customer.wallet") %></h3>
       <% if @vouchers.empty? %>
@@ -103,14 +95,55 @@
     </div>
   </div>
 
-  <%# ---- Danger zone: permanently delete the customer (owner only) ---- %>
-  <% if current_membership&.owner? %>
-    <div class="l-panel" style="margin-top:16px; border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);">
-      <h3 class="l-display" style="font-size:17px; margin-bottom:4px; color:var(--warn);"><%= t("merchant.customer.delete_title") %></h3>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.customer.delete_note") %></p>
-      <%= button_to t("merchant.customer.delete"), merchant_customer_path(@member), method: :delete,
-            class: "l-btn l-btn-ghost", style: "color:var(--warn); border-color:var(--warn);",
-            form: { data: { turbo_confirm: t("merchant.customer.delete_confirm", name: @member.display_name) }, style: "display:inline;" } %>
+  <div>
+    <div class="l-panel" style="margin-bottom:16px;">
+      <h3 style="font-size:15px; font-weight:700; margin-bottom:10px;"><%= t("merchant.customer.context") %></h3>
+      <div class="l-kv"><span class="k">Email</span><span class="v l-mono"><%= @member.email.presence || "—" %></span></div>
+      <div class="l-kv"><span class="k"><%= t("merchant.customers.th_phone") %></span><span class="v l-mono"><%= @member.phone.presence || "—" %></span></div>
+      <div class="l-kv"><span class="k"><%= t("merchant.customers.th_birthday") %></span><span class="v"><%= @member.birthday ? l(@member.birthday, format: :short) : "—" %></span></div>
+      <div class="l-kv"><span class="k"><%= t("merchant.customers.th_joined") %></span><span class="v"><%= l(@member.created_at.to_date, format: :short) %></span></div>
     </div>
-  <% end %>
+
+    <%# ---- Manual points adjustment (managers) ---- %>
+    <% if current_membership&.can_manage? %>
+      <div class="l-panel" style="margin-top:16px;">
+        <h3 class="l-display" style="font-size:17px; margin-bottom:4px;"><%= t("merchant.customer.adjust_title") %></h3>
+        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.customer.adjust_note") %></p>
+        <%= form_with url: adjust_merchant_customer_path(@member), method: :post do %>
+          <%# Fixed three-column grid squeezed the reason box on a laptop. %>
+          <div style="display:grid; grid-template-columns:130px minmax(0,1fr) auto; gap:8px; align-items:end;">
+            <div>
+              <label class="l-label"><%= t("merchant.customer.amount") %></label>
+              <%= number_field_tag :amount, nil, class: "l-field", placeholder: "VD: 100 / -50",
+                    min: -Merchant::CustomersController::MAX_ADJUST, max: Merchant::CustomersController::MAX_ADJUST %>
+            </div>
+            <div>
+              <%# The reason is required — an unexplained manual change to what the
+                  shop owes a customer is the one nobody can account for later. %>
+              <label class="l-label"><%= t("merchant.customer.reason") %> <span style="color:#B4402F;">*</span></label>
+              <%= text_field_tag :note, nil, class: "l-field", placeholder: "VD: Đền bù đồ uống lỗi", required: true %>
+            </div>
+            <%= submit_tag t("merchant.customer.apply"), class: "l-btn l-btn-primary" %>
+          </div>
+          <p style="color:var(--ink-2); font-size:12px; margin-top:8px;">
+            <%= t("merchant.customer.adjust_limits",
+                  max: number_with_delimiter(Merchant::CustomersController::MAX_ADJUST),
+                  balance: number_with_delimiter(@member.points_balance)) %>
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+
+
+    <%# ---- Danger zone: permanently delete the customer (owner only) ---- %>
+    <% if current_membership&.owner? %>
+      <div class="l-panel" style="margin-top:16px; border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);">
+        <h3 class="l-display" style="font-size:17px; margin-bottom:4px; color:var(--warn);"><%= t("merchant.customer.delete_title") %></h3>
+        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.customer.delete_note") %></p>
+        <%= button_to t("merchant.customer.delete"), merchant_customer_path(@member), method: :delete,
+              class: "l-btn l-btn-ghost", style: "color:var(--warn); border-color:var(--warn);",
+              form: { data: { turbo_confirm: t("merchant.customer.delete_confirm", name: @member.display_name) }, style: "display:inline;" } %>
+      </div>
+    <% end %>
+  </div>
 </div>
