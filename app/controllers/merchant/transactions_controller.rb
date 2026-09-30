@@ -46,6 +46,12 @@ module Merchant
       @purchases = Purchase.where(
         id: @transactions.select { |t| t.source_type == "Purchase" }.map(&:source_id)
       ).index_by(&:id)
+
+      # Reached from the staff launcher, which is its own little app: keep the
+      # kiosk chrome rather than dropping a cashier into the full admin with its
+      # menu drawer.
+      @kiosk = params[:kiosk].present?
+      render layout: "scanner_kiosk" if @kiosk
     end
 
     private

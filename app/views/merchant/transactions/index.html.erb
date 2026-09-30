@@ -2,12 +2,28 @@
 <% content_for :title_en, "TRANSACTIONS" %>
 <% tx = ->(k, **o) { t("merchant.transactions.#{k}", **o) } %>
 
+<%# Reached from the staff launcher: it has no sidebar, so give it a way back. %>
+<% if @kiosk %>
+  <div class="m-sec" style="margin-bottom:14px;">
+    <div>
+      <h3 style="font-size:18px;"><%= t("merchant.transactions.title") %></h3>
+      <div class="sub"><%= t("merchant.scan.history_sub") %></div>
+    </div>
+    <%= link_to merchant_scan_home_path, class: "l-btn l-btn-soft",
+          style: "padding:9px 15px; font-size:13.5px;", data: { turbo: false } do %>
+      <%= ui_icon(:arrow_left, size: 15) %> <%= t("merchant.scan.back_home") %>
+    <% end %>
+  </div>
+<% end %>
+
 <%# ---- Filters ---- %>
 <%= form_with url: merchant_transactions_path, method: :get, data: { turbo: false } do %>
+  <%# Filtering must not drop the caller back into the full admin layout. %>
+  <% if @kiosk %><%= hidden_field_tag :kiosk, 1 %><% end %>
   <%# Same toolbar shape as every other list screen. %>
   <div class="m-filters" style="border:1px solid var(--line); border-radius:16px; background:#fff; margin-bottom:16px;">
     <input type="search" name="q" value="<%= @q %>" placeholder="<%= tx.(:search_ph) %>"
-           class="l-field" style="flex:1; min-width:220px;">
+           class="l-field grow">
 
     <% is_custom = @range[:key] == 'custom' %>
     <select name="range" class="l-field" style="max-width:170px;"

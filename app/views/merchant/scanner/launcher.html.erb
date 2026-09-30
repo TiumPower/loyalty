@@ -52,7 +52,7 @@
         <div class="ds"><%= sc.(:pos_sub) %></div>
       <% end %>
     <% else %>
-      <%= link_to merchant_transactions_path, data: { turbo: false } do %>
+      <%= link_to merchant_transactions_path(kiosk: 1), data: { turbo: false } do %>
         <%= ui_icon(:history, size: 20) %>
         <div class="tt"><%= t("merchant.nav.transactions") %></div>
         <div class="ds"><%= sc.(:history_sub) %></div>
