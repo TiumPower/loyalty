@@ -259,4 +259,46 @@ module ApplicationHelper
     "kid_friendly" => :users
   }.freeze
   def amenity_icon(key) = AMENITY_ICONS.fetch(key.to_s, :check)
+
+  # A collected stamp, drawn as a rubber-stamp impression: two rings, a
+  # four-point spark and the stamp's number. The roughened edge comes from an
+  # SVG turbulence filter defined once per page (see `stamp_ink_filter`); a
+  # browser that cannot resolve it simply draws clean rings, which still reads
+  # as a stamp.
+  #
+  # Each one is tilted a few degrees so a full card looks hand-stamped rather
+  # than printed — deterministic from the index, so it does not jump about on
+  # re-render.
+  SPARK = "M24 11.6c1.2 7.1 5.3 11.2 12.4 12.4-7.1 1.2-11.2 5.3-12.4 12.4" \
+          "-1.2-7.1-5.3-11.2-12.4-12.4 7.1-1.2 11.2-5.3 12.4-12.4Z"
+
+  def stamp_mark(number)
+    tilt = (number.to_i * 37 % 9) - 4
+    body = <<~SVG
+      <svg viewBox="0 0 48 48" class="l-stampmark" style="rotate:#{tilt}deg;" aria-hidden="true">
+        <g filter="url(#l-ink)">
+          <circle cx="24" cy="24" r="20.4" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <circle cx="24" cy="24" r="16.4" fill="none" stroke="currentColor" stroke-width="1.4"
+                  stroke-dasharray="0.5 3" stroke-linecap="round"/>
+          <path d="#{SPARK}" fill="currentColor"/>
+        </g>
+        <text x="33" y="35.5" text-anchor="middle" font-size="9.5" font-weight="700"
+              fill="currentColor" font-family="inherit">#{number}</text>
+      </svg>
+    SVG
+    body.html_safe
+  end
+
+  # The one-per-page definition the marks above reference. Rendering it more
+  # than once would repeat the id.
+  def stamp_ink_filter
+    <<~SVG.html_safe
+      <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+        <filter id="l-ink" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </svg>
+    SVG
+  end
 end

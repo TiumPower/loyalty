@@ -1,4 +1,5 @@
 <% content_for :title, t("customer.stamps.title") %>
+<%= stamp_ink_filter %>
 <% content_for :tab, "" %>
 <header class="l-subhead">
   <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
@@ -31,7 +32,7 @@
           <% target.times do |i| %>
             <% last = i == target - 1 %>
             <div class="s <%= 'on' if i < count %> <%= 'goal' if last && i >= count %>">
-              <% if i < count %><span style="font-size:17px;"><%= card.display_icon %></span>
+              <% if i < count %><%= stamp_mark(i + 1) %>
               <% elsif last %><%= ui_icon(:gift, size: 16) %>
               <% else %><%= i + 1 %><% end %>
             </div>

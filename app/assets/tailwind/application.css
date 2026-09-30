@@ -1475,3 +1475,11 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-amenities > div { display:flex; align-items:center; gap:9px; font-size:13.5px; }
 .l-amenities .ic { width:28px; height:28px; border-radius:9px; flex:none; display:grid; place-items:center;
   background: var(--primary-soft); color: var(--primary); }
+
+/* A collected stamp is a rubber-stamp impression, not a filled dot: two rings,
+   a spark and its number, tilted a few degrees so a full card looks hand
+   stamped. The cell stops being a bordered circle and lets the mark speak. */
+.l-stamps .s.on { border:none; background:none; padding:0; animation:stampPress .32s cubic-bezier(.3,1.5,.5,1); }
+.l-stampmark { width:100%; height:100%; display:block; color: var(--primary); opacity:.92; }
+@keyframes stampPress { 0% { transform:scale(1.45); opacity:0; } 60% { opacity:1; } 100% { transform:scale(1); } }
+@media (prefers-reduced-motion: reduce) { .l-stamps .s.on { animation:none; } }
