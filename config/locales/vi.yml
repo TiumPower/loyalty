@@ -2213,6 +2213,7 @@ vi:
       choose_photo: "Chọn ảnh"
       rejected_reason: "Lý do từ chối"
       pending_note: "Minh chứng của bạn đang được duyệt."
+      all: "Tất cả"
     stamps:
       your_reward: "Phần thưởng của bạn"
       almost_there: "Sắp xong rồi! 🎉 Còn %{n} lần nữa thôi."

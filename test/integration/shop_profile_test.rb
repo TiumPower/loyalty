@@ -74,10 +74,31 @@ class ShopProfileTest < ActionDispatch::IntegrationTest
       post "/w/#{@ws.slug}/login", params: { email: member.email }
       post "/w/#{@ws.slug}/verify", params: { code: OtpChallenge.order(:created_at).last.code }
     end
-    get "/w/#{@ws.slug}/shop"
+    # Freeze the clock inside the opening window: the badge says "open until
+    # 22:00" or "opens at 07:00" depending on the hour, so a test asserting one
+    # of them passes in the afternoon and fails at night.
+    travel_to Time.zone.parse("2026-06-01 09:00") do
+      get "/w/#{@ws.slug}/shop"
+    end
     assert_response :success
     assert_match "Cold Brew", response.body
     assert_match I18n.t("merchant.amenities.wifi"), response.body
+    assert_match I18n.t("customer.shop.open"), response.body
     assert_match "22:00", response.body
+  end
+
+  test "outside the opening window it says when the shop opens instead" do
+    ActsAsTenant.with_tenant(@ws) do
+      @ws.update!(settings: @ws.settings.merge("feedback_public" => true))
+      @outlet.update!(settings: { "open_hours" => { "open" => "07:00", "close" => "22:00" } })
+      member = create(:member, workspace: @ws)
+      post "/w/#{@ws.slug}/login", params: { email: member.email }
+      post "/w/#{@ws.slug}/verify", params: { code: OtpChallenge.order(:created_at).last.code }
+    end
+    travel_to Time.zone.parse("2026-06-01 03:00") do
+      get "/w/#{@ws.slug}/shop"
+    end
+    assert_match I18n.t("customer.shop.closed"), response.body
+    assert_match "07:00", response.body
   end
 end

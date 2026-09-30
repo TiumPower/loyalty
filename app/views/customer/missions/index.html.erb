@@ -21,6 +21,20 @@
     <%= t("customer.missions.explainer") %>
   </p>
 
+  <%# Badges live under Missions in the design — their screen carries the
+      Missions tab. They had no entry point but a link at the foot of the tier
+      screen, which nobody was going to find. %>
+  <% if current_workspace.program.gamification_enabled %>
+    <%= link_to member_badges_path, class: "l-action", style: "margin-bottom:16px;" do %>
+      <%= ui_icon(:trophy, size: 18) %>
+      <span style="flex:1; min-width:0; text-align:left;">
+        <span style="display:block; font-weight:700;"><%= t("customer.badges.title") %></span>
+        <span style="display:block; font-size:12.5px; color:var(--ink-2);"><%= t("customer.badges.subtitle") %></span>
+      </span>
+      <%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %>
+    <% end %>
+  <% end %>
+
   <% if @missions.empty? %>
     <div class="l-empty">
       <div class="ic"><%= ui_icon(:target, size: 28) %></div>
@@ -28,23 +42,29 @@
       <div class="mt"><%= t("customer.missions.empty_sub") %></div>
     </div>
   <% else %>
-    <%# The tabs jump to a group rather than hiding the others — the design
-        lists every group on one page and explains that above. Because nothing
-        is being filtered, none of them was ever marked current and the two read
-        as identical; scrollspy lights the one you are looking at. %>
-    <div class="l-seg boxed" data-controller="scrollspy">
-      <% groups.each do |period, label| %>
-        <% next if open_missions.none? { |m| m.period == period } %>
-        <a href="#g-<%= period %>" data-scrollspy-target="link"><%= label %></a>
+    <%# One tab per group, plus "all" — tapping one shows that group. They used
+        to be anchors that jumped to a heading, which on a card with two missions
+        moved the page barely a hundred pixels and read as a dead tab. %>
+    <% shown = groups.select { |period, _| open_missions.any? { |m| m.period == period } } %>
+    <div data-controller="groupfilter">
+      <% if shown.size > 1 %>
+        <div class="l-seg boxed">
+          <button type="button" data-groupfilter-target="tab" data-group="all"
+                  data-action="groupfilter#pick"><%= t("customer.missions.all") %></button>
+          <% shown.each do |period, label| %>
+            <button type="button" data-groupfilter-target="tab" data-group="<%= period %>"
+                    data-action="groupfilter#pick"><%= label %></button>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% shown.each do |period, label| %>
+        <div data-groupfilter-target="group" data-group="<%= period %>">
+          <div class="l-grouplabel"><%= label %></div>
+          <% open_missions.select { |m| m.period == period }.each { |m| %><%= render "customer/missions/card", m: m, mp: @progress[m] %><% } %>
+        </div>
       <% end %>
     </div>
-
-    <% groups.each do |period, label| %>
-      <% list = open_missions.select { |m| m.period == period } %>
-      <% next if list.empty? %>
-      <div class="l-grouplabel" id="g-<%= period %>" style="scroll-margin-top:12px;"><%= label %></div>
-      <% list.each { |m| %><%= render "customer/missions/card", m: m, mp: @progress[m] %><% } %>
-    <% end %>
 
     <% if done_missions.any? %>
       <div class="l-grouplabel"><%= t("customer.missions.completed") %></div>

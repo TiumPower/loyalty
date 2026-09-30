@@ -2172,6 +2172,7 @@ en:
       choose_photo: "Choose photo"
       rejected_reason: "Rejection reason"
       pending_note: "Your proof is being reviewed."
+      all: "All"
     stamps:
       your_reward: "Your reward"
       almost_there: "Almost there! 🎉 %{n} more to go."
