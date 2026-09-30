@@ -1,11 +1,29 @@
 # Rebuilds the whole demo/test dataset from scratch.
 #
-#   bin/rails loyalty:test_data PASSWORD='...'            # dev
-#   cap production deploy:test_data                       # production wrapper
+#   bin/rails loyalty:test_data PASSWORD='...'                     # dev, every shop
+#   bin/rails loyalty:test_data PASSWORD='...' ONLY=cozycafe       # just that one
+#   cap production deploy:test_data                                # production wrapper
+#
+# ONLY takes a comma-separated list of subdomains. Everything else is still
+# deleted — the point of ONLY is to end up with exactly those shops and nothing
+# else, not to leave the others alone.
 #
 # Destructive by design: every workspace (and everything inside it) is deleted,
 # then rebuilt. AdminUser rows are KEPT — only the super admin's password is
 # reset to PASSWORD so the account stays usable for testing.
+
+# Attaches one of the committed demo photographs (db/seed_images) to an
+# Active Storage attachment. Missing files are a warning, not a failure: the
+# dataset is still useful without photos, and the app falls back to the emoji.
+def attach_seed_image!(attachment, name)
+  path = Rails.root.join("db/seed_images/#{name}.jpg")
+  unless path.exist?
+    warn("   ! thiếu ảnh db/seed_images/#{name}.jpg — bỏ qua (chạy bin/rails loyalty:seed_images)")
+    return
+  end
+  attachment.attach(io: File.open(path), filename: "#{name}.jpg", content_type: "image/jpeg")
+end
+
 namespace :loyalty do
   desc "Wipe all workspaces and rebuild a full test dataset (every role, every state). ENV: PASSWORD, CONFIRM"
   task test_data: :environment do
@@ -24,15 +42,16 @@ namespace :loyalty do
     SHOPS = [
       { sub: "cozycafe", name: "Mộc Cà Phê", industry: "fnb", preset: "cozy_cafe", plan: "growth",
         term: "bạn", tagline: "Mỗi ly một niềm vui", scan_mode: "staff_scans_member", earn_per: 10_000,
+        cover: "shop_cover",
         outlets: [["MAIN", "Mộc Cà Phê — Thảo Điền", "12 Nguyễn Ư Dĩ, Thảo Điền, TP. Thủ Đức"],
                   ["D1",   "Mộc Cà Phê — Quận 1",    "45 Lý Tự Trọng, Bến Nghé, Quận 1"],
                   ["GV",   "Mộc Cà Phê — Gò Vấp",    "88 Quang Trung, Phường 10, Gò Vấp"]],
         rewards: [
-          { title: "Cà phê sữa đá miễn phí", kind: "voucher",  icon: "☕", cost_points: 300,  value: 0,     value_unit: "item" },
-          { title: "Giảm 30% toàn menu trà", kind: "discount", icon: "🧋", cost_points: 250,  value: 30,    value_unit: "percent" },
-          { title: "Giảm 50.000đ hoá đơn",   kind: "voucher",  icon: "🎟️", cost_points: 800,  value: 50000, value_unit: "vnd" },
-          { title: "Bánh ngọt tặng kèm",     kind: "gift",     icon: "🍰", cost_points: 500,  value: 0,     value_unit: "item", stock: 50 },
-          { title: "Combo 2 ly + bánh",      kind: "voucher",  icon: "🥐", cost_points: 1200, value: 0,     value_unit: "item" }
+          { title: "Cà phê sữa đá miễn phí", kind: "voucher",  icon: "☕", cost_points: 300,  value: 0,     value_unit: "item",    image: "reward_coffee" },
+          { title: "Giảm 30% toàn menu trà", kind: "discount", icon: "🧋", cost_points: 250,  value: 30,    value_unit: "percent", image: "reward_tea" },
+          { title: "Giảm 50.000đ hoá đơn",   kind: "voucher",  icon: "🎟️", cost_points: 800,  value: 50000, value_unit: "vnd",     image: "reward_bill" },
+          { title: "Bánh ngọt tặng kèm",     kind: "gift",     icon: "🍰", cost_points: 500,  value: 0,     value_unit: "item", stock: 50, image: "reward_cake" },
+          { title: "Combo 2 ly + bánh",      kind: "voucher",  icon: "🥐", cost_points: 1200, value: 0,     value_unit: "item",    image: "reward_combo" }
         ],
         stamp: ["Mua 9 ly tặng 1", "Tích 1 tem mỗi ly, đủ 9 tem đổi 1 ly miễn phí", "🧋", 9],
         reviews: [[5, "Cà phê ngon, không gian ấm cúng, nhân viên dễ thương!"],
@@ -85,8 +104,10 @@ namespace :loyalty do
       puts "⚠  Xoá toàn bộ workspace hiện có…"
       # Xoá theo đúng thứ tự phụ thuộc: các bảng con trỏ tới outlets/members
       # phải đi trước, vì `workspace.destroy` huỷ outlets trước members.
+      # PosCharge phải đứng trước Purchase: pos_charges.purchase_id có khoá ngoại
+      # tới purchases, nên xoá purchases trước sẽ vi phạm ràng buộc.
       child_tables = %w[PointTransaction SpinLog MemberBadge MissionProgress StampCardMembership
-                        PromoClaim Voucher Purchase PosCharge Rating Notification Referral
+                        PromoClaim Voucher PosCharge Purchase Rating Notification Referral
                         PushSubscription Broadcast MerchantAlert WorkspaceInsight
                         PromoCode Campaign StampCard OtpChallenge Invoice]
       Workspace.find_each do |ws|
@@ -111,7 +132,12 @@ namespace :loyalty do
 
       presets = Merchant::AppearancesController::PRESETS
 
-      SHOPS.each do |cfg|
+      only = ENV["ONLY"].to_s.split(",").map(&:strip).reject(&:blank?)
+      shops = only.any? ? SHOPS.select { |c| only.include?(c[:sub]) } : SHOPS
+      abort("✗ ONLY='#{ENV['ONLY']}' không khớp shop nào. Có: #{SHOPS.map { |c| c[:sub] }.join(', ')}") if shops.empty?
+      puts "   → Dựng #{shops.size}/#{SHOPS.size} shop#{" (ONLY=#{only.join(',')})" if only.any?}"
+
+      shops.each do |cfg|
         ws = Workspace.create!(
           name: cfg[:name], subdomain: cfg[:sub], slug: cfg[:sub], industry: cfg[:industry],
           status: "active", plan: cfg[:plan], locale_default: "vi",
@@ -120,6 +146,8 @@ namespace :loyalty do
           branding: { "customer_term" => cfg[:term], "tagline" => cfg[:tagline], "tone" => "friendly" },
           settings: { "onboarded" => true, "feedback_public" => true }
         )
+
+        attach_seed_image!(ws.cover, cfg[:cover]) if cfg[:cover]
 
         ActsAsTenant.with_tenant(ws) do
           WorkspaceBootstrap.call(ws)
@@ -145,7 +173,10 @@ namespace :loyalty do
 
           # ---- Rewards ---------------------------------------------------
           rewards = cfg[:rewards].each_with_index.map do |rw, i|
-            Reward.create!(rw.merge(workspace: ws, active: true, position: i, valid_days: 30))
+            art = rw[:image]
+            r = Reward.create!(rw.except(:image).merge(workspace: ws, active: true, position: i, valid_days: 30))
+            attach_seed_image!(r.image, art) if art
+            r
           end
 
           # ---- Gamification ----------------------------------------------
@@ -261,6 +292,11 @@ namespace :loyalty do
       end
 
       # ---- Shop đang chờ duyệt (để test hàng đợi duyệt của Super Admin) --
+      # Skipped under ONLY: it is a fourth shop, and ONLY exists to end up with
+      # exactly the shops that were asked for.
+      if only.any?
+        puts "   · Bỏ qua shop chờ duyệt (ONLY)"
+      else
       pending = Workspace.create!(name: "Tiệm Bánh Ngọt", subdomain: "tiembanhngot", slug: "tiembanhngot",
                                   industry: "fnb", status: "pending", plan: "starter",
                                   theme: presets["cozy_cafe"]["theme"],
@@ -274,6 +310,7 @@ namespace :loyalty do
       end
       WorkspaceBootstrap.call(pending)
       puts "   ✓ Tiệm Bánh Ngọt (tiembanhngot) — trạng thái CHỜ DUYỆT"
+      end
 
       # ---- Bật hiện OTP để test ngay --------------------------------------
       AppSetting.set_flag(AppSetting::SHOW_OTP_KEY, true)
