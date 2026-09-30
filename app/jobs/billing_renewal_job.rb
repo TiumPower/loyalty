@@ -46,8 +46,8 @@ class BillingRenewalJob < ApplicationJob
       amount:      invoice.amount,
       description: "Quenly #{ws.plan}",
       return_url:  Rails.application.routes.url_helpers.merchant_billing_return_url(
-                     code: invoice.payos_order_code, host: "loyalty.tiumpower.com", protocol: "https"),
-      cancel_url:  "https://loyalty.tiumpower.com/merchant/billing"
+                     code: invoice.payos_order_code, host: "quenly.tiumpower.com", protocol: "https"),
+      cancel_url:  "https://quenly.tiumpower.com/merchant/billing"
     )
     invoice.update!(checkout_url: data["checkoutUrl"]) if data && data["checkoutUrl"]
   rescue => e

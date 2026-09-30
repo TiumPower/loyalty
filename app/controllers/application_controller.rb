@@ -24,8 +24,8 @@ class ApplicationController < ActionController::Base
     super
   end
 
-  # Base platform host (no subdomain), e.g. "loyalty.tiumpower.com".
-  PLATFORM_HOST = ENV.fetch("PLATFORM_HOST", "loyalty.tiumpower.com")
+  # Base platform host (no subdomain), e.g. "quenly.tiumpower.com".
+  PLATFORM_HOST = ENV.fetch("PLATFORM_HOST", "quenly.tiumpower.com")
 
   private
 

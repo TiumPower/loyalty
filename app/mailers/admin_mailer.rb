@@ -11,5 +11,5 @@ class AdminMailer < ApplicationMailer
 
   private
 
-  def platform_from = %(Quenly <#{ENV.fetch("MAIL_FROM", "no-reply@loyalty.tiumpower.com")}>)
+  def platform_from = %(Quenly <#{ENV.fetch("MAIL_FROM", "no-reply@quenly.tiumpower.com")}>)
 end

@@ -11,8 +11,8 @@ Mô tả tính năng chi tiết: [docs/TINH-NANG.md](docs/TINH-NANG.md).
 
 | App | Ai dùng | Truy cập | Đăng nhập |
 |---|---|---|---|
-| **Landing** | Khách tiềm năng (chủ shop) | Host gốc, ví dụ `loyalty.tiumpower.com` | — |
-| **Customer PWA** | Khách của cửa hàng | `<shop>.loyalty.tiumpower.com` · dev: `/w/<slug>` hoặc `<shop>.lvh.me:3000` | Email + OTP |
+| **Landing** | Khách tiềm năng (chủ shop) | Host gốc, ví dụ `quenly.tiumpower.com` | — |
+| **Customer PWA** | Khách của cửa hàng | `<shop>.quenly.tiumpower.com` · dev: `/w/<slug>` hoặc `<shop>.lvh.me:3000` | Email + OTP |
 | **Merchant** | Chủ shop, quản lý, thu ngân | `/merchant` | Email + mật khẩu |
 | **Super Admin** | Vận hành nền tảng | `/admin` | Tài khoản admin riêng |
 
