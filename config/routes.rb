@@ -84,6 +84,9 @@ Rails.application.routes.draw do
     # there has never been a new.html.erb, so the route only served an error.
     resources :outlets, except: [:new] do
       member { get :checkin_qr }
+      # Look up coordinates for an address the merchant is still typing, so it
+      # takes no outlet and writes nothing.
+      collection { post :geocode }
     end
     resources :staff, only: [:index, :create, :update, :destroy]
     resource  :domain, only: [:show, :update], controller: "domains" do

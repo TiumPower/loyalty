@@ -55,12 +55,42 @@ module Merchant
 
     def edit; end
 
+    # "Tự lấy toạ độ": resolve whatever is in the address box right now, without
+    # saving anything. The merchant looks at the answer and decides.
+    #
+    # Synchronous on purpose. The background job is the right shape for a save —
+    # nobody should wait on Nominatim to store a branch name — but this one *is*
+    # the merchant waiting for an answer, and a job they would have to poll for
+    # is a worse trade than three seconds with a spinner on the button.
+    def geocode
+      address = params[:address].to_s.strip
+      return render(json: { ok: false, error: t("merchant.outlets.geo_no_address") }) if address.blank?
+
+      hit = GeocoderService.lookup_line(address)
+      if hit.nil?
+        render json: { ok: false, error: t("merchant.outlets.geo_not_found") }
+      else
+        render json: { ok: true, lat: hit.lat.round(7), lon: hit.lon.round(7),
+                       label: hit.display_name.to_s.truncate(90),
+                       note: (hit.approximate? ? t("merchant.outlets.geo_approx") : t("merchant.outlets.geo_exact")) }
+      end
+    rescue => e
+      Rails.logger.error("[Outlets#geocode] #{e.class}: #{e.message}")
+      render json: { ok: false, error: t("merchant.outlets.geo_failed") }
+    end
+
     def update
       # Typing a coordinate claims it: the automatic lookup must not undo the
       # merchant's correction on the next address edit. Ticking "use the
       # automatic one again" hands it back.
       if params[:reset_geocode] == "1"
         @outlet.assign_attributes(geocode_manual: false, latitude: nil, longitude: nil)
+      elsif params[:coords_source] == "lookup"
+        # Filled by the "tự lấy toạ độ" button: it is the automatic answer, just
+        # asked for by hand. Marking it manual would freeze the branch against
+        # every future address edit, which is the opposite of what the button is
+        # for.
+        @outlet.assign_attributes(geocode_manual: false, geocoded_at: Time.current)
       elsif coordinates_typed?
         @outlet.geocode_manual = true
       end

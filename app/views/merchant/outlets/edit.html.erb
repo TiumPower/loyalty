@@ -4,7 +4,12 @@
 <%# Full width in two columns, like every other editor. %>
 <div class="m-editor">
  <div class="l-panel">
-  <%= form_with model: @outlet, url: merchant_outlet_path(@outlet), method: :patch do |f| %>
+  <%= form_with model: @outlet, url: merchant_outlet_path(@outlet), method: :patch,
+        data: { controller: "geopick",
+                geopick_url_value: geocode_merchant_outlets_path,
+                geopick_working_value: t("merchant.outlets.geo_working"),
+                geopick_empty_value: t("merchant.outlets.geo_no_address"),
+                geopick_failed: t("merchant.outlets.geo_failed") } do |f| %>
     <% if @outlet.errors.any? %>
       <div class="l-note warn" style="margin-bottom:12px;">
         <%= ui_icon(:shield, size: 16) %><span><%= @outlet.errors.full_messages.to_sentence %></span>
@@ -17,7 +22,7 @@
       <div><label class="l-label"><%= t("merchant.outlets.phone") %></label><%= f.telephone_field :phone, class: "l-field" %></div>
     </div>
     <label class="l-label" style="margin-top:12px;"><%= t("merchant.outlets.address") %></label>
-    <%= f.text_field :address, class: "l-field" %>
+    <%= f.text_field :address, class: "l-field", data: { geopick_target: "address" } %>
 
     <%# Opening hours. The customer app shows "Mở tới 22:00" from this, and
         shows nothing at all while it is blank rather than guessing. %>
@@ -32,11 +37,23 @@
         here because Vietnamese street names repeat across the country and the
         automatic answer is sometimes the wrong street. Typing one marks the
         branch as set by hand, and the automatic lookup then leaves it alone. %>
-    <label class="l-label" style="margin-top:16px;"><%= t("merchant.outlets.coords") %></label>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <%= f.text_field :latitude,  class: "l-field", placeholder: "10.8012", inputmode: "decimal" %>
-      <%= f.text_field :longitude, class: "l-field", placeholder: "106.7360", inputmode: "decimal" %>
+    <div style="display:flex; align-items:flex-end; gap:10px; margin-top:16px;">
+      <label class="l-label" style="flex:1; min-width:0; margin:0;"><%= t("merchant.outlets.coords") %></label>
+      <%# Editing an address and waiting for the background job to catch up left
+          the merchant with no way to say "look it up again, now". %>
+      <button type="button" class="m-minibtn" style="flex:none;"
+              data-geopick-target="button" data-action="geopick#fetchCoords">
+        <%= ui_icon(:navigate, size: 14) %><%= t("merchant.outlets.geo_cta") %>
+      </button>
     </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px;">
+      <%= f.text_field :latitude,  class: "l-field", placeholder: "10.8012", inputmode: "decimal",
+            data: { geopick_target: "lat", action: "input->geopick#typed" } %>
+      <%= f.text_field :longitude, class: "l-field", placeholder: "106.7360", inputmode: "decimal",
+            data: { geopick_target: "lon", action: "input->geopick#typed" } %>
+    </div>
+    <%= hidden_field_tag :coords_source, "", data: { geopick_target: "source" } %>
+    <p class="m-geostatus" data-geopick-target="status" hidden></p>
     <p style="font-size:12px; color:var(--ink-2); margin-top:6px; line-height:1.45;">
       <% if @outlet.geocode_manual? %>
         <%= t("merchant.outlets.coords_manual") %>

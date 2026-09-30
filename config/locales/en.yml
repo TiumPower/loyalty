@@ -1133,6 +1133,13 @@ en:
       ws_hours: "Opening hours show as “Open · until 10 PM” on the home card and the shop page. Blank means nothing is shown."
       ws_distance: "The coordinates are what the distance from the customer is measured against."
       ws_qr: "Each branch has its own check-in QR, printable from the branch page."
+      geo_cta: "Look up coordinates"
+      geo_working: "Looking up the address…"
+      geo_no_address: "Type an address first."
+      geo_not_found: "That address is not on the map. Try being more specific: number, street, district, city."
+      geo_failed: "The lookup did not answer. Try again in a few minutes."
+      geo_exact: "Street matched"
+      geo_approx: "Approximate (district/city level)"
     campaigns:
       col_campaign: "Campaign"
       col_status: "Status"

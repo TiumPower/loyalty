@@ -1136,6 +1136,13 @@ vi:
       ws_hours: "Giờ mở cửa hiện thành “Đang mở · Mở tới 22:00” ở trang chủ và trang giới thiệu quán. Để trống thì không hiện gì."
       ws_distance: "Toạ độ dùng để tính khoảng cách từ chỗ khách đang đứng tới quán."
       ws_qr: "Mỗi chi nhánh có mã QR check-in riêng, in ở trang chi tiết chi nhánh."
+      geo_cta: "Tự lấy toạ độ"
+      geo_working: "Đang tra địa chỉ…"
+      geo_no_address: "Nhập địa chỉ trước đã."
+      geo_not_found: "Không tìm thấy địa chỉ này trên bản đồ. Thử ghi rõ hơn: số nhà, đường, quận, thành phố."
+      geo_failed: "Không tra được lúc này, thử lại sau ít phút."
+      geo_exact: "Đúng tên đường"
+      geo_approx: "Vị trí tương đối (cấp quận/thành phố)"
     campaigns:
       col_campaign: "Chiến dịch"
       col_status: "Trạng thái"
