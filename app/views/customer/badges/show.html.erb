@@ -81,6 +81,28 @@
     </button>
   <% end %>
 
+  <%# ---- where they have actually been ---- %>
+  <% if @journey.present? %>
+    <div style="text-align:left; margin-top:22px;">
+      <h3 style="font-size:16px; font-weight:700; letter-spacing:-.015em;"><%= t("customer.badges.journey") %></h3>
+      <div style="margin-top:10px;">
+        <% total = [@target.to_i, @journey.size].max %>
+        <% @journey.each_with_index do |(outlet, at), i| %>
+          <div class="l-row">
+            <span class="ic" style="background:var(--good-soft); color:var(--good);">
+              <%= ui_icon(:check, size: 16, stroke: 2.6) %>
+            </span>
+            <div class="bd">
+              <div class="tt"><%= outlet.name %></div>
+              <div class="mt"><%= l(at.to_date, format: :short) %></div>
+            </div>
+            <span class="tr" style="font-size:12.5px; color:var(--ink-2);"><%= i + 1 %>/<%= total %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @next_up %>
     <% nd, nt = @next_up.progress_for(@member) %>
     <p style="font-size:12.5px; color:var(--ink-2); margin-top:16px;">

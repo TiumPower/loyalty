@@ -27,7 +27,13 @@
         <div style="font-weight:700; font-size:17px; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= current_workspace.name %></div>
         <div style="display:flex; align-items:center; gap:7px; margin-top:5px;">
           <% if @shop_rating.to_f.positive? %><span class="l-pill"><%= @shop_rating %> ★</span><% end %>
-          <span class="l-pill good"><%= t("customer.home.open_now") %></span>
+          <%# The design shows "Open now" here. It is not drawn while the app has
+              no opening hours to read: this badge was a constant, so it told a
+              customer standing outside a closed shop at 3am that it was open.
+              It comes back with the opening-hours field on the outlet. %>
+          <% if (state = shop_open_state(current_workspace)) %>
+            <span class="l-pill <%= state[:open] ? 'good' : '' %>"><%= state[:label] %></span>
+          <% end %>
         </div>
       </div>
       <% if current_workspace.feedback_public? %>

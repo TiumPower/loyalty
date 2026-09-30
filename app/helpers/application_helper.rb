@@ -216,4 +216,29 @@ module ApplicationHelper
     return :star if tier.nil?
     TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :star
   end
+
+  # Whether the shop is open right now, or nil when it has never said.
+  #
+  # `settings["open_hours"]` is {"open" => "07:00", "close" => "22:00"}; a shop
+  # that has not filled it in gets no badge rather than a cheerful guess.
+  def shop_open_state(ws)
+    hours = ws&.settings&.dig("open_hours")
+    from, to = hours&.values_at("open", "close")
+    return nil if from.blank? || to.blank?
+    now = Time.zone.now.strftime("%H:%M")
+    # A window that wraps past midnight (22:00–02:00) is open on either side of it.
+    open = to > from ? (now >= from && now < to) : (now >= from || now < to)
+    { open: open,
+      label: open ? t("customer.home.open_until", time: to) : t("customer.home.closed_until", time: from) }
+  end
+
+  # Which build the customer is looking at. Capistrano names each release after
+  # its timestamp, so the directory is the only version number this app has —
+  # and it is the one thing worth having when a customer reports something odd.
+  def app_build_label
+    @app_build_label ||= begin
+      dir = Rails.root.basename.to_s
+      dir.match?(/\A\d{14}\z/) ? "v#{dir[0, 8]}.#{dir[8, 4]}" : "dev"
+    end
+  end
 end

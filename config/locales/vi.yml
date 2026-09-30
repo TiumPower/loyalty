@@ -1856,6 +1856,8 @@ vi:
       offer_refer_big: "+100 điểm"
       offer_refer_sub: "Mời bạn, cả hai cùng nhận"
       missions_today: "Nhiệm vụ hôm nay"
+      open_until: "Mở tới %{time}"
+      closed_until: "Mở lại lúc %{time}"
     profile:
       email_code_valid: "Mã còn hiệu lực"
       email_confirm_heading: "Xác nhận email mới"
@@ -1992,6 +1994,8 @@ vi:
       cancel_later: "Huỷ, để dùng sau"
       use_now: "Sử dụng ngay"
       use_hint: "Chỉ bấm khi bạn đang ở quầy — mã có hiệu lực %{min} phút."
+      share_receipt: "Chia sẻ hoá đơn"
+      share_text: "Mình vừa đổi %{reward} ở %{shop} 🎉"
     my_code:
       subtitle: "Đưa cho nhân viên để tích điểm"
       refresh_post: "nữa mã sẽ tự đổi"
@@ -2215,6 +2219,7 @@ vi:
       reward_hint: "+%{n} điểm khi đạt"
       reward_voucher: "Tặng: %{reward}"
       earned: "Đã đạt"
+      journey: "Hành trình chi nhánh"
     wheel:
       recent_winners: "Vừa trúng"
       prize_reward: "Một phần quà"

@@ -1815,6 +1815,8 @@ en:
       offer_refer_big: "+100 pts"
       offer_refer_sub: "Invite a friend, both get rewarded"
       missions_today: "Today's missions"
+      open_until: "Open until %{time}"
+      closed_until: "Opens at %{time}"
     profile:
       email_code_valid: "Code valid for"
       email_confirm_heading: "Confirm your new email"
@@ -1951,6 +1953,8 @@ en:
       cancel_later: "Cancel, use later"
       use_now: "Use now"
       use_hint: "Only tap when you're at the counter — the code is valid for %{min} min."
+      share_receipt: "Share receipt"
+      share_text: "I just redeemed %{reward} at %{shop} 🎉"
     my_code:
       subtitle: "Show at the counter to earn"
       refresh_post: "until auto-refresh"
@@ -2174,6 +2178,7 @@ en:
       reward_hint: "+%{n} pts when earned"
       reward_voucher: "Gift: %{reward}"
       earned: "Earned"
+      journey: "Your outlet journey"
     wheel:
       recent_winners: "Recent winners"
       prize_reward: "A reward"

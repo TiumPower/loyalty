@@ -29,6 +29,15 @@
       <div class="l-kv"><span class="k"><%= t("customer.common.code_label") %></span><span class="v l-mono"><%= @voucher.code %></span></div>
     </div>
     <%= link_to t("customer.voucher.back_to_wallet"), member_vouchers_path, class: "l-btn l-btn-primary l-btn-block", style: "margin-top:18px;" %>
+    <%# "Share receipt" from the design — a used voucher is a small win worth
+        passing on, and it is the shop's best free advertising. %>
+    <button type="button" class="l-btn l-btn-outline l-btn-block" style="margin-top:10px;"
+            data-controller="share"
+            data-share-url-value="<%= member_root_url(host: request.host_with_port) %>"
+            data-share-text-value="<%= t("customer.voucher.share_text", reward: @voucher.reward.title, shop: current_workspace.name) %>"
+            data-action="share#native">
+      <%= ui_icon(:share, size: 17) %><%= t("customer.voucher.share_receipt") %>
+    </button>
 
   <% elsif @voucher.expired? %>
     <div class="l-result">

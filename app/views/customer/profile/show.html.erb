@@ -135,6 +135,10 @@
     <%= button_to t("customer.profile.logout"), member_logout_path, method: :delete,
           form: { data: { turbo_confirm: t("customer.profile.logout") + "?" } },
           class: "l-btn l-btn-ghost l-btn-block", style: "color:var(--warn);" %>
-    <div style="font-size:11.5px; color:var(--ink-2); margin-top:14px;"><%= current_workspace.name %></div>
+    <%# Shop name and build, as in the design's footer — the build is what a
+        customer reads back when something looks wrong on their phone. %>
+    <div style="font-size:11.5px; color:var(--ink-2); margin-top:14px;">
+      <%= current_workspace.name %> · <%= app_build_label %>
+    </div>
   </div>
 </div>
