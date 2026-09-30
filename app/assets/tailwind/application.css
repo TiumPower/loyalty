@@ -657,7 +657,12 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
    hides that overlay. */
 .l-reticle { position:absolute; inset:14% 14%; z-index:1; pointer-events:none;
   opacity:0; transition:opacity .2s; }
-.l-viewfinder:has([data-qrnav-target="overlay"][style*="display: none"]) .l-reticle { opacity:1; }
+.l-viewfinder:has(.l-camprompt[hidden]) .l-reticle { opacity:1; }
+/* The "turn on camera" prompt, centred in the viewfinder. Its layout lives here
+   rather than inline because the controller toggles it: clearing an inline
+   `display` cannot help but take `display:grid` with it. */
+.l-camprompt { position:absolute; inset:0; z-index:2; display:grid; place-items:center; }
+.l-camprompt[hidden] { display:none; }
 .l-reticle i { position:absolute; width:30px; height:30px; border:3px solid rgba(255,255,255,.9); }
 .l-reticle i:nth-child(1) { top:0; left:0; border-right:none; border-bottom:none; border-radius:6px 0 0 0; }
 .l-reticle i:nth-child(2) { top:0; right:0; border-left:none;  border-bottom:none; border-radius:0 6px 0 0; }

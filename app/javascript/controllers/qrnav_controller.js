@@ -18,15 +18,15 @@ export default class extends Controller {
     // back to the localStorage heuristic.
     const state = await this.cameraState()
     if (state === "granted") {
-      if (this.hasOverlayTarget) this.overlayTarget.style.display = "none"
+      if (this.hasOverlayTarget) this.showOverlay(false)
       this.start()
     } else if (state === "denied") {
-      if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
+      if (this.hasOverlayTarget) this.showOverlay(true)
       this.statusTarget.textContent = this.deniedTextValue
     } else if (state === "prompt") {
-      if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
+      if (this.hasOverlayTarget) this.showOverlay(true)
     } else {
-      if (this.cameraSeen() && this.hasOverlayTarget) this.overlayTarget.style.display = "none"
+      if (this.cameraSeen() && this.hasOverlayTarget) this.showOverlay(false)
       this.start()
     }
     this.watchPermission()
@@ -64,7 +64,7 @@ export default class extends Controller {
       this.videoTarget.srcObject = this.stream
       this.videoTarget.setAttribute("playsinline", "true")
       await this.videoTarget.play()
-      if (this.hasOverlayTarget) this.overlayTarget.style.display = "none"
+      if (this.hasOverlayTarget) this.showOverlay(false)
       this.rememberCamera(true)
 
       if ("BarcodeDetector" in window) {
@@ -81,7 +81,7 @@ export default class extends Controller {
     } catch (e) {
       // Access failed/denied — restore the overlay button so the user can retry.
       this.rememberCamera(false)
-      if (this.hasOverlayTarget) this.overlayTarget.style.display = ""
+      if (this.hasOverlayTarget) this.showOverlay(true)
       this.statusTarget.textContent = this.failedTextValue
     }
   }
@@ -125,20 +125,49 @@ export default class extends Controller {
     setTimeout(next, 550)
   }
 
+  // A full release: the scan landed, or the screen is going away.
   stop() {
-    if (this.timer) clearInterval(this.timer)
+    if (this.timer) { clearInterval(this.timer); this.timer = null }
     if (this.stream) this.stream.getTracks().forEach((t) => t.stop())
-    this.stream = null // so coming back to the tab can start a fresh one
+    this.stream = null
   }
 
   // Decoding every frame with the camera live is the most expensive thing this
   // app does on a phone; there is nothing to scan while the screen is off.
+  //
+  // This used to release the camera track and call getUserMedia again on the way
+  // back, which is what made the browser ask for camera permission over and over
+  // — every glance at another app cost the customer another prompt. Disabling
+  // the track stops the frames (and the recording indicator) just as well, while
+  // keeping the grant alive, so coming back resumes silently.
   visibility = () => {
-    if (document.hidden) { this.stop() } else if (!this.stream) { this.start() }
+    if (document.hidden) { this.pause() } else { this.resume() }
+  }
+
+  pause() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null }
+    if (this.stream) this.stream.getTracks().forEach((t) => { t.enabled = false })
+  }
+
+  resume() {
+    if (!this.stream) { this.start(); return }
+    this.stream.getTracks().forEach((t) => { t.enabled = true })
+    if (!this.timer) this.timer = setInterval(() => this.tick(), this.mode === "jsqr" ? 250 : 400)
   }
 
   disconnect() {
     this.stop()
     document.removeEventListener("visibilitychange", this.visibility)
   }
+
+  // Show/hide the "turn on camera" prompt. It used to set `style.display` and
+  // clear it again with "", which wiped the inline `display:grid` the overlay
+  // needs — the prompt then laid out as a block and sat pinned to the top of
+  // the viewfinder instead of centred in it. The `hidden` attribute leaves the
+  // layout to CSS.
+  showOverlay(show) {
+    if (!this.hasOverlayTarget) return
+    this.overlayTarget.toggleAttribute("hidden", !show)
+  }
+
 }
