@@ -9,7 +9,7 @@
      data-controller="mycode"
      data-mycode-token-url-value="<%= member_my_code_token_path %>"
      data-mycode-recent-url-value="<%= member_my_code_recent_path %>"
-     data-mycode-since-value="<%= @since %>"
+     data-mycode-after-value="<%= @after_id %>"
      data-mycode-ttl-value="<%= MemberQr::TTL %>"
      data-mycode-locale-value="<%= I18n.locale %>">
   <%= link_to "", member_root_path, class: "scrim", "aria-label": t("customer.common.close") %>

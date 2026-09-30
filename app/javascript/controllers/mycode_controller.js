@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 // reused) and polls for a fresh earn to reveal a "+X điểm" burst on the phone.
 export default class extends Controller {
   static targets = ["qr", "count", "burst", "burstPoints", "burstBalance"]
-  static values = { tokenUrl: String, recentUrl: String, since: Number, ttl: Number, locale: String }
+  static values = { tokenUrl: String, recentUrl: String, after: Number, ttl: Number, locale: String }
 
   connect() {
     this.remaining = this.ttlValue
@@ -27,6 +27,9 @@ export default class extends Controller {
 
   visibility = () => {
     if (document.hidden) { this.halt(); return }
+    // Coming back with the result still on screen: leave it alone. Rotating the
+    // QR and polling behind it is how the burst used to get overwritten.
+    if (this.showing) return
     // Back on screen: the code has almost certainly gone stale, so take a fresh
     // one rather than showing one the counter will reject.
     this.remaining = this.ttlValue
@@ -55,17 +58,18 @@ export default class extends Controller {
 
   async pollEarn() {
     try {
-      const res = await fetch(`${this.recentUrlValue}?since=${this.sinceValue}`,
+      const res = await fetch(`${this.recentUrlValue}?after=${this.afterValue}`,
                              { headers: { Accept: "application/json" } })
       const data = await res.json()
-      if (data.earned) {
-        this.sinceValue = data.at
-        this.reveal(data.earned, data.balance)
-      }
+      // A request already in flight when the burst went up would otherwise
+      // reveal a second time over the one being read.
+      if (data.id) this.afterValue = data.id
+      if (data.earned && !this.showing) this.reveal(data.earned, data.balance)
     } catch (e) { /* ignore */ }
   }
 
   reveal(points, balance) {
+    this.showing = true
     // Was pinned to vi-VN, so an English customer saw "1.234" for 1,234.
     const loc = this.hasLocaleValue && this.localeValue ? this.localeValue : "vi-VN"
     this.burstPointsTarget.textContent = points.toLocaleString(loc)
@@ -82,6 +86,7 @@ export default class extends Controller {
 
   // Tap "OK": hide the result and resume the rotating QR + earn polling.
   dismiss() {
+    this.showing = false
     const el = this.burstTarget
     el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300 }).onfinish = () => { el.style.display = "none" }
     this.remaining = this.ttlValue
