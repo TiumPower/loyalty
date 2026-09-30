@@ -13,6 +13,7 @@ module IconsHelper
     stamp:   %(<circle cx="12" cy="12" r="8"/><path d="m8.5 12 2.3 2.3 4.7-4.7"/>),
     target:  %(<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>),
     medal:   %(<circle cx="12" cy="14" r="6"/><path d="m9 4 3 5 3-5"/><path d="m10.5 13.5 1.5 1.5 3-3" stroke-linecap="round"/>),
+    gem:     %(<path d="M5.6 3.4h12.8l3 5.4L12 20.6 2.6 8.8Z" stroke-linejoin="round"/><path d="M2.6 8.8h18.8"/><path d="m9 3.4-2.1 5.4L12 20.6l5.1-11.8-2.1-5.4" stroke-linejoin="round"/>),
     users:   %(<circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 5.5a3 3 0 0 1 0 5.6M17 19c0-2.2-1-3.8-2.5-4.6"/>),
     history: %(<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v3.5H7" stroke-linecap="round"/><path d="M12 8v4.2l2.8 1.7" stroke-linecap="round"/>),
     eye:     %(<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>),

@@ -21,7 +21,11 @@
         <div class="l-eyebrow"><%= t("customer.home.points_balance") %></div>
         <div class="v"><%= number_with_delimiter(@member.points_balance) %><small><%= t("customer.common.points_unit") %></small></div>
       </div>
-      <% if tier %><span class="l-pill gold lg" style="flex:none;"><%= tier.name %></span><% end %>
+      <% if tier %>
+        <span class="l-pill tier lg" style="flex:none; background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
+          <%= ui_icon(tier_icon(tier), size: 13, stroke: 2.2) %><%= tier.name %>
+        </span>
+      <% end %>
     </div>
     <% if @member.next_tier %>
       <div class="l-bar" style="margin-top:14px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>

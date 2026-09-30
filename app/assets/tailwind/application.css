@@ -400,6 +400,11 @@ a.l-chip-lg:hover, button.l-chip-lg:hover { background:#fff; color:var(--ink);
 .l-pill.dark { background: var(--ink); color: var(--surface); }
 .l-pill.gold { background: linear-gradient(135deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 70%, #000));
   color:#fff; font-weight:700; box-shadow:0 2px 8px color-mix(in srgb, var(--primary-2) 40%, transparent); }
+/* A tier badge wears that tier's own colours. The accent-coloured pill above
+   made a Bronze member look identical to a Diamond one — the whole point of a
+   tier is that you can tell it apart. The gradient is set inline because it
+   lives on the tier row and the merchant can change it. */
+.l-pill.tier { color:#fff; font-weight:700; box-shadow:0 2px 8px rgba(30,20,10,.18); }
 .l-pill.lg { padding:7px 14px; font-size:13px; }
 /* Leading status dot (Available / Used / Expired). */
 .l-pill .bead { width:6px; height:6px; border-radius:50%; background:currentColor; flex:none; }
@@ -729,6 +734,9 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: linear-gradient(160deg, var(--primary-2), color-mix(in srgb, var(--primary-2) 62%, #000)); }
 .l-crest .nm { font-size:13px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+/* A rung of the ladder the member has not reached: still its own colour, but
+   visibly out of reach. */
+.l-tierdot.locked { filter:grayscale(.85); opacity:.5; }
 .l-benefit { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line-soft); font-size:14px; }
 .l-benefit:last-child { border-bottom:none; }
 .l-benefit .ic { color: var(--primary); flex:none; display:grid; place-items:center; }

@@ -203,4 +203,17 @@ module ApplicationHelper
     rows << [:sparkles, t("customer.tiers.b_events"),  t("customer.tiers.b_invited")] if m > 1
     rows
   end
+
+  # One glyph per membership tier. The design draws the gold tier as a star in a
+  # hexagon crest; the others follow the same idea so a badge is recognisable
+  # before you read it. Tiers are merchant-editable — they can be renamed, added
+  # to, or given their own keys — so an unknown key falls back to its rung on
+  # the ladder rather than to nothing.
+  TIER_ICONS      = { "bronze" => :medal, "silver" => :award, "gold" => :star, "diamond" => :gem }.freeze
+  TIER_ICON_RUNGS = %i[medal award star gem].freeze
+
+  def tier_icon(tier)
+    return :star if tier.nil?
+    TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :star
+  end
 end

@@ -48,6 +48,17 @@ Rails.application.configure do
       :local
     end
 
+  # Serve images through the app rather than redirecting to Spaces.
+  #
+  # The redirect hands the browser a signed Spaces URL that expires in five
+  # minutes, and the redirect itself is cacheable for five minutes. In a PWA
+  # whose service worker caches every GET, any replay after that window followed
+  # an expired signature and the customer got a broken image — the shop cover and
+  # the reward photos, which are the first things the app shows. The proxy URL is
+  # same-origin, stable, and served with `immutable, max-age=1 year`, so each
+  # image is fetched once and then cached properly by the browser and the worker.
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
+
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
   # config.action_cable.url = "wss://example.com/cable"

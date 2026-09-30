@@ -41,6 +41,35 @@ class Tier < ApplicationRecord
   # Belt and braces for rows written before the validation existed.
   def self.hex?(value) = value.to_s.match?(HEX_COLOR_RE)
 
+  # Lettering that stays readable on this tier's own gradient.
+  #
+  # Every badge used to print white, which is fine on a deep bronze and
+  # unreadable on a pale gold — and the merchant picks these colours, so pale
+  # ones will happen. The design's own gold crest letters GOLD in dark ink for
+  # exactly this reason. Pick whichever of white/ink actually contrasts better,
+  # with a bias to white: on a mid-tone the two are within a few percent of each
+  # other and white is what a badge is expected to look like.
+  INK = "#2E241B".freeze
+  DARK_INK_ADVANTAGE = 1.25
+
+  def ink_color
+    colors = [gradient_from, gradient_to].select { |c| self.class.hex?(c) }
+    return "#FFFFFF" if colors.empty?
+    l = colors.sum { |c| self.class.luminance(c) } / colors.size
+    on_white = 1.05 / (l + 0.05)
+    on_ink   = (l + 0.05) / (self.class.luminance(INK) + 0.05)
+    on_ink > on_white * DARK_INK_ADVANTAGE ? INK : "#FFFFFF"
+  end
+
+  # WCAG relative luminance, so the choice above is measured rather than eyeballed.
+  def self.luminance(hex)
+    h = hex.to_s.delete("#")
+    h = h.chars.map { |c| c * 2 }.join if h.length == 3
+    r, g, b = h.scan(/../).map { |pair| pair.to_i(16) / 255.0 }
+    lin = ->(c) { c <= 0.03928 ? c / 12.92 : (((c + 0.055) / 1.055)**2.4) }
+    (0.2126 * lin.call(r)) + (0.7152 * lin.call(g)) + (0.0722 * lin.call(b))
+  end
+
   def next_tier
     workspace.tiers.ordered.select { |t| t.threshold_points > threshold_points }
              .min_by { |t| [t.threshold_points, t.position] }

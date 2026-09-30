@@ -19,7 +19,11 @@
 
     <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
       <div style="font-size:18px; font-weight:700; letter-spacing:-.018em;"><%= t("customer.my_code.title") %></div>
-      <% if @member.tier %><span class="l-pill dark"><%= t("customer.home.tier_badge", name: @member.tier.name) %></span><% end %>
+      <% if @member.tier %>
+        <span class="l-pill tier" style="background:<%= @member.tier.gradient_css %>; color:<%= @member.tier.ink_color %>;">
+          <%= ui_icon(tier_icon(@member.tier), size: 12, stroke: 2.2) %><%= t("customer.home.tier_badge", name: @member.tier.name) %>
+        </span>
+      <% end %>
     </div>
 
     <div data-mycode-target="qr" style="display:inline-block; padding:16px; background:#fff; border-radius:18px;

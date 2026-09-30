@@ -11,8 +11,8 @@
 
 <div class="l-screen" style="text-align:center;">
   <%# ---- the crest ---- %>
-  <div class="l-crest lg" style="background: <%= @current&.gradient_css || 'linear-gradient(160deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>;">
-    <%= ui_icon(:star, size: 24, stroke: 2) %>
+  <div class="l-crest lg" style="background: <%= @current&.gradient_css || 'linear-gradient(160deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
+    <%= ui_icon(tier_icon(@current), size: 24, stroke: 2) %>
     <div class="nm"><%= @current&.name %></div>
   </div>
   <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>
@@ -21,9 +21,11 @@
   <%# ---- how far to the next one ---- %>
   <% if @member.next_tier %>
     <div style="margin-top:24px; text-align:left;">
+      <%# As in the design: the rung you are on is labelled in its own colour,
+          the one you are climbing towards in the shop's. %>
       <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;">
-        <span style="color:var(--primary);"><%= @current&.name %></span>
-        <span style="color:var(--ink-2);"><%= @member.next_tier.name %></span>
+        <span style="color:<%= @current&.gradient_to.presence || 'var(--primary)' %>;"><%= @current&.name %></span>
+        <span style="color:var(--primary);"><%= @member.next_tier.name %></span>
       </div>
       <div class="l-bar thick" style="margin-top:8px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
       <div style="font-size:12.5px; color:var(--ink-2); margin-top:8px;">
@@ -58,13 +60,16 @@
         <% is_current = tier.key == @current&.key %>
         <% reached = @member.points_balance >= tier.threshold_points.to_i %>
         <div class="l-row" style="<%= 'border-color:var(--primary);' if is_current %>">
-          <span class="ic" style="background:<%= tier.gradient_css %>; color:#fff;">
-            <%= reached ? ui_icon(:check, size: 17, stroke: 2.6) : ui_icon(:lock, size: 16) %>
+          <%# Its own colour and glyph, greyed while it is still out of reach —
+              the lock moves next to the name so the rung stays recognisable. %>
+          <span class="ic l-tierdot <%= 'locked' unless reached %>" style="background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
+            <%= ui_icon(tier_icon(tier), size: 17, stroke: 2.2) %>
           </span>
           <div class="bd">
             <div class="tt">
               <%= tier.name %>
               <% if is_current %><span class="l-pill brand" style="margin-left:6px;"><%= t("customer.tiers.current_chip") %></span><% end %>
+              <% unless reached %><span style="margin-left:6px; color:var(--ink-2); vertical-align:-2px;"><%= ui_icon(:lock, size: 13) %></span><% end %>
             </div>
             <div class="mt"><%= t("customer.tiers.from_points", n: number_with_delimiter(tier.threshold_points), m: tier.multiplier) %></div>
           </div>

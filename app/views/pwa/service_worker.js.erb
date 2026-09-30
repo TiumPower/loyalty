@@ -1,5 +1,5 @@
 // Quenly — minimal service worker (per-workspace PWA install).
-const CACHE = "loyalty-v2";
+const CACHE = "loyalty-v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -48,8 +48,14 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(event.request, copy)).catch(() => {});
+        // Only keep same-origin successes. A redirected or opaque response can
+        // carry a signed URL that has since expired, and replaying one of those
+        // from the cache shows the customer a broken image rather than an old
+        // one — worse than not caching it at all.
+        if (res.ok && res.type === "basic" && !res.redirected) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(event.request, copy)).catch(() => {});
+        }
         return res;
       })
       .catch(() => caches.match(event.request))

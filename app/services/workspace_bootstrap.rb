@@ -3,11 +3,16 @@
 module WorkspaceBootstrap
   module_function
 
+  # Gold is sampled from the design's tier crest; the other three are cut in the
+  # same register — saturated, with a genuinely deep bottom stop so the badge
+  # holds its lettering. Merchants can change all of them, so these are only the
+  # starting point (see Tier#ink_color, which keeps the text readable whatever
+  # they pick).
   TIERS = [
-    { key: "bronze",  name: "Đồng",      threshold_points: 0,     multiplier: 1.0, from: "#C08A52", to: "#8A5A2E" },
-    { key: "silver",  name: "Bạc",       threshold_points: 2000,  multiplier: 1.2, from: "#C9CDD4", to: "#8A9099" },
-    { key: "gold",    name: "Vàng",      threshold_points: 5000,  multiplier: 1.5, from: "#E6C15A", to: "#B8892E" },
-    { key: "diamond", name: "Kim Cương", threshold_points: 12000, multiplier: 2.0, from: "#8FD6E8", to: "#4A9FC7" }
+    { key: "bronze",  name: "Đồng",      threshold_points: 0,     multiplier: 1.0, from: "#C87A34", to: "#8A4310" },
+    { key: "silver",  name: "Bạc",       threshold_points: 2000,  multiplier: 1.2, from: "#C2CBD6", to: "#6E7B8A" },
+    { key: "gold",    name: "Vàng",      threshold_points: 5000,  multiplier: 1.5, from: "#F6B51F", to: "#DD7F09" },
+    { key: "diamond", name: "Kim Cương", threshold_points: 12000, multiplier: 2.0, from: "#7FC8E8", to: "#2F7FB5" }
   ].freeze
 
   EARN = { "fnb" => 10_000, "retail" => 15_000, "service" => 20_000 }.freeze

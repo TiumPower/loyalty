@@ -75,11 +75,14 @@ class LoyaltyProgramConfigTest < ActionDispatch::IntegrationTest
   # customer PWA pages. Anything but a colour there injects CSS — including a
   # url() that fires a request from the customer's browser.
   test "tier colours must be hex" do
+    # Read what it was rather than naming a colour: the point is that the bad
+    # value is refused, not which default the bootstrap happens to seed.
+    before = tier("gold").gradient_from
     patch merchant_tiers_path, params: {
       tiers: tier_rows("gold" => { gradient_from: "red; background-image:url(https://evil.example/x)" })
     }
     assert_redirected_to merchant_loyalty_program_path
-    assert_equal "#E6C15A", tier("gold").gradient_from
+    assert_equal before, tier("gold").gradient_from
     refute_includes tier("gold").gradient_css, "evil.example"
   end
 
