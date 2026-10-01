@@ -1,0 +1,98 @@
+name: Deploy
+
+# Chạy ngay sau khi CI kết thúc trên main — KỂ CẢ KHI CI ĐỎ. Đây là lựa chọn
+# có chủ ý của chủ sản phẩm, không phải thiếu sót: không có `if: success()`
+# nào ở đây, và job summary sẽ nói rõ CI đã đỏ hay xanh ở mỗi lần deploy.
+#
+# Nếu sau này muốn đổi thành "chỉ deploy khi CI xanh", thêm đúng một dòng vào
+# điều kiện `if` bên dưới: github.event.workflow_run.conclusion == 'success'.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  # Deploy tay, không cần đợi CI (ví dụ khi muốn deploy lại bản hiện tại).
+  workflow_dispatch:
+
+# Một deploy một lúc. Hai lần push sát nhau không được tranh nhau cùng một
+# thư mục release trên máy chủ — và không huỷ lần đang chạy giữa chừng.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # CI bị huỷ (cancelled) gần như luôn là do có commit mới đè lên, và lần CI
+    # của commit mới sẽ tự deploy — nên bỏ qua. "Đỏ" thì vẫn deploy.
+    # Chỉ nhận CI của push lên main: CI của pull request không được deploy.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion != 'cancelled' &&
+       github.event.workflow_run.conclusion != 'skipped')
+
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 25
+
+    steps:
+      # Deploy luôn lấy main hiện tại, giống hệt `cap production deploy` chạy
+      # tay. Máy chủ tự fetch từ GitHub, nên checkout ở đây chỉ để có Gemfile,
+      # Capfile và config/deploy.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # Khoá này làm hai việc: mở SSH vào máy chủ, VÀ (qua forward_agent trong
+      # config/deploy/production.rb) cho máy chủ kéo mã từ GitHub. Máy chủ
+      # không có khoá GitHub riêng — nó mượn agent này, y như khi deploy tay.
+      - name: Mở SSH agent với khoá deploy
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      # Ghim khoá máy chủ thay vì tắt kiểm tra: một runner mới tinh mỗi lần
+      # chạy mà StrictHostKeyChecking=no thì chẳng khác gì không xác thực.
+      - name: Ghim khoá máy chủ
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: cap production deploy
+        run: bundle exec cap production deploy
+
+      # Chạy kể cả khi deploy hỏng, để lần nào cũng đọc được tình trạng CI đi
+      # kèm bản vừa (hoặc không) lên.
+      - name: Ghi lại đã deploy cái gì, trên nền CI nào
+        if: always()
+        env:
+          CI_RESULT: ${{ github.event.workflow_run.conclusion || 'không qua CI (deploy tay)' }}
+          CI_URL: ${{ github.event.workflow_run.html_url }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          MSG: ${{ github.event.workflow_run.head_commit.message }}
+          WHO: ${{ github.event.workflow_run.head_commit.author.name || github.actor }}
+          DEPLOY_RESULT: ${{ job.status }}
+        run: |
+          {
+            echo "## Deploy production — \`$DEPLOY_RESULT\`"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Commit | \`${SHA:0:12}\` |"
+            echo "| Nội dung | ${MSG%%$'\n'*} |"
+            echo "| Người đẩy | $WHO |"
+            echo "| Kết quả CI | **$CI_RESULT** |"
+            [ -n "$CI_URL" ] && echo "| Lần chạy CI | $CI_URL |"
+            echo
+            if [ "$CI_RESULT" = "failure" ]; then
+              echo "> [!WARNING]"
+              echo "> CI ĐỎ nhưng vẫn deploy — đúng như cấu hình đã chọn."
+              echo "> Nếu production hỏng: chạy workflow **Rollback** để quay về bản trước."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

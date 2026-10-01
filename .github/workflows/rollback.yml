@@ -1,0 +1,65 @@
+name: Rollback
+
+# Vì Deploy chạy kể cả khi CI đỏ, phải có đường lùi nhanh bằng đúng một cú
+# bấm. Capistrano giữ 5 release gần nhất (`keep_releases`), rollback chỉ là
+# trỏ symlink `current` về release trước rồi khởi động lại Puma — vài giây,
+# không build lại gì.
+#
+# Lưu ý: rollback KHÔNG hoàn tác migration. Nếu bản lỗi đã đổi cấu trúc dữ
+# liệu thì phải xử lý tay.
+on:
+  workflow_dispatch:
+    inputs:
+      ly_do:
+        description: "Vì sao phải lùi? (ghi vào nhật ký chạy)"
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Mở SSH agent với khoá deploy
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Ghim khoá máy chủ
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: cap production deploy:rollback
+        run: bundle exec cap production deploy:rollback
+
+      - name: Ghi lại
+        if: always()
+        env:
+          LY_DO: ${{ inputs.ly_do }}
+          KET_QUA: ${{ job.status }}
+        run: |
+          {
+            echo "## Rollback production — \`$KET_QUA\`"
+            echo
+            echo "**Lý do:** $LY_DO"
+            echo
+            echo "**Người bấm:** ${{ github.actor }}"
+            echo
+            echo "> Rollback không hoàn tác migration. Nếu bản vừa lùi có đổi"
+            echo "> cấu trúc dữ liệu, kiểm tra lại bằng tay."
+          } >> "$GITHUB_STEP_SUMMARY"
