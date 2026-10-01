@@ -655,6 +655,16 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-result { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:22px; }
 /* A white disc inside a soft ring, as the design draws it — a flat tinted
    circle swallows the glyph sitting on it. */
+/* The earn reveal on "Mã của tôi". It covers the sheet rather than replacing
+   the page, so it scrolls on a short phone instead of burying its own button —
+   the mistake the scan screens made. */
+.pwa-app .l-burst { position:absolute; inset:0; z-index:4; overflow-y:auto; overscroll-behavior:contain;
+  flex-direction:column; align-items:center; justify-content:flex-start;
+  padding:26px 20px calc(26px + env(safe-area-inset-bottom));
+  background: var(--surface); border-radius:26px 26px 0 0; }
+.pwa-app .l-burst .l-result { margin-bottom:0; }
+.pwa-app .l-burst .l-result .halo { margin-bottom:20px; }
+
 .l-result .halo { width:78px; height:78px; border-radius:50%; display:grid; place-items:center;
   background:#fff; color: var(--good); margin:0 0 28px;
   box-shadow: 0 0 0 11px var(--good-soft), 0 0 0 22px color-mix(in srgb, var(--good) 7%, transparent); }

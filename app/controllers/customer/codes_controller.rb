@@ -27,10 +27,17 @@ module Customer
     # customer dismissed it, forever.
     def recent
       after = params[:after].to_i
-      p = current_member.purchases.not_voided.where("id > ?", after).order(:id).last
+      p = current_member.purchases.not_voided.includes(:outlet).where("id > ?", after).order(:id).last
       if p
+        # Enough to draw the same receipt the full earn screen draws. "+5 điểm"
+        # alone asks the customer to take it on faith; the branch and the bill
+        # are what make it checkable against the slip in their hand.
         render json: { earned: p.points_earned, balance: current_member.reload.points_balance,
-                       id: p.id }
+                       id: p.id,
+                       shop: current_workspace.name,
+                       outlet: p.outlet&.name,
+                       amount: (p.amount.to_i.positive? ? helpers.number_with_delimiter(p.amount) : nil),
+                       at: l(p.created_at, format: :short) }
       else
         render json: { earned: nil }
       end

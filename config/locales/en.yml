@@ -464,7 +464,6 @@ en:
       already_used: "Reward already used"
       used_at: "used at"
       scan_other: "Scan another"
-      verified: "Reward verified"
       time: "Time"
       branch: "Branch"
       code: "Code"
@@ -1029,7 +1028,6 @@ en:
       custom_note_html: "Use your own brand's domain, e.g. <span class=\"l-mono\">loyalty.yourshop.com</span>."
       custom_label: "Custom domain"
       save: "Save"
-      verified: "✓ Verified"
       verified_note_html: "Customer app is live at <span class=\"l-mono\">%{domain}</span>."
       not_verified: "Not verified · add DNS records"
       dns_intro: "Add these 2 records at your domain provider, then click “Check”."
@@ -1671,7 +1669,6 @@ en:
       scanned_title: "Invoice scanned"
       valid_invoice: "Valid %{shop} invoice"
       verified_fast: "Verified securely in under a second"
-      verified: "Verified"
       invoice: "Invoice"
       purchased_at: "Purchased"
       points_earned: "Points earned"
@@ -2021,6 +2018,9 @@ en:
       balance_pre: "Balance:"
       show_to_staff: "Show this code to staff to earn points on your bill."
       scan_shop_qr_sub: "Check in at the shop, or claim a campaign gift"
+      verified: "Points added"
+      earned_heading_pre: "You earned "
+      earned_heading_post: " points!"
     notices:
       tier_up:
         title: "%{tier} tier unlocked! 🎉"
@@ -2127,7 +2127,6 @@ en:
     earn_success:
       tier_unlocks: "%{tier} unlocks at %{n} PTS"
       bill: "Purchase total"
-      verified: "Purchase verified"
       heading_points: "You earned %{n} points!"
       subtitle: "Your %{shop} purchase has been added to your point history."
       new_balance: "New balance"

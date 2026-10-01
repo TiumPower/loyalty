@@ -3,7 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 // "Mã của tôi": rotates the personal QR on a countdown (so a screenshot can't be
 // reused) and polls for a fresh earn to reveal a "+X điểm" burst on the phone.
 export default class extends Controller {
-  static targets = ["qr", "count", "burst", "burstPoints", "burstBalance"]
+  static targets = ["qr", "count", "burst", "burstPoints", "burstPts2", "burstBalance",
+                    "burstShop", "burstAt", "burstAmount", "burstBillRow"]
   static values = { tokenUrl: String, recentUrl: String, after: Number, ttl: Number, locale: String }
 
   connect() {
@@ -64,18 +65,35 @@ export default class extends Controller {
       // A request already in flight when the burst went up would otherwise
       // reveal a second time over the one being read.
       if (data.id) this.afterValue = data.id
-      if (data.earned && !this.showing) this.reveal(data.earned, data.balance)
+      if (data.earned && !this.showing) this.reveal(data)
     } catch (e) { /* ignore */ }
   }
 
-  reveal(points, balance) {
+  reveal(data) {
     this.showing = true
     // Was pinned to vi-VN, so an English customer saw "1.234" for 1,234.
     const loc = this.hasLocaleValue && this.localeValue ? this.localeValue : "vi-VN"
-    this.burstPointsTarget.textContent = points.toLocaleString(loc)
-    this.burstBalanceTarget.textContent = balance.toLocaleString(loc)
+    const points = data.earned.toLocaleString(loc)
+    this.burstPointsTarget.textContent = points
+    if (this.hasBurstPts2Target) this.burstPts2Target.textContent = `+${points}`
+    this.burstBalanceTarget.textContent = data.balance.toLocaleString(loc)
+
+    // The receipt half. Each piece is drawn only when the server sent it —
+    // a branch the shop never named, or a check-in with no bill behind it,
+    // must not leave an empty row looking like missing data.
+    if (this.hasBurstShopTarget && data.shop) {
+      this.burstShopTarget.textContent = data.outlet ? `${data.shop} · ${data.outlet}` : data.shop
+    }
+    if (this.hasBurstAtTarget) this.burstAtTarget.textContent = data.at || ""
+    if (this.hasBurstBillRowTarget) {
+      const hasBill = Boolean(data.amount)
+      this.burstBillRowTarget.hidden = !hasBill
+      if (hasBill && this.hasBurstAmountTarget) this.burstAmountTarget.textContent = data.amount
+    }
+
     const el = this.burstTarget
     el.style.display = "flex"
+    el.scrollTop = 0
     el.animate([{ opacity: 0, transform: "scale(1.15)" }, { opacity: 1, transform: "scale(1)" }],
                { duration: 300, easing: "ease-out" })
     if (navigator.vibrate) navigator.vibrate(60)

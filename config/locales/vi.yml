@@ -467,7 +467,6 @@ vi:
       already_used: "Ưu đãi đã được sử dụng"
       used_at: "đã dùng lúc"
       scan_other: "Quét mã khác"
-      verified: "Đã xác thực ưu đãi"
       time: "Thời gian"
       branch: "Chi nhánh"
       code: "Mã"
@@ -1032,7 +1031,6 @@ vi:
       custom_note_html: "Dùng domain của chính thương hiệu bạn, ví dụ <span class=\"l-mono\">loyalty.tenshop.vn</span>."
       custom_label: "Tên miền riêng"
       save: "Lưu"
-      verified: "✓ Đã xác minh"
       verified_note_html: "Customer app đã hoạt động tại <span class=\"l-mono\">%{domain}</span>."
       not_verified: "Chưa xác minh · thêm bản ghi DNS"
       dns_intro: "Thêm 2 bản ghi sau tại nhà cung cấp tên miền của bạn, rồi bấm “Kiểm tra”."
@@ -1712,7 +1710,6 @@ vi:
       scanned_title: "Đã quét hoá đơn"
       valid_invoice: "Hoá đơn %{shop} hợp lệ"
       verified_fast: "Đã xác thực trong chưa đầy một giây"
-      verified: "Đã xác thực"
       invoice: "Hoá đơn"
       purchased_at: "Thời gian mua"
       points_earned: "Điểm nhận được"
@@ -2062,6 +2059,9 @@ vi:
       balance_pre: "Số dư:"
       show_to_staff: "Đưa mã này cho nhân viên quét để tích điểm vào hoá đơn của %{term}."
       scan_shop_qr_sub: "Check-in tại quán hoặc nhận quà từ chiến dịch"
+      verified: "Đã cộng điểm"
+      earned_heading_pre: "Bạn vừa nhận "
+      earned_heading_post: " điểm!"
     notices:
       tier_up:
         title: "Lên hạng %{tier}! 🎉"
@@ -2168,7 +2168,6 @@ vi:
     earn_success:
       tier_unlocks: "Hạng %{tier} mở khoá ở %{n} điểm"
       bill: "Giá trị hoá đơn"
-      verified: "Đã xác nhận hoá đơn"
       heading_points: "Bạn nhận được %{n} điểm!"
       subtitle: "Giao dịch tại %{shop} đã được cộng vào lịch sử điểm của bạn."
       new_balance: "Số dư mới"

@@ -54,14 +54,48 @@
     <% end %>
     <div style="font-size:12px; color:var(--ink-2); margin-top:7px;"><%= t("customer.my_code.scan_shop_qr_sub") %></div>
 
-    <%# +X points reveal, shown in place when the counter picks up an earn. %>
-    <div data-mycode-target="burst" style="display:none; position:absolute; inset:0; z-index:4;
-         background:var(--scanner-bg); color:#fff; border-radius:26px 26px 0 0;
-         flex-direction:column; align-items:center; justify-content:center;">
-      <div style="font-size:14px; opacity:.8;"><%= t("customer.my_code.you_earned") %></div>
-      <div style="font-size:60px; font-weight:700; letter-spacing:-.04em; line-height:1.05; margin-top:4px;">+<span data-mycode-target="burstPoints">0</span></div>
-      <div style="opacity:.8; font-size:14px;"><%= t("customer.my_code.balance_pre") %> <span data-mycode-target="burstBalance">0</span> <%= t("customer.common.points_word") %></div>
-      <button type="button" data-action="mycode#dismiss" class="l-btn" style="margin-top:22px; background:#fff; color:var(--ink); padding:12px 40px;"><%= t("customer.my_code.got_it") %></button>
+    <%# The moment the counter rings it up. This used to be a slab of scanner
+        black with a bare "+5" on it — the one screen in the app that looked
+        like a debug overlay, and the only one the customer is actually
+        watching. It is now the same receipt the full earn screen draws, in the
+        same light chrome, because it is the same event. %>
+    <div data-mycode-target="burst" class="l-burst" style="display:none;">
+      <div class="l-result" style="width:100%;">
+        <div class="halo solid"><%= ui_icon(:party, size: 34, stroke: 1.9) %></div>
+        <span class="l-pill good"><%= t("customer.my_code.verified") %></span>
+        <h1><%= t("customer.my_code.earned_heading_pre") %><span data-mycode-target="burstPoints">0</span><%= t("customer.my_code.earned_heading_post") %></h1>
+      </div>
+
+      <div class="l-tile" style="margin-top:18px; width:100%; text-align:left;">
+        <div style="display:flex; align-items:center; gap:11px;">
+          <%= workspace_avatar(current_workspace, klass: "", style: "width:40px; height:40px; border-radius:12px; flex:none; font-size:14px;") %>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; font-size:14.5px;" data-mycode-target="burstShop"><%= current_workspace.name %></div>
+            <div style="font-size:12px; color:var(--ink-2); margin-top:2px;" data-mycode-target="burstAt"></div>
+          </div>
+          <%# Dấu cộng nằm trong cùng một node với con số: .l-pill có gap, nên
+              tách ra hai phần tử sẽ hiện thành "+ 120". %>
+          <span class="l-pill good" style="flex:none;" data-mycode-target="burstPts2">+0</span>
+        </div>
+        <div data-mycode-target="burstBillRow" hidden
+             style="margin-top:12px; padding-top:4px; border-top:1px solid var(--line-soft);">
+          <div class="l-kv">
+            <span class="k"><%= t("customer.earn_success.bill") %></span>
+            <span class="v"><span data-mycode-target="burstAmount"></span>đ</span>
+          </div>
+        </div>
+        <div class="l-delta" style="margin-top:10px;">
+          <div><div class="k"><%= t("customer.earn_success.new_balance") %></div></div>
+          <div style="text-align:right;">
+            <div class="v hi"><span data-mycode-target="burstBalance">0</span> <%= t("customer.common.points_word") %></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:18px; width:100%;">
+        <button type="button" data-action="mycode#dismiss" class="l-btn l-btn-primary l-btn-block"><%= t("customer.my_code.got_it") %></button>
+        <%= link_to t("customer.home.view_history"), member_history_path, class: "l-btn l-btn-outline l-btn-block" %>
+      </div>
     </div>
   </div>
 </div>
