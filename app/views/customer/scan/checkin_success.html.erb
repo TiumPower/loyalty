@@ -23,7 +23,7 @@
       <%= workspace_avatar(current_workspace, klass: "", style: "width:40px; height:40px; border-radius:12px; flex:none; font-size:14px;") %>
       <div style="flex:1; min-width:0;">
         <div style="font-weight:700; font-size:14.5px;">
-          <%= current_workspace.name %><%= " · #{@outlet.name}" if @outlet %>
+          <%= shop_and_outlet(@outlet) %>
         </div>
         <div style="font-size:12px; color:var(--ink-2); margin-top:2px;"><%= l(Time.current, format: :short) %></div>
       </div>

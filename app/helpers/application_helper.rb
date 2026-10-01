@@ -232,6 +232,30 @@ module ApplicationHelper
   # Whether a branch is open right now, or nil when it has never said. Hours
   # live on the outlet (a chain's branches keep different ones); a branch that
   # has not filled them in gets no badge rather than a cheerful guess.
+  # "Quán · Chi nhánh" — nhưng chỉ khi chi nhánh thật sự nói thêm điều gì.
+  #
+  # Rất nhiều quán một cơ sở đặt tên chi nhánh trùng luôn tên quán, nên nối vô
+  # điều kiện sẽ ra "Highland · Highland". Màn hình POS đã tự né bẫy này theo
+  # cách riêng của nó; giờ cả ba màn hình cộng điểm dùng chung một luật.
+  def shop_and_outlet(outlet, workspace: current_workspace)
+    shop = workspace&.name.to_s.strip
+    name = outlet&.name.to_s.strip
+    return shop if name.blank?
+    return name if shop.blank?
+
+    a = squash_name(name)
+    b = squash_name(shop)
+    return shop if a == b
+    # "Highland Lê Lợi" đã mang sẵn tên quán — tên chi nhánh tự nó là đủ.
+    return name if a.include?(b)
+    "#{shop} · #{name}"
+  end
+
+  # So tên bỏ qua hoa thường, dấu và khoảng trắng thừa.
+  def squash_name(str)
+    str.to_s.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").downcase.gsub(/[^a-z0-9]+/, " ").strip
+  end
+
   def shop_open_state(outlet)
     return nil unless outlet.respond_to?(:hours?) && outlet.hours?
     open = outlet.open_at?

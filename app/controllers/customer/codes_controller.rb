@@ -34,8 +34,10 @@ module Customer
         # are what make it checkable against the slip in their hand.
         render json: { earned: p.points_earned, balance: current_member.reload.points_balance,
                        id: p.id,
-                       shop: current_workspace.name,
-                       outlet: p.outlet&.name,
+                       # Ghép ở đây, không để JS nối chuỗi: chi nhánh trùng
+                       # tên quán thì phải ra "Highland", không phải
+                       # "Highland · Highland".
+                       place: helpers.shop_and_outlet(p.outlet),
                        amount: (p.amount.to_i.positive? ? helpers.number_with_delimiter(p.amount) : nil),
                        at: l(p.created_at, format: :short) }
       else

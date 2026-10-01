@@ -81,9 +81,7 @@ export default class extends Controller {
     // The receipt half. Each piece is drawn only when the server sent it —
     // a branch the shop never named, or a check-in with no bill behind it,
     // must not leave an empty row looking like missing data.
-    if (this.hasBurstShopTarget && data.shop) {
-      this.burstShopTarget.textContent = data.outlet ? `${data.shop} · ${data.outlet}` : data.shop
-    }
+    if (this.hasBurstShopTarget && data.place) this.burstShopTarget.textContent = data.place
     if (this.hasBurstAtTarget) this.burstAtTarget.textContent = data.at || ""
     if (this.hasBurstBillRowTarget) {
       const hasBill = Boolean(data.amount)

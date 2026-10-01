@@ -36,8 +36,8 @@ class EarnBurstTest < ActionDispatch::IntegrationTest
     body = JSON.parse(response.body)
 
     assert_equal result.points, body["earned"]
-    assert_equal @ws.name, body["shop"]
-    assert_equal @outlet.name, body["outlet"], "the branch is what makes it checkable"
+    assert_equal "#{@ws.name} · #{@outlet.name}", body["place"],
+                 "the branch is what makes it checkable"
     assert_equal "120.000", body["amount"], "the bill, grouped for reading"
     assert body["at"].present?
     assert_equal @member.reload.points_balance, body["balance"]
@@ -54,6 +54,26 @@ class EarnBurstTest < ActionDispatch::IntegrationTest
     end
     get "#{base}/my-code/recent", params: { after: before }, as: :json
     assert_nil JSON.parse(response.body)["earned"]
+  end
+
+  # Plenty of one-branch shops name the branch after the shop. Joining the two
+  # unconditionally produced "Highland · Highland" on a customer's phone.
+  test "a branch named after its shop is not said twice" do
+    ActsAsTenant.with_tenant(@ws) { @outlet.update!(name: @ws.name) }
+    before = ActsAsTenant.with_tenant(@ws) { @member.purchases.maximum(:id).to_i }
+    earn!(50_000)
+    get "#{base}/my-code/recent", params: { after: before }, as: :json
+    assert_equal @ws.name, JSON.parse(response.body)["place"]
+  end
+
+  # "Highland Lê Lợi" already carries the shop name; prefixing it again gives
+  # "Highland · Highland Lê Lợi".
+  test "a branch that already carries the shop name stands alone" do
+    ActsAsTenant.with_tenant(@ws) { @outlet.update!(name: "#{@ws.name} Lê Lợi") }
+    before = ActsAsTenant.with_tenant(@ws) { @member.purchases.maximum(:id).to_i }
+    earn!(50_000)
+    get "#{base}/my-code/recent", params: { after: before }, as: :json
+    assert_equal "#{@ws.name} Lê Lợi", JSON.parse(response.body)["place"]
   end
 
   test "nothing new means nothing to show" do
