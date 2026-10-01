@@ -71,31 +71,35 @@ thì lần push tiếp theo lên `main` sẽ tự deploy sau khi CI xong.
 
 ## Vì sao vẫn deploy khi CI đỏ — và cái giá
 
-Đây là yêu cầu của chủ sản phẩm, và nó là đánh đổi hợp lý khi **CI đang đỏ vì
-lý do không liên quan đến chất lượng mã**. Thời điểm viết tài liệu này:
+Đây là yêu cầu của chủ sản phẩm. Tình trạng CI lúc viết tài liệu này
+(2026-10-01):
 
-- `bin/rubocop` báo **812 lỗi style** → job `lint` đỏ ở **mọi** lần push.
-- `bin/rails test:system` chạy trong CI nhưng `test/system/` **không có file
-  nào**.
-- `test/integration/landing_page_test.rb` có một lỗi đã biết (robots.txt đang
-  cố tình chặn vì sản phẩm chưa mở công khai).
+| Job | Tình trạng |
+|---|---|
+| `test` | **xanh** — 442 runs, 0 failures |
+| `scan_ruby` (brakeman) | **xanh** — no warnings |
+| `scan_js` (importmap audit) | xanh |
+| `lint` (rubocop) | **ĐỎ** — 812 lỗi style, đỏ ở **mọi** lần push |
 
-Nghĩa là CI gần như không bao giờ xanh, nên "chỉ deploy khi CI xanh" sẽ chặn
-mọi bản deploy. Deploy-bất-chấp là cách làm cho pipeline chạy được **ngay**.
+Tức là CI đỏ vì đúng **một** job, và job đó đỏ vì style chứ không vì mã sai.
+"Chỉ deploy khi CI xanh" sẽ chặn mọi bản deploy cho tới khi dọn xong rubocop.
+Deploy-bất-chấp làm pipeline chạy được **ngay**.
 
-Cái giá: một commit làm hỏng test thật vẫn ra tới khách hàng. Hai thứ bù lại:
+Cái giá có thật: từ giờ một commit làm **hỏng test** cũng ra tới khách hàng,
+y như một commit chỉ sai khoảng trắng. Hai thứ bù lại:
 
 1. **Capistrano đổi release bằng symlink.** Một deploy *hỏng giữa chừng*
    (asset không build được, migration lỗi) để nguyên bản cũ đang chạy —
    production không sập. Rủi ro thật là deploy *thành công* với mã sai.
 2. **Workflow Rollback** quay về release trước trong vài giây.
 
-Khi nào muốn CI có ý nghĩa trở lại, làm theo thứ tự này:
+Vì chỉ còn `lint` đỏ, đường về một CI đáng để chặn deploy khá ngắn:
 
-1. `bin/rubocop -A` để tự sửa 433 lỗi sửa được, rồi chỉnh `.rubocop.yml` cho
-   phần còn lại — hoặc bỏ job `lint` khỏi `ci.yml` nếu không dùng tới.
-2. Bỏ `test:system` khỏi lệnh test trong `ci.yml` cho tới khi thật sự có
-   system test.
-3. Xử lý nốt lỗi `landing_page_test`.
-4. Rồi thêm `github.event.workflow_run.conclusion == 'success'` vào điều kiện
+1. `bin/rubocop -A` tự sửa 433 lỗi, rồi `bin/rubocop --auto-gen-config` để
+   gạt phần còn lại sang `.rubocop_todo.yml` — hoặc bỏ hẳn job `lint` khỏi
+   `ci.yml` nếu không định dùng.
+2. Rồi thêm `github.event.workflow_run.conclusion == 'success'` vào điều kiện
    `if` trong `deploy.yml` — đúng một dòng.
+
+(`test:system` chạy trong CI trong khi `test/system/` chưa có file nào, nhưng
+0 test thì thoát mã 0 — không làm CI đỏ, chỉ tốn vài giây cài Chrome.)
