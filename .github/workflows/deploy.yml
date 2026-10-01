@@ -20,6 +20,11 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+# Chỉ cần đọc mã nguồn. Token tự cấp này cũng là thứ máy chủ dùng để kéo mã —
+# xem bước "cap production deploy" bên dưới.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     # CI bị huỷ (cancelled) gần như luôn là do có commit mới đè lên, và lần CI
@@ -48,9 +53,9 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      # Khoá này làm hai việc: mở SSH vào máy chủ, VÀ (qua forward_agent trong
-      # config/deploy/production.rb) cho máy chủ kéo mã từ GitHub. Máy chủ
-      # không có khoá GitHub riêng — nó mượn agent này, y như khi deploy tay.
+      # Khoá này chỉ để mở SSH vào máy chủ. Việc máy chủ kéo mã từ GitHub do
+      # token HTTPS ở bước deploy lo — tổ chức TiumPower tắt Deploy keys nên
+      # máy chủ không thể có khoá GitHub riêng.
       - name: Mở SSH agent với khoá deploy
         uses: webfactory/ssh-agent@v0.9.1
         with:
@@ -64,8 +69,19 @@ jobs:
           printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+      # GITHUB_TOKEN được cấp tự động cho mỗi lần chạy và hết hạn khi lần chạy
+      # kết thúc, nên không có bí mật dài hạn nào phải tạo hay xoay vòng.
+      # Capistrano truyền URL này xuống máy chủ để nó tự fetch.
       - name: cap production deploy
+        env:
+          REPO_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         run: bundle exec cap production deploy
+
+      # Token nằm lại trong config của git mirror trên máy chủ. Nó chết ngay
+      # khi lần chạy kết thúc, nhưng vẫn dọn — kể cả khi deploy hỏng.
+      - name: Xoá token khỏi máy chủ
+        if: always()
+        run: bundle exec cap production deploy:scrub_repo_url
 
       # Chạy kể cả khi deploy hỏng, để lần nào cũng đọc được tình trạng CI đi
       # kèm bản vừa (hoặc không) lên.

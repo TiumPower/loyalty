@@ -16,10 +16,24 @@ class ApplicationController < ActionController::Base
   # Turbo re-requests the redirect target as a separate GET, which drops the
   # one-shot flash — so success/notice toasts never render. Default mutating
   # redirects to 303 so the flash survives into the rendered page.
+  #
+  # Rails refuses a cross-host redirect unless told otherwise, which is right:
+  # it is what stops an open redirect. But this app genuinely spans hosts —
+  # every shop's dashboard and PWA live on their own subdomain of
+  # PLATFORM_HOST — and not every redirect is ours to annotate. Devise does the
+  # "bạn đã đăng nhập rồi" bounce off /merchant/login itself, calling
+  # after_sign_in_path_for and redirecting to whatever it returns; there is no
+  # seam to pass allow_other_host through. In production that return value is a
+  # subdomain URL, so a signed-in merchant opening the login page got a 500.
+  #
+  # So: our own hosts are not "other hosts". Everything else still raises.
   def redirect_to(options = {}, response_options = {})
     if response_options[:status].blank? &&
        %w[POST PUT PATCH DELETE].include?(request.request_method)
       response_options[:status] = :see_other
+    end
+    if !response_options.key?(:allow_other_host) && own_host_url?(options)
+      response_options[:allow_other_host] = true
     end
     super
   end
@@ -28,6 +42,24 @@ class ApplicationController < ActionController::Base
   PLATFORM_HOST = ENV.fetch("PLATFORM_HOST", "quenly.tiumpower.com")
 
   private
+
+  # Is this redirect target one of OUR hosts — the platform host itself, or a
+  # shop subdomain under it?
+  #
+  # Deliberately strict. It parses rather than pattern-matches, so a host like
+  # "quenly.tiumpower.com.evil.example" does not slip through on a prefix, and
+  # an attacker-supplied URL anywhere else still raises as before.
+  def own_host_url?(target)
+    return false unless target.is_a?(String)
+    uri = URI.parse(target)
+    return false unless %w[http https].include?(uri.scheme)
+    host = uri.host.to_s.downcase
+    base = PLATFORM_HOST.to_s.downcase
+    return false if base.blank?
+    host == base || host.end_with?(".#{base}")
+  rescue URI::InvalidURIError
+    false
+  end
 
   # Merchants work inside their own workspace subdomain. Land the owner there
   # right after sign-in so every relative link in the dashboard stays on the

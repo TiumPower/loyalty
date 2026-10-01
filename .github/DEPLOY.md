@@ -7,39 +7,44 @@ trên nhánh `main` — **kể cả khi CI đỏ**. Đó là lựa chọn có ch
 `rollback.yml` chạy `cap production deploy:rollback` khi bấm tay, để có đường
 lùi nhanh khi một bản đỏ làm hỏng production.
 
-## Cần chuẩn bị đúng ba thứ
+## Máy chủ lấy mã từ đâu
 
-Máy chủ `103.116.38.152` **không có khoá GitHub riêng** — nó mượn SSH agent của
-máy đang deploy (`forward_agent: true` trong `config/deploy/production.rb`).
-Nên một khoá duy nhất phải làm được cả hai việc: mở SSH vào máy chủ, và kéo mã
-từ GitHub.
+Khi deploy tay, máy chủ `103.116.38.152` mượn SSH agent của máy đang deploy
+(`forward_agent: true` trong `config/deploy/production.rb`) để kéo mã từ
+GitHub — nó không có khoá GitHub nào của riêng mình.
 
-### 1. Tạo khoá riêng cho CI
+GitHub Actions không mượn được như vậy, và **tổ chức TiumPower tắt Deploy
+keys** nên cũng không thể cấp cho máy chủ một khoá riêng. Thay vào đó, workflow
+truyền `REPO_URL` dạng HTTPS kèm `GITHUB_TOKEN` — token GitHub tự cấp cho mỗi
+lần chạy và **tự hết hạn khi lần chạy kết thúc**:
+
+```
+https://x-access-token:<token>@github.com/TiumPower/loyalty.git
+```
+
+`config/deploy.rb` đọc `REPO_URL` nếu có, không thì dùng URL SSH như cũ — nên
+deploy tay không đổi gì.
+
+Capistrano ghi URL đó vào config của git mirror trên máy chủ, nên sau mỗi lần
+deploy (kể cả khi hỏng) workflow gọi `cap production deploy:scrub_repo_url` để
+trả về URL SSH. Token đã chết rồi, nhưng không để bí mật nằm lại trên đĩa.
+
+Hệ quả: **không cần tạo Deploy key, không cần GitHub App, không có bí mật dài
+hạn nào phải xoay vòng.** Chỉ còn đúng một khoá SSH để mở máy chủ.
+
+## Cần chuẩn bị đúng hai thứ
+
+### 1. Tạo khoá SSH riêng cho CI
 
 Đừng dùng khoá cá nhân đang có trên máy. Tạo khoá mới để lúc cần thu hồi thì
 chỉ thu hồi quyền của CI:
 
 ```bash
 ssh-keygen -t ed25519 -C "github-actions-deploy-loyalty" -f ~/.ssh/loyalty_ci -N ""
-```
-
-### 2. Cho khoá đó vào ba nơi
-
-**a. Máy chủ** — để GitHub Actions SSH vào được:
-
-```bash
 ssh-copy-id -i ~/.ssh/loyalty_ci.pub deploy@103.116.38.152
 ```
 
-**b. GitHub repo → Settings → Deploy keys → Add deploy key** — để máy chủ kéo
-được mã. Dán nội dung `~/.ssh/loyalty_ci.pub`, đặt tên `github-actions`,
-**KHÔNG tích** "Allow write access".
-
-```bash
-cat ~/.ssh/loyalty_ci.pub
-```
-
-**c. GitHub repo → Settings → Secrets and variables → Actions** — hai secret:
+### 2. Hai secret trong GitHub repo → Settings → Secrets and variables → Actions
 
 | Tên secret | Lấy từ đâu |
 |---|---|
