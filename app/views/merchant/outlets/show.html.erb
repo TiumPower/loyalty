@@ -18,7 +18,7 @@
     <div style="flex:1; min-width:220px;">
       <div class="l-eyebrow"><%= t("merchant.outlets.checkin_title") %></div>
       <h3 class="l-display" style="font-size:18px; margin:2px 0 4px;"><%= @outlet.name %></h3>
-      <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.outlets.checkin_desc_html", name: @outlet.name).html_safe %></p>
+      <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;"><%= t("merchant.outlets.checkin_desc_html", name: @outlet.name) %></p>
       <%= link_to checkin_qr_merchant_outlet_path(@outlet), class: "l-btn l-btn-primary", data: { turbo: false } do %>
         <%= ui_icon(:launch, size: 16) %> <%= t("merchant.dashboard.download_code") %>
       <% end %>

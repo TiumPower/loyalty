@@ -1,0 +1,20 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "HTTP Verb Confusion",
+      "fingerprint": "4aeaebd95a14f6399cce17fdff533c46552ebe5ba9c6eadc4236d7ac42e4d80f",
+      "note": "Only decides whether to remember return_to before redirecting to login. A HEAD request skipping that is harmless."
+    },
+    {
+      "warning_type": "Unmaintained Dependency",
+      "fingerprint": "d84924377155b41e094acae7404ec2e521629d86f97b0ff628e3d1b263f8101c",
+      "note": "Rails 7.2 EOL 2026-08-09. Accepted until the Rails 8 upgrade; remove this entry when upgrading."
+    },
+    {
+      "warning_type": "Unmaintained Dependency",
+      "fingerprint": "edf687f759ec9765bd5db185dbc615c80af77d6e7e19386fc42934e7a80307af",
+      "note": "Ruby 3.2 EOL 2026-03-31. Accepted until the Ruby upgrade; remove this entry when upgrading."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}
