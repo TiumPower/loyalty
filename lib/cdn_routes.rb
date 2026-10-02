@@ -41,8 +41,23 @@ module CdnRoutes
 
   def cdn_url(blob)
     return nil if blob.nil?
-    service = blob.service
+    service = storage_behind(blob.service)
     return nil unless service.respond_to?(:public_host) && service.public_host.present?
     blob.url
+  end
+
+  # Kho thật nằm sau lớp nào.
+  #
+  # Service của blob ở đây là Mirror (R2 là chính, đĩa máy chủ là bản sao cho
+  # bản sao lưu đêm). Mirror không có `public_host` — nó uỷ quyền `url` xuống
+  # primary — nên hỏi thẳng Mirror thì lúc nào cũng ra "không công khai", và
+  # mọi ảnh lặng lẽ quay về đường cũ.
+  MAX_DEPTH = 4
+  def storage_behind(service)
+    MAX_DEPTH.times do
+      break unless service.respond_to?(:primary)
+      service = service.primary
+    end
+    service
   end
 end

@@ -42,6 +42,18 @@ class CdnRoutesTest < ActiveSupport::TestCase
     assert_equal "https://img.tiumpower.com/loyalty/abc123", svc.url("abc123")
   end
 
+  # Kho thật là Mirror (R2 chính + đĩa sao lưu). Mirror không có `public_host`
+  # của riêng nó, nên nếu chỉ hỏi lớp ngoài thì mọi ảnh lặng lẽ quay về đường
+  # Rails — đúng lỗi đã xảy ra lần deploy đầu.
+  test "nhìn xuyên qua Mirror để thấy kho thật" do
+    require "active_storage/service/mirror_service"
+    mirror = ActiveStorage::Service::MirrorService.new(
+      primary: public_service, mirrors: [ActiveStorage::Blob.service]
+    )
+    assert_not mirror.respond_to?(:public_host), "Mirror tự nó không có"
+    assert_equal "https://img.tiumpower.com", CdnRoutes.storage_behind(mirror).public_host
+  end
+
   # Ở môi trường test service là Disk, nên resolver phải nhường đường cho Rails.
   test "service không công khai thì nhường lại cho Rails" do
     blob = ActiveStorage::Blob.create_and_upload!(
