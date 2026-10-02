@@ -17,13 +17,39 @@ module ActiveStorage
   # `upload_stream` đi vòng qua TransferManager khi aws-sdk đủ mới. Bỏ sót một
   # trong ba là tệp rơi ra ngoài tiền tố mà không báo lỗi gì.
   class Service::PrefixedS3Service < Service::S3Service
-    def initialize(prefix:, **options)
+    # `public_host` là domain tuỳ chỉnh gắn trước bucket công khai (ví dụ
+    # https://img.tiumpower.com). Có nó thì service trở thành "công khai": URL
+    # phát ra là đường dẫn CDN vĩnh viễn, không ký tên, không hạn dùng.
+    attr_reader :public_host
+
+    def initialize(prefix:, public_host: nil, **options)
       @prefix = prefix.to_s.delete_prefix("/").chomp("/")
+      @public_host = public_host.presence&.chomp("/")
       super(**options)
+      return if @public_host.nil?
+
+      @public = true
+      # S3Service gắn ACL "public-read" cho service công khai. R2 KHÔNG có ACL
+      # trên object — gửi lên là mọi upload chết. Quyền công khai ở R2 là thuộc
+      # tính của bucket, bật trong bảng điều khiển Cloudflare.
+      @upload_options.delete(:acl)
+    end
+
+    # URL công khai qua domain tuỳ chỉnh. Mặc định của S3Service là
+    # `object.public_url`, trỏ vào endpoint S3 của R2 — nơi KHÔNG phục vụ công
+    # khai kể cả khi bucket đã mở; đường công khai duy nhất là r2.dev hoặc
+    # domain tuỳ chỉnh.
+    def public_url(key, **)
+      "#{@public_host}/#{prefixed(key)}"
     end
 
     def delete_prefixed(prefix)
       super(prefixed(prefix))
+    end
+
+    def prefixed(key)
+      return key if @prefix.empty?
+      key.to_s.start_with?("#{@prefix}/") ? key : "#{@prefix}/#{key}"
     end
 
     private
@@ -34,11 +60,6 @@ module ActiveStorage
 
     def upload_stream(key:, **options, &block)
       super(key: prefixed(key), **options, &block)
-    end
-
-    def prefixed(key)
-      return key if @prefix.empty?
-      key.to_s.start_with?("#{@prefix}/") ? key : "#{@prefix}/#{key}"
     end
   end
 end

@@ -32,8 +32,15 @@ spaces:
   # MỌI upload chết ngay. `when_required` tắt phần SDK tự thêm; Content-MD5 vẫn
   # còn nên tính toàn vẹn không mất gì.
   request_checksum_calculation: when_required
-  # Tệp để RIÊNG TƯ; app phát đường dẫn ký tên có hạn khi cần tải.
-  public: false
+  # Domain công khai gắn trước bucket (Cloudflare R2 → Settings → Custom
+  # Domains). Có nó thì ảnh phát thẳng URL CDN, Rails ra khỏi đường đi; bỏ
+  # trống thì quay lại đường ký tên có hạn như cũ.
+  public_host: <%= ENV["R2_PUBLIC_HOST"] %>
+  upload:
+    # Blob là bất biến — khoá ngẫu nhiên, nội dung không bao giờ đổi tại chỗ —
+    # nên nói thẳng với CDN là cache vĩnh viễn. Thiếu header này Cloudflare trả
+    # `cf-cache-status: DYNAMIC` và đi hỏi R2 lại mỗi lần.
+    cache_control: "public, max-age=31536000, immutable"
 
 # R2 là kho chính, đĩa máy chủ là bản sao — bản sao lưu hằng đêm đóng gói
 # shared/storage, nên vẫn cần tệp nằm trên đĩa để backup không rỗng.

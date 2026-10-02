@@ -57,7 +57,9 @@ Rails.application.configure do
   # the reward photos, which are the first things the app shows. The proxy URL is
   # same-origin, stable, and served with `immutable, max-age=1 year`, so each
   # image is fetched once and then cached properly by the browser and the worker.
-  config.active_storage.resolve_model_to_route = :rails_storage_proxy
+  # Ảnh phát thẳng URL CDN khi bucket có domain công khai; biến thể chưa dựng
+  # rơi về redirect của Rails rồi lần sau đi thẳng. Xem lib/cdn_routes.rb.
+  config.active_storage.resolve_model_to_route = :cdn_storage
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
