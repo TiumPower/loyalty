@@ -37,20 +37,20 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  # Lưu tệp lên DigitalOcean Spaces khi đã có khoá; chưa có thì vẫn dùng đĩa
+  # Lưu tệp lên Cloudflare R2 khi đã có khoá; chưa có thì vẫn dùng đĩa
   # máy chủ, để thiếu cấu hình không làm hỏng việc tải tệp lên.
-  # Mặc định ghi cả hai nơi (Spaces là chính, đĩa là bản sao cho backup đêm);
-  # SPACES_MIRROR_LOCAL=false để chỉ ghi lên Spaces.
+  # Mặc định ghi cả hai nơi (R2 là chính, đĩa là bản sao cho backup đêm);
+  # R2_MIRROR_LOCAL=false để chỉ ghi lên R2.
   config.active_storage.service =
-    if ENV["SPACES_KEY"].present? && ENV["SPACES_BUCKET"].present?
-      ENV["SPACES_MIRROR_LOCAL"] == "false" ? :spaces : :spaces_mirrored
+    if ENV["R2_KEY"].present? && ENV["R2_ACCOUNT_ID"].present?
+      ENV["R2_MIRROR_LOCAL"] == "false" ? :spaces : :spaces_mirrored
     else
       :local
     end
 
-  # Serve images through the app rather than redirecting to Spaces.
+  # Serve images through the app rather than redirecting to R2.
   #
-  # The redirect hands the browser a signed Spaces URL that expires in five
+  # The redirect hands the browser a signed R2 URL that expires in five
   # minutes, and the redirect itself is cacheable for five minutes. In a PWA
   # whose service worker caches every GET, any replay after that window followed
   # an expired signature and the customer got a broken image — the shop cover and

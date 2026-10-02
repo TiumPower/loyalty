@@ -1,27 +1,27 @@
-# Chuyển tệp Active Storage từ đĩa máy chủ sang DigitalOcean Spaces.
+# Chuyển tệp Active Storage từ đĩa máy chủ sang Cloudflare R2.
 #
-# Chạy được nhiều lần: tệp nào đã có trên Spaces thì bỏ qua. Mỗi blob sau khi
+# Chạy được nhiều lần: tệp nào đã có trên R2 thì bỏ qua. Mỗi blob sau khi
 # chép xong mới đổi `service_name` — nên nếu task dừng giữa chừng, các tệp chưa
 # chép vẫn đọc từ đĩa như cũ, app không hỏng.
 #
-#   bin/rails storage:check                 # thử kết nối Spaces
+#   bin/rails storage:check                 # thử kết nối R2
 #   DRY=1 bin/rails storage:to_spaces       # xem sẽ chép bao nhiêu, không ghi
 #   bin/rails storage:to_spaces             # chép thật
 namespace :storage do
-  desc "Kiểm tra kết nối tới DigitalOcean Spaces"
+  desc "Kiểm tra kết nối tới Cloudflare R2"
   task check: :environment do
     service = spaces_service
     key = "connection-check/#{SecureRandom.hex(8)}"
     service.upload(key, StringIO.new("ok"), content_type: "text/plain")
     ok = service.download(key) == "ok"
     service.delete(key)
-    puts ok ? "✓ Spaces OK — bucket #{ENV['SPACES_BUCKET']} (#{ENV.fetch('SPACES_REGION', 'sgp1')})" : "✗ Ghi được nhưng đọc lại sai."
+    puts ok ? "✓ R2 OK — bucket #{ENV.fetch('R2_BUCKET', 'tiumpower')}" : "✗ Ghi được nhưng đọc lại sai."
   end
 
-  desc "Chép mọi tệp đang nằm trên đĩa lên Spaces (DRY=1 để chạy thử)"
+  desc "Chép mọi tệp đang nằm trên đĩa lên R2 (DRY=1 để chạy thử)"
   task to_spaces: :environment do
     dry    = ENV["DRY"].present?
-    # Ghi thẳng lên Spaces (kho chính) — tệp vốn đã nằm trên đĩa, cho đi qua
+    # Ghi thẳng lên R2 (kho chính) — tệp vốn đã nằm trên đĩa, cho đi qua
     # Mirror nữa chỉ tổ chép lại đúng những byte đó xuống chính chỗ cũ.
     target = spaces_service
     # …nhưng blob phải trỏ về kho MẶC ĐỊNH của app (production: spaces_mirrored),
@@ -31,12 +31,12 @@ namespace :storage do
 
     pending = ActiveStorage::Blob.where.not(service_name: target_name)
     total   = pending.count
-    puts "#{total} tệp chưa nằm trên Spaces.#{' (chạy thử — không ghi gì)' if dry}"
+    puts "#{total} tệp chưa nằm trên R2.#{' (chạy thử — không ghi gì)' if dry}"
 
     copied = skipped = missing = failed = 0
     pending.find_each.with_index(1) do |blob, i|
       if target.exist?(blob.key)
-        # Đã có sẵn trên Spaces (lần chạy trước dừng giữa chừng) — chỉ cần
+        # Đã có sẵn trên R2 (lần chạy trước dừng giữa chừng) — chỉ cần
         # trỏ blob sang đúng service.
         blob.update_columns(service_name: target_name) unless dry
         skipped += 1
@@ -61,7 +61,7 @@ namespace :storage do
     end
 
     puts "\nXong: #{copied} chép, #{skipped} đã có sẵn, #{missing} thiếu tệp gốc, #{failed} lỗi."
-    puts "Còn #{ActiveStorage::Blob.where.not(service_name: target_name).count} blob chưa ở trên Spaces."
+    puts "Còn #{ActiveStorage::Blob.where.not(service_name: target_name).count} blob chưa ở trên R2."
   end
 
   desc "Kiểm tra mọi tệp Active Storage đều đọc được từ kho đang dùng"
@@ -80,8 +80,8 @@ namespace :storage do
   end
 
   def spaces_service
-    unless ENV["SPACES_KEY"].present? && ENV["SPACES_BUCKET"].present?
-      abort "Thiếu SPACES_KEY / SPACES_BUCKET trong .env — xem config/storage.yml."
+    unless ENV["R2_KEY"].present? && ENV["R2_ACCOUNT_ID"].present?
+      abort "Thiếu R2_KEY / R2_ACCOUNT_ID trong .env — xem config/storage.yml."
     end
     ActiveStorage::Blob.services.fetch(:spaces)
   end

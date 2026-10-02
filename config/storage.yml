@@ -6,24 +6,30 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-# DigitalOcean Spaces — S3-compatible, nên dùng service S3 với endpoint riêng.
-# Cùng khối này chạy được với mọi nhà cung cấp S3-compatible khác chỉ bằng cách
-# đổi SPACES_ENDPOINT và SPACES_REGION.
+# Cloudflare R2 — S3-compatible, nên vẫn dùng service S3 với endpoint riêng.
+# Chuyển từ DigitalOcean Spaces sang R2 ngày 2026-10-02; khối này chạy được với
+# nhà cung cấp S3-compatible khác chỉ bằng cách đổi R2_ENDPOINT và R2_REGION.
+#
+# TÊN SERVICE CỐ Ý GIỮ `spaces` / `spaces_mirrored` dù kho không còn là DO
+# Spaces: cột `service_name` của mọi blob đã lưu đúng hai chuỗi này. Đổi tên
+# block là mọi tệp cũ hết đọc được.
 #
 # Bucket dùng CHUNG với các app khác trên cùng server, nên mỗi app ghi vào tiền
 # tố riêng (xem lib/active_storage/service/prefixed_s3_service.rb).
 spaces:
   service: PrefixedS3
-  prefix: <%= ENV.fetch("SPACES_PREFIX", "loyalty") %>
-  access_key_id:     <%= ENV["SPACES_KEY"] %>
-  secret_access_key: <%= ENV["SPACES_SECRET"] %>
-  region:            <%= ENV.fetch("SPACES_REGION", "sgp1") %>
-  bucket:            <%= ENV["SPACES_BUCKET"] %>
-  endpoint:          <%= ENV.fetch("SPACES_ENDPOINT") { "https://#{ENV.fetch('SPACES_REGION', 'sgp1')}.digitaloceanspaces.com" } %>
+  prefix: <%= ENV.fetch("R2_PREFIX", "loyalty") %>
+  access_key_id:     <%= ENV["R2_KEY"] %>
+  secret_access_key: <%= ENV["R2_SECRET"] %>
+  region:            <%= ENV.fetch("R2_REGION", "auto") %>
+  bucket:            <%= ENV.fetch("R2_BUCKET", "tiumpower") %>
+  endpoint:          <%= ENV.fetch("R2_ENDPOINT") { "https://#{ENV['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com" } %>
+  # R2 chỉ có MỘT endpoint cho cả tài khoản, tên bucket nằm trong đường dẫn.
+  force_path_style:  true
   # Tệp để RIÊNG TƯ; app phát đường dẫn ký tên có hạn khi cần tải.
   public: false
 
-# Spaces là kho chính, đĩa máy chủ là bản sao — bản sao lưu hằng đêm đóng gói
+# R2 là kho chính, đĩa máy chủ là bản sao — bản sao lưu hằng đêm đóng gói
 # shared/storage, nên vẫn cần tệp nằm trên đĩa để backup không rỗng.
 spaces_mirrored:
   service: Mirror
