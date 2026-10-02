@@ -57,7 +57,7 @@ jobs:
       # token HTTPS ở bước deploy lo — tổ chức TiumPower tắt Deploy keys nên
       # máy chủ không thể có khoá GitHub riêng.
       - name: Mở SSH agent với khoá deploy
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
