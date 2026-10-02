@@ -26,6 +26,12 @@ spaces:
   endpoint:          <%= ENV.fetch("R2_ENDPOINT") { "https://#{ENV['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com" } %>
   # R2 chỉ có MỘT endpoint cho cả tài khoản, tên bucket nằm trong đường dẫn.
   force_path_style:  true
+  # aws-sdk 3.257 tự thêm checksum CRC32 vào mọi PutObject, trong khi Active
+  # Storage đã gửi Content-MD5 của chính nó — R2 từ chối khi thấy hai checksum
+  # cùng lúc ("You can only specify one non-default checksum at a time"), nên
+  # MỌI upload chết ngay. `when_required` tắt phần SDK tự thêm; Content-MD5 vẫn
+  # còn nên tính toàn vẹn không mất gì.
+  request_checksum_calculation: when_required
   # Tệp để RIÊNG TƯ; app phát đường dẫn ký tên có hạn khi cần tải.
   public: false
 
