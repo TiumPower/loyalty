@@ -19,23 +19,6 @@ class CrossHostRedirectTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@ws) { Membership.create!(user: @user, workspace: @ws, role: "owner") }
   end
 
-  # Pretend we are production, where merchant_url_for emits absolute URLs.
-  #
-  # Puts the original method back rather than removing the override: both live
-  # on ApplicationController, so `remove_method` would delete the real one and
-  # leave the class without it — which is exactly what it did, taking five
-  # unrelated tests down with it.
-  def across_hosts
-    original = ApplicationController.instance_method(:force_subdomain_links?)
-    ApplicationController.class_eval { define_method(:force_subdomain_links?) { true } }
-    yield
-  ensure
-    ApplicationController.class_eval do
-      define_method(:force_subdomain_links?, original)
-      private :force_subdomain_links?
-    end
-  end
-
   test "a signed-in merchant opening the login page is sent to their shop, not a 500" do
     sign_in @user
     across_hosts { get "/merchant/login" }

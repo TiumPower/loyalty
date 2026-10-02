@@ -6,6 +6,7 @@ module Merchant
     before_action :no_browser_cache
     before_action :set_current_workspace
     before_action :require_accessible_workspace
+    before_action :canonical_merchant_host
     before_action :enforce_workspace_access
     around_action :scope_tenant
 
@@ -108,6 +109,33 @@ module Merchant
       end
       @current_workspace ||= accessible_workspaces.first
       session[:workspace_id] = @current_workspace&.id
+    end
+
+    # The address bar has to name the shop on the screen.
+    #
+    # The host is only a preference above: open another shop's subdomain and,
+    # as long as you manage a shop of your own, you were quietly served YOUR
+    # shop under THEIR address. Nothing leaked — accessible_workspaces gates
+    # every query and the tenant scope follows @current_workspace — but
+    # "highland.../merchant" showing Highland while the URL says "cozycafe" is
+    # a URL that lies, and every link or QR copied out of that session carries
+    # the wrong host. Send them to their own subdomain instead.
+    #
+    # Mirrors canonical_customer_host, which has always done this on the
+    # customer side.
+    def canonical_merchant_host
+      return unless Rails.env.production? && request.get?
+      ws = @current_workspace
+      return if ws&.subdomain.blank?
+      return if ws.custom_domain.present? && request.host == ws.custom_domain
+      target = "#{ws.subdomain}.#{PLATFORM_HOST}"
+      return if request.host == target
+      # Only ever bounce between hosts we control, and only when the host we
+      # are on actually names a different shop — the bare platform host is a
+      # legitimate way in (login, the shop picker) and must stay put.
+      return unless request.host.end_with?(".#{PLATFORM_HOST}")
+      return if workspace_from_host.nil?
+      redirect_to "https://#{target}#{request.fullpath}", allow_other_host: true
     end
 
     # Signed in but no workspace to manage — their shop was deleted, or they
