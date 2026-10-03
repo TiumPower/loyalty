@@ -34,6 +34,37 @@ module Merchant
       redirect_to merchant_automations_path, notice: t("merchant.automations.saved")
     end
 
+    # Bật/tắt từ chính danh sách.
+    #
+    # `update` dựng lại toàn bộ cấu hình từ form, nên gọi nó cho một cú bật là
+    # xoá sạch quà, số ngày và lời nhắn đã đặt. Ở đây chỉ chạm đúng cờ `enabled`.
+    #
+    # Chào mừng và Sinh nhật mà chưa chọn quà thì CHẠY CŨNG KHÔNG CHO GÌ (xem
+    # Automations#on_signup / run_birthday: cả hai thoát ngay khi thiếu
+    # reward_id). Bật trong trạng thái đó là dựng một cái bẫy im lặng, nên chặn
+    # lại và nói rõ còn thiếu gì. Kéo khách quay lại thì chạy được không cần quà
+    # — nó vẫn gửi lời nhắc.
+    NEEDS_REWARD = %w[welcome birthday].freeze
+
+    def toggle
+      kind = params[:kind].to_s
+      return redirect_to merchant_automations_path unless KINDS.include?(kind)
+
+      autos = current_workspace.settings.fetch("automations", {}).dup
+      cfg   = (autos[kind] || {}).dup
+      turning_on = !cfg["enabled"]
+
+      if turning_on && NEEDS_REWARD.include?(kind) && cfg["reward_id"].blank?
+        return redirect_to merchant_edit_automation_path(kind), alert: t("merchant.automations.need_gift_first")
+      end
+
+      autos[kind] = cfg.merge("enabled" => turning_on)
+      current_workspace.update!(settings: current_workspace.settings.merge("automations" => autos))
+      redirect_to merchant_automations_path,
+                  notice: t(turning_on ? "merchant.automations.turned_on" : "merchant.automations.turned_off",
+                            name: t("merchant.automations.#{kind}_title"))
+    end
+
     private
 
     def nav_key = :messages

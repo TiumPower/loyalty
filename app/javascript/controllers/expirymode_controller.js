@@ -17,15 +17,11 @@ export default class extends Controller {
     if (this.hasFixedRowTarget) this.dim(this.fixedRowTarget, mode !== "fixed")
   }
 
-  // Soften the row that isn't selected — WITHOUT dimming its radio (a faded radio
-  // reads as disabled). Grey the label text and fade only its input; the radio
-  // stays crisp and clickable so the user can switch modes.
+  // Làm nhạt dòng KHÔNG được chọn, nhưng không làm nhạt nút radio của nó (radio
+  // mờ đọc như đã bị khoá). Phần nhìn nằm hết ở CSS `.l-optrow.off` — kể cả
+  // trạng thái rê chuột, thứ mà style nội tuyến không tả được: dòng đang mờ khi
+  // rê chuột phải sáng lên để nói rằng bấm vào là chọn được nó.
   dim(row, off) {
-    if (!row) return
-    row.style.color = off ? "var(--ink-2)" : ""
-    row.querySelectorAll("input:not([type=radio]), select").forEach((el) => {
-      el.style.opacity = off ? "0.5" : ""
-      el.style.pointerEvents = off ? "none" : ""
-    })
+    if (row) row.classList.toggle("off", off)
   }
 }

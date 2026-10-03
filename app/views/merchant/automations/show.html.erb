@@ -57,8 +57,15 @@
             <span class="m-badge <%= 'up' if on %>"><%= on ? a.(:on) : a.(:off) %></span>
           </td>
           <td>
-            <%= link_to a.(:edit), merchant_edit_automation_path(kind),
-                  style: "font-size:13px; font-weight:600; color:var(--primary); text-decoration:none;" %>
+            <%# Trạng thái trước đây chỉ là một con chữ, công tắc thật nằm trong
+                Chỉnh sửa — nhìn vào bảng không ai biết bật ở đâu. Đặt luôn hành
+                động ngay cạnh trạng thái nó đổi. %>
+            <div style="display:flex; align-items:center; gap:14px; justify-content:flex-end;">
+              <%= button_to on ? a.(:turn_off) : a.(:turn_on), merchant_toggle_automation_path(kind),
+                    method: :post, class: "l-btn l-btn-sm #{on ? 'l-btn-soft' : 'l-btn-primary'}" %>
+              <%= link_to a.(:edit), merchant_edit_automation_path(kind),
+                    style: "font-size:13px; font-weight:600; color:var(--primary); text-decoration:none;" %>
+            </div>
           </td>
         </tr>
       <% end %>

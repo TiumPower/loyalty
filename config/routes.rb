@@ -124,6 +124,9 @@ Rails.application.routes.draw do
     # One automation at a time — the set is fixed (Merchant::AutomationsController::KINDS),
     # so the key is the id.
     get "automations/:kind/edit", to: "automations#edit", as: :edit_automation
+    # Bật/tắt ngay tại danh sách; `update` dựng lại cả cấu hình từ form nên
+    # không dùng được cho một cú bật đơn lẻ.
+    post "automations/:kind/toggle", to: "automations#toggle", as: :toggle_automation
     # :destroy cancels a SCHEDULED send that has not gone out yet — see the
     # controller. A sent broadcast is history and stays.
     resources :broadcasts, only: [:index, :new, :create, :destroy]
@@ -147,6 +150,9 @@ Rails.application.routes.draw do
     post "pos", to: "pos#create", as: :pos_charges
     get  "scan-home", to: "scanner#launcher", as: :scan_home # minimal staff-mobile landing
     get  "scan-home/checkin-qr", to: "scanner#checkin_qr", as: :scanner_checkin_qr # branch check-in QR (standalone)
+    # Đường riêng chứ không phải "checkin-qr.png": route ngay trên đã có
+    # `(.:format)`, nên đuôi .png sẽ bị nó nuốt và không bao giờ tới được đây.
+    get  "scan-home/checkin-qr/download", to: "scanner#checkin_qr_png", as: :scanner_checkin_qr_png
     get  "scanner", to: "scanner#show"
     # Counter scanner — Tích điểm (earn)
     post "earn/lookup", to: "earn#lookup", as: :earn_lookup

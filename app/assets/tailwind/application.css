@@ -1132,6 +1132,10 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-panel { background:#fff; border:1px solid var(--line); border-radius:20px; padding:22px; box-shadow: var(--shadow); }
 .l-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); }
 .l-toggle-row:last-child { border-bottom:none; }
+/* Tuỳ chọn CON của dòng ngay trên nó: thụt vào và có vạch dọc, để không ai đọc
+   nó như một lựa chọn ngang hàng thứ ba. */
+.l-subopt { padding-left:14px; border-left:2px solid var(--line); margin-left:2px; }
+.l-subopt[hidden] { display:none; }
 .l-switch { display:inline-block; width:46px; height:27px; border-radius:999px; background:var(--surface-2); position:relative; cursor:pointer; border:1px solid var(--line); flex:none; vertical-align:middle; }
 .l-switch input { position:absolute; opacity:0; inset:0; cursor:pointer; }
 .l-switch .knob { position:absolute; top:2px; left:2px; width:21px; height:21px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2); transition:.16s; }
@@ -1337,6 +1341,21 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-badges .chip.off .d { background:transparent; color: var(--ink-2);
   border:1.5px dashed var(--line); }
 .l-badges .chip.off .n { font-weight:600; color: var(--ink-2); }
+
+/* Một dòng lựa chọn kiểu "chọn 1 trong 2": cả dòng là <label> nên bấm đâu
+   cũng chọn được. Dòng KHÔNG được chọn bị làm nhạt, nhưng rê chuột vào thì
+   phải sáng lên — nếu không, nó trông như một ô đã bị khoá và người dùng
+   không biết bấm vào là đổi được. Con trỏ cũng phải là bàn tay trên cả dòng,
+   kể cả trên ô nhập đang tắt. */
+.l-optrow { cursor:pointer; border-radius:12px; padding:6px 8px; margin:-6px -8px;
+  transition: background .12s, color .12s; }
+.l-optrow.off { color: var(--ink-2); }
+.l-optrow.off:hover { color: var(--ink); background: var(--surface-2); }
+/* Ô nhập của dòng đang tắt không nhận chuột, để cú bấm rơi xuống <label> và
+   chọn dòng đó thay vì đặt con trỏ vào một ô chưa dùng được. */
+.l-optrow.off input:not([type=radio]), .l-optrow.off select { opacity:.5; pointer-events:none;
+  transition: opacity .12s; }
+.l-optrow.off:hover input:not([type=radio]), .l-optrow.off:hover select { opacity:.8; }
 
 /* ---------- shop detail ---------- */
 .l-shophero { aspect-ratio:390/200; background: var(--surface-2); position:relative; overflow:hidden;

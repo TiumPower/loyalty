@@ -49,11 +49,30 @@ module Merchant
       render layout: "scanner_kiosk" if @kiosk
     end
 
+    # Tải chính mã QR đang hiện xuống dạng PNG, để in áp phích hay dán lên
+    # bàn.
+    #
+    # Đã có một đường tải PNG cho từng chi nhánh ở `Merchant::OutletsController`,
+    # nhưng nó đứng sau `require_manager!` — trong khi màn này nhân viên quầy
+    # cũng mở được. Ai nhìn thấy mã trên màn hình thì chụp màn hình cũng ra
+    # đúng thứ đó, nên chặn đường tải chỉ tổ đẩy người ta đi chụp một tấm ảnh
+    # mờ. Dùng lại đúng phạm vi chi nhánh của màn hình.
+    def checkin_qr_png
+      outlets = checkin_qr_outlets
+      outlet  = outlets.find { |o| o.id.to_s == params[:qr_outlet].to_s } || outlets.first
+      return head :not_found if outlet.nil?
+
+      url = helpers.customer_scan_url(current_workspace, checkin: Checkin.encode(current_workspace, outlet))
+      name = outlet.name.parameterize.presence || outlet.id
+      send_data helpers.qr_png(url, size: 1080), type: "image/png",
+                disposition: "attachment", filename: "checkin-#{name}.png"
+    end
+
     private
 
     # Màn quản lý mã QR nằm trong mục Vận hành; máy quét thì có nút riêng
     # trên thanh menu. Cùng một controller, hai chỗ khác nhau trong menu.
-    def nav_key = action_name == "checkin_qr" ? :checkin_qr : :scanner
+    def nav_key = action_name.start_with?("checkin_qr") ? :checkin_qr : :scanner
 
     # Today's postings at the active branch (all branches when none is chosen).
     def load_counter_activity

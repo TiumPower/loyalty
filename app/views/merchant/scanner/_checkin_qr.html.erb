@@ -30,6 +30,17 @@
       <%= qr_svg(checkin_url, size: 260) %>
     </div>
 
+    <%# Mã này sống trên một tấm áp phích hay miếng dán để bàn, nên nó phải RỜI
+        được màn hình. Trước đây cách duy nhất là chụp màn hình — ra một tấm ảnh
+        mờ, lẫn cả nền trang. PNG 1080px in cỡ A5 vẫn sắc. %>
+    <div style="margin-top:14px;">
+      <%= link_to merchant_scanner_checkin_qr_png_path(qr_outlet: @qr_outlet.id),
+            class: "l-btn l-btn-soft l-btn-sm", data: { turbo: false } do %>
+        <%= ui_icon(:launch, size: 16) %> <%= t("merchant.scan.checkin_download") %>
+      <% end %>
+      <p style="color:var(--ink-2); font-size:12px; margin:8px 0 0;"><%= t("merchant.scan.checkin_download_hint") %></p>
+    </div>
+
     <%# The poster carries a static token, so rotating the nonce is the only way
         to kill a QR that has been photographed and shared. It had no entry
         point anywhere in the app. Managers only — it revokes every branch. %>

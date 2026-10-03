@@ -135,22 +135,31 @@
             <div class="s"><%= c.(:sec_creative_sub) %></div>
           </div>
           <% if new %>
+            <%# Tạo bằng AI và tải ảnh lên là HAI CÁCH THAY NHAU để có banner, nên
+                chúng phải đứng cạnh nhau. "Ghép mã QR" không phải cách thứ ba —
+                nó là tuỳ chọn của riêng cách AI, nên lồng vào trong và chỉ hiện
+                khi công tắc AI bật. %>
             <% if AiImageService.configured? %>
-              <div class="l-toggle-row" style="padding-top:0;">
-                <div style="flex:1; min-width:0;">
-                  <div style="font-size:13.5px; font-weight:600;">🎨 <%= c.(:gen_banner_label) %></div>
-                  <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:gen_banner_now) %></div>
+              <div data-controller="subopt">
+                <div class="l-toggle-row" style="padding-top:0;">
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:13.5px; font-weight:600;">🎨 <%= c.(:gen_banner_label) %></div>
+                    <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:gen_banner_now) %></div>
+                  </div>
+                  <label class="l-switch">
+                    <%= check_box_tag "generate_banner", "1", false,
+                          data: { subopt_target: "switch", action: "subopt#apply" } %><span class="knob"></span>
+                  </label>
                 </div>
-                <label class="l-switch"><%= check_box_tag "generate_banner", "1", false %><span class="knob"></span></label>
-              </div>
-              <%# Baking in the QR is a choice: a banner meant for Facebook/Zalo is
-                  often nicer without one. %>
-              <div class="l-toggle-row">
-                <div style="flex:1; min-width:0;">
-                  <div style="font-size:13.5px; font-weight:600;"><%= c.(:banner_include_qr) %></div>
-                  <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:banner_include_qr_hint) %></div>
+                <%# Ghép QR là một lựa chọn: banner để đăng Facebook/Zalo nhiều khi
+                    đẹp hơn khi không có mã. %>
+                <div class="l-toggle-row l-subopt" data-subopt-target="child" hidden>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:13.5px; font-weight:600;"><%= c.(:banner_include_qr) %></div>
+                    <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= c.(:banner_include_qr_hint) %></div>
+                  </div>
+                  <label class="l-switch"><%= check_box_tag "banner_include_qr", "1", true %><span class="knob"></span></label>
                 </div>
-                <label class="l-switch"><%= check_box_tag "banner_include_qr", "1", true %><span class="knob"></span></label>
               </div>
             <% end %>
             <%# Own artwork, offered whether or not the AI key is configured. %>
@@ -212,7 +221,7 @@
           <div class="m-channel">
             <div class="ic"><%= ui_icon(:mail, size: 16) %></div>
             <div class="bd"><div class="tt"><%= c.(:ch_email) %></div><div class="ds"><%= c.(:ch_email_sub) %></div></div>
-            <div class="st"><%= c.(:ch_off) %></div>
+            <div class="st"><%= c.(:ch_soon) %></div>
           </div>
         </div>
 
