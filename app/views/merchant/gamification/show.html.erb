@@ -310,21 +310,34 @@
   </div>
 
 <% when "games" %>
+  <%# Huy hiệu và vòng quay là hai thứ độc lập, cùng độ quan trọng — xếp cạnh
+      nhau 50/50 thay vì chồng dọc, để không phải cuộn hết thẻ này mới thấy thẻ
+      kia. `.m-ops` tự xếp chồng lại dưới 1000px. %>
+  <div class="m-ops" style="--ops-cols:repeat(2, minmax(0,1fr));">
   <%# ---- Badges (editable) ---- %>
   <% crit = { "first_purchase" => t("merchant.gami.crit_first"), "purchases_count" => t("merchant.gami.crit_count"), "points_total" => t("merchant.gami.crit_points"), "night_owl" => t("merchant.gami.crit_night") } %>
   <div class="l-panel">
     <h3 class="l-display" style="font-size:18px; margin-bottom:10px;"><%= t("merchant.gami.badges") %></h3>
     <%= render "merchant/gamification/reward_source", context: :badge %>
     <% @badges.each do |b| %>
-      <details class="l-editrow">
-        <summary style="display:flex; align-items:center; gap:10px; padding:8px 0; cursor:pointer; list-style:none;">
+      <%# Cùng mẫu thẻ với nhiệm vụ và thẻ tem — ba tab cạnh nhau thì hàng phải
+          nhìn như nhau. Nút xoá trước đây là một dấu "✕" to ở góc phải: ai cũng
+          đọc nó là NÚT ĐÓNG, bấm vào lại ra hộp xác nhận xoá huy hiệu. Giờ nó
+          là thùng rác màu cảnh báo như mọi chỗ khác, còn việc đóng/mở do mũi
+          tên cạnh chữ "Sửa" nói. %>
+      <details class="taskcard">
+        <summary>
           <span style="font-size:20px;"><%= b.display_icon %></span>
-          <div style="flex:1;"><strong><%= b.name %></strong>
-            <div style="font-size:12px; color:var(--ink-2);"><%= crit[b.criteria_type] || b.criteria_type %><%= " · #{t('merchant.gami.threshold_word')} #{b.threshold}" if %w[purchases_count points_total].include?(b.criteria_type) %><%= " · #{t('merchant.gami.points_plus', n: b.reward_points)}" if b.reward_points.to_i.positive? %><%= " · 🎁 #{b.reward.title}" if b.reward %></div>
+          <div style="flex:1; min-width:0;">
+            <div class="sc-title"><strong><%= b.name %></strong></div>
+            <div class="sc-meta"><%= crit[b.criteria_type] || b.criteria_type %><%= " · #{t('merchant.gami.threshold_word')} #{b.threshold}" if %w[purchases_count points_total].include?(b.criteria_type) %><%= " · #{t('merchant.gami.points_plus', n: b.reward_points)}" if b.reward_points.to_i.positive? %><%= " · 🎁 #{b.reward.title}" if b.reward %></div>
           </div>
           <span class="sc-edit"><%= t("merchant.gami.edit_chip") %></span>
-          <%= button_to "✕", merchant_badge_path(b), method: :delete, class: "l-btn l-btn-ghost", style: "padding:4px 10px;", form: { data: { turbo_confirm: t("merchant.gami.delete_badge_confirm") }, style: "display:inline;" } %>
+          <%= button_to "🗑", merchant_badge_path(b), method: :delete, class: "sc-del",
+                title: t("merchant.gami.delete_badge"),
+                form: { data: { turbo_confirm: t("merchant.gami.delete_badge_confirm") }, class: "sc-del-form" } %>
         </summary>
+        <div class="sc-body">
         <%= form_with model: b, url: merchant_badge_path(b), method: :patch, scope: :badge do |f| %>
           <label class="l-label"><%= t("merchant.gami.badge_name_label") %></label>
           <%= f.text_field :name, class: "l-field", style: "margin:4px 0 10px;", placeholder: t("merchant.gami.badge_name_ph") %>
@@ -354,6 +367,7 @@
           <p style="font-size:11.5px; color:var(--ink-2); margin:4px 0 0;"><%= t("merchant.gami.badge_desc_hint") %></p>
           <%= f.submit t("merchant.gami.save"), class: "l-btn l-btn-primary", style: "margin:12px 0 12px;" %>
         <% end %>
+        </div>
       </details>
     <% end %>
 
@@ -390,7 +404,6 @@
   </div>
 
   <%# ---- Lucky wheel (editable prizes) ---- %>
-  <div style="height:16px;"></div>
   <div class="l-panel">
     <h3 class="l-display" style="font-size:18px; margin-bottom:4px;"><%= t("merchant.gami.wheel") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.gami.wheel_note") %></p>
@@ -441,4 +454,5 @@
       <%= submit_tag t("merchant.gami.save_wheel"), class: "l-btn l-btn-primary", style: "margin-top:16px;" %>
     <% end %>
   </div>
+</div>
 <% end %>

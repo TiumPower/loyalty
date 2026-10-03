@@ -46,9 +46,15 @@
         </div>
       </div>
       <div style="text-align:right; flex:none;">
-        <div class="l-eyebrow"><%= t("customer.reward_detail.balance_after") %></div>
+        <%# Chưa đủ điểm thì KHÔNG có "còn lại sau khi đổi" nào cả — lần đổi đó
+            không xảy ra được, nên một số âm là nói về một việc không có thật.
+            Nói thẳng khách đang có bao nhiêu; dòng "còn thiếu N điểm" ngay dưới
+            lo phần chênh lệch. %>
+        <div class="l-eyebrow">
+          <%= enough ? t("customer.reward_detail.balance_after") : t("customer.reward_detail.your_points") %>
+        </div>
         <div style="font-size:22px; font-weight:700; letter-spacing:-.025em; margin-top:4px; font-variant-numeric:tabular-nums; color:<%= enough ? 'var(--ink)' : 'var(--warn)' %>;">
-          <%= number_with_delimiter(@member.points_balance - cost) %>
+          <%= number_with_delimiter(enough ? @member.points_balance - cost : @member.points_balance) %>
         </div>
       </div>
     </div>

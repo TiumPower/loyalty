@@ -13,7 +13,7 @@
   </div>
 </header>
 
-<div class="l-screen flush">
+<div class="l-screen flush" data-controller="lightbox">
   <div class="l-shophero">
     <%= shop_cover(current_workspace) %>
     <div class="cap"><%= current_workspace.name %></div>
@@ -185,12 +185,16 @@
                 <% if r.comment.present? %>
                   <div style="font-size:13.5px; margin-top:9px; line-height:1.55;"><%= r.comment %></div>
                 <% end %>
-                <%# Photos of the visit. They open full size, because a thumbnail of
-                    a coffee is not why the customer took the picture. %>
+                <%# Ảnh của buổi ghé quán, mở ra cỡ đầy đủ — khách chụp ly cà
+                    phê chứ không chụp một ô vuông 76px của nó. Mở ngay trong
+                    app: `target="_blank"` ở một PWA đã cài là bật ra trình
+                    duyệt ngoài, khách rơi khỏi app và phải tự tìm đường về. %>
                 <% if r.photos.attached? %>
                   <div class="l-reviewshots">
                     <% r.photo_list.each do |att| %>
-                      <%= link_to url_for(att), target: "_blank", rel: "noopener" do %>
+                      <%= link_to url_for(att), data: { action: "click->lightbox#open",
+                            lightbox_src: url_for(att),
+                            lightbox_alt: t("customer.shop.photo_of", name: r.member&.display_name) } do %>
                         <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
                       <% end %>
                     <% end %>
@@ -250,4 +254,14 @@
       <%= ui_icon(:edit, size: 16) %><%= t("customer.review.new_title") %>
     <% end %>
   </div>
+
+  <%# Một hộp xem ảnh dùng chung cho mọi đánh giá trên trang.
+      <dialog> PHẢI tự định vị: UA stylesheet căn giữa nó bằng `margin:auto`,
+      mà reset CSS của app xoá margin nên hộp sẽ dán vào góc trên trái. %>
+  <dialog class="l-lightbox" data-lightbox-target="dialog"
+          data-action="click->lightbox#backdrop close->lightbox#cleared">
+    <button type="button" class="x" data-action="lightbox#close"
+            aria-label="<%= t("customer.shop.photo_close") %>">✕</button>
+    <img data-lightbox-target="image" alt="">
+  </dialog>
 </div>

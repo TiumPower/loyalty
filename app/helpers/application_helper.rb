@@ -82,6 +82,22 @@ module ApplicationHelper
   # Just the given name, for the home greeting: "Chào buổi chiều, Tô Trung Tuân"
   # wraps onto two lines and pushes the bell out of the header, and a greeting
   # reads better on a first name anyway. Vietnamese names put it last.
+  # Lời chào theo buổi trong ngày. Dùng giờ của múi giờ app (Asia/Ho_Chi_Minh
+  # trên production) chứ không phải giờ máy chủ.
+  def greeting_for(member)
+    part = case Time.current.hour
+           when 5..11  then "morning"
+           when 12..17 then "afternoon"
+           else "evening"
+           end
+    # Khách đăng nhập bằng SĐT chưa khai tên thì `display_name` rơi về "Thành
+    # viên", và `greeting_name` cắt lấy từ cuối — ra "Chào buổi tối, viên!".
+    # Chưa có tên thì chào trống, đừng chào một mảnh chữ.
+    name = member.name.presence && greeting_name(member)
+    name.present? ? t("customer.home.greeting_#{part}", name: name)
+                  : t("customer.home.greeting_#{part}_anon")
+  end
+
   def greeting_name(member)
     full = member.display_name.to_s.strip
     parts = full.split(/\s+/)

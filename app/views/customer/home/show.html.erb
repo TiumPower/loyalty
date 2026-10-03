@@ -57,7 +57,7 @@
     <div class="idrow">
       <div class="who">
         <div class="toprow">
-          <span class="greet"><%= t("customer.home.greeting_hey", name: greeting_name(@member)) %></span>
+          <span class="greet"><%= greeting_for(@member) %></span>
           <% if tier %>
             <%# Viên giữ màu thương hiệu, huy hiệu trắng — như mẫu. Lấy màu của
                 hạng vào đây làm nó nhợt đi: hạng Đồng là tông nâu nhạt, và

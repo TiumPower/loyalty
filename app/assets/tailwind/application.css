@@ -1431,6 +1431,10 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   padding:6px 10px; border-radius:9px; font-weight:600; font-family:inherit;
   transition: background .12s, color .12s; }
 .sc-edit { background: var(--primary-soft); color: var(--primary-ink); }
+/* Mũi tên nói hàng đang đóng hay mở. Thiếu nó thì mở form ra rồi không ai biết
+   đóng lại bằng cách nào — và người ta đi bấm nút xoá vì nó trông như "✕". */
+.sc-edit::after { content:"▾"; margin-left:5px; display:inline-block; transition: transform .15s; }
+details[open] > summary .sc-edit::after { transform: rotate(180deg); }
 .sc-del  { color: var(--ink-2); font-size:15px; padding:6px 8px; }
 @media (hover: hover) and (pointer: fine) {
   .sc-edit:hover { background: color-mix(in srgb, var(--primary) 22%, #fff); }
@@ -1810,6 +1814,21 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-reviewshots a { width:76px; height:76px; border-radius:12px; overflow:hidden; flex:none; display:block;
   background: var(--surface-2); }
 .l-reviewshots img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Ảnh đánh giá ở cỡ đầy đủ. <dialog> PHẢI tự định vị: UA stylesheet căn giữa
+   bằng `margin:auto`, mà reset của app xoá margin nên hộp dán vào góc trên
+   trái. Kích thước theo ảnh, chặn trên bằng khung nhìn để ảnh dọc không tràn. */
+.l-lightbox { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  max-width:min(94vw, 900px); max-height:92dvh; padding:0; border:none; border-radius:16px;
+  background:transparent; overflow:visible; }
+.l-lightbox::backdrop { background:rgb(0 0 0 / .78); }
+.l-lightbox img { display:block; max-width:min(94vw, 900px); max-height:92dvh;
+  width:auto; height:auto; border-radius:16px; }
+.l-lightbox .x { position:absolute; top:-14px; right:-14px; width:36px; height:36px;
+  border-radius:50%; border:none; cursor:pointer; background:#fff; color:var(--ink);
+  font-size:15px; line-height:1; box-shadow:0 6px 18px rgb(0 0 0 / .3); }
+/* Trên màn hẹp nút đóng nằm ngoài sẽ bị khung nhìn cắt mất. */
+@media (max-width:520px) { .l-lightbox .x { top:8px; right:8px; } }
 
 /* What the shop offers, two per row on a phone. */
 .l-amenities { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
