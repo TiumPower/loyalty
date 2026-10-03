@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_03_090000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_03_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -320,7 +320,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_090000) do
 
   create_table "otp_challenges", force: :cascade do |t|
     t.bigint "workspace_id", null: false
-    t.string "phone"
     t.string "code", null: false
     t.string "purpose", default: "login", null: false
     t.integer "attempts", default: 0, null: false
@@ -328,15 +327,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_090000) do
     t.datetime "consumed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "email"
-    t.string "identifier"
+    t.string "identifier", null: false
     t.string "channel", default: "email", null: false
     t.string "scope", default: "customer", null: false
     t.datetime "delivered_at"
     t.string "delivery_provider"
     t.string "delivery_error"
     t.index ["scope", "identifier"], name: "index_otp_challenges_on_scope_and_identifier"
-    t.index ["workspace_id", "email"], name: "index_otp_challenges_on_workspace_id_and_email"
     t.index ["workspace_id", "identifier"], name: "index_otp_challenges_on_workspace_id_and_identifier"
     t.index ["workspace_id"], name: "index_otp_challenges_on_workspace_id"
   end

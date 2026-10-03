@@ -13,14 +13,6 @@ class OtpChallenge < ApplicationRecord
   DEFAULT_SCOPE = "customer"
   CHANNELS      = %w[email sms zalo].freeze
 
-  # The columns the identifier/channel shape replaced. Declared ignored BEFORE
-  # they are dropped, and that order is load-bearing: Capistrano runs
-  # deploy:migrate while the OLD puma is still serving, and a process whose
-  # cached schema still lists `email` builds every INSERT with it. Drop the
-  # column under a process like that and every login 500s until the restart
-  # lands. Ignoring them first makes the later drop invisible.
-  # See db/migrate/*_drop_legacy_otp_columns.rb.
-  self.ignored_columns += %w[email phone]
 
   belongs_to :workspace
 

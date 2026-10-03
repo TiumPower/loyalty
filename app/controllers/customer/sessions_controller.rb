@@ -79,7 +79,6 @@ module Customer
         Referrals.attach(referred: member, referrer_code: ref_code) if is_new && ref_code.present?
         Automations.on_signup(member) if is_new
         session.delete(:otp_identifier)
-        session.delete(:otp_email)
         sign_in_member(member)             # per-shop long-lived cookie
         # Resume a stashed target (e.g. the promo QR they scanned) so the reward
         # is claimed right after login; otherwise land on home.
@@ -122,12 +121,7 @@ module Customer
       end
     end
 
-    # `otp_email` is the pre-phone-login session key. Reading it too keeps
-    # anyone who was mid-login across the deploy from hitting a dead end; it can
-    # go once a release has shipped.
-    def pending_identifier
-      session[:otp_identifier].presence || session[:otp_email].presence
-    end
+    def pending_identifier = session[:otp_identifier].presence
 
     def identifier_key = @identifier.to_s.include?("@") ? :email : :phone
 
