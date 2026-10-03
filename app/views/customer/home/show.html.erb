@@ -46,19 +46,49 @@
       Hạng từng là một viên pill riêng đứng lẻ bên phải, lặp lại hình viên
       thuốc của số điểm ngay cạnh nó. Giờ nó là nửa sau của CÙNG một viên:
       điểm bên trái, huy hiệu và tên hạng bên phải, chung một đường bao. %>
+  <%# Ảnh đại diện, tên, điểm — một hàng ngang, như mẫu.
+      Hạng gộp vào viên điểm bằng ĐÚNG cái huy hiệu của nó, không kèm tên: ở
+      bề ngang này tên hạng đẩy viên ra khỏi dòng, mà màu và hình huy hiệu đã
+      đủ để nhận ra hạng. Bấm vào vẫn sang trang quyền lợi. %>
   <div class="l-balance" style="margin-top:14px;">
-    <div class="greet"><%= t("customer.home.greeting_hey", name: greeting_name(@member)) %></div>
-    <div class="lbl"><%= t("customer.home.points_balance") %></div>
-    <div><span class="l-ptspill">
-      <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
-      <small><%= t("customer.common.points_unit") %></small>
-      <% if tier %>
-        <%= link_to member_tier_path, class: "tier",
-              style: "background:#{tier.pill_background}; color:#{tier.pill_foreground};" do %>
-          <%= ui_icon(tier_icon(tier), size: 14, fill: true) %><%= tier.name %>
+    <div class="idrow">
+      <%= member_avatar(@member, klass: "av") %>
+      <div class="who">
+        <div class="toprow">
+          <span class="greet"><%= t("customer.home.greeting_hey", name: greeting_name(@member)) %></span>
+          <% if tier %>
+            <%# Viên giữ màu thương hiệu, huy hiệu trắng — như mẫu. Lấy màu của
+                hạng vào đây làm nó nhợt đi: hạng Đồng là tông nâu nhạt, và
+                con số quan trọng nhất màn hình thì không nên nhạt. Hạng vẫn
+                đọc ra được qua HÌNH huy hiệu, vốn mỗi hạng một kiểu. %>
+            <%= link_to member_tier_path, class: "l-ptspill",
+                  title: t("customer.home.tier_badge", name: tier.name) do %>
+              <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
+              <small><%= t("customer.common.points_unit") %></small>
+              <%= ui_icon(tier_icon(tier), size: 16, fill: true) %>
+            <% end %>
+          <% else %>
+            <%= link_to member_history_path, class: "l-ptspill" do %>
+              <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
+              <small><%= t("customer.common.points_unit") %></small>
+            <% end %>
+          <% end %>
+        </div>
+        <%# Dòng dưới: thứ có hạn chót trước, nếu không thì quãng đường tới hạng kế. %>
+        <% exp_amt, exp_date = prog.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
+        <% if exp_amt.to_i > 0 %>
+          <div class="sub expiring">
+            <%= t("customer.home.expiring_plain", n: number_with_delimiter(exp_amt),
+                  date: (exp_date ? l(exp_date.to_date, format: :short) : "")) %>
+          </div>
+        <% elsif (nt = @member.next_tier) %>
+          <div class="sub"><%= t("customer.home.to_next", n: number_with_delimiter(@member.points_to_next), tier: nt.name) %></div>
         <% end %>
-      <% end %>
-    </span></div>
+      </div>
+    </div>
+    <% if @member.next_tier %>
+      <div class="l-bar" style="margin-top:12px;"><span style="width:<%= @member.tier_progress_pct %>%;"></span></div>
+    <% end %>
     <%= link_to member_history_path, class: "link" do %>
       <%= t("customer.home.view_history") %> <%= ui_icon(:chevron_right, size: 14, stroke: 2.4) %>
     <% end %>

@@ -1,19 +1,22 @@
 require "test_helper"
 
-# Khối "Điểm hiện có". Hạng từng là một viên pill riêng đứng lẻ bên phải thẻ —
-# hai hình viên thuốc cạnh nhau nói hai chuyện khác nhau. Giờ hạng là nửa sau
-# của cùng một viên.
+# Khối điểm trên trang chủ: ảnh đại diện, tên và điểm trên MỘT hàng ngang, ghi
+# chú thụt vào dưới tên. Hạng từng là một viên pill riêng đứng lẻ bên phải thẻ
+# — hai hình viên thuốc cạnh nhau nói hai chuyện khác nhau.
 class BalanceCardTest < ActionDispatch::IntegrationTest
   setup do
     @ws = create(:workspace, subdomain: "bal", name: "Mộc Cà Phê")
     @ws.update!(settings: @ws.settings.merge("onboarded" => true))
     ActsAsTenant.with_tenant(@ws) do
       create(:loyalty_program, workspace: @ws, tiers_enabled: true)
-      @tier = @ws.tiers.find_or_create_by!(key: "bronze") do |t|
+      @bronze = @ws.tiers.find_or_create_by!(key: "bronze") do |t|
         t.name = "Đồng"; t.threshold_points = 0; t.position = 0; t.multiplier = 1
       end
+      @silver = @ws.tiers.find_or_create_by!(key: "silver") do |t|
+        t.name = "Bạc"; t.threshold_points = 2000; t.position = 1; t.multiplier = 1.2
+      end
       @member = create(:member, workspace: @ws, email: "bal@example.com", name: "Lê Quốc Viên")
-      PointTransaction.create!(workspace: @ws, member: @member, kind: "earn", amount: 1250)
+      PointTransaction.create!(workspace: @ws, member: @member, kind: "earn", amount: 450)
       @member.recompute_points!
     end
     post "#{base}/login", params: { email: @member.email }
@@ -24,36 +27,48 @@ class BalanceCardTest < ActionDispatch::IntegrationTest
 
   def base = "/w/#{@ws.slug}"
 
-  test "lời chào có tên khách, rồi mới tới nhãn điểm" do
+  test "tên và điểm nằm trên cùng một hàng" do
     get base
     assert_response :success
-    assert_select ".l-balance .greet", /Viên/
-    assert_select ".l-balance .lbl", I18n.t("customer.home.points_balance")
+    assert_select ".l-balance .idrow .av", 1, "ảnh đại diện mở đầu hàng"
+    assert_select ".l-balance .toprow .greet", /Viên/
+    assert_select ".l-balance .toprow .l-ptspill .n", "450"
   end
 
-  test "điểm và hạng nằm trong cùng một viên" do
+  # Huy hiệu hạng gộp vào viên điểm, không đứng thành viên thứ hai.
+  test "hạng là huy hiệu trong viên điểm, không phải viên riêng" do
     get base
-    assert_select ".l-balance .l-ptspill .n", "1.250"
-    assert_select ".l-balance .l-ptspill a.tier", 1
-    assert_select ".l-balance .l-ptspill a.tier", /#{Regexp.escape(@tier.name)}/
+    assert_select ".l-balance .l-ptspill svg", { minimum: 1 }, "huy hiệu hạng nằm trong viên"
+    assert_select ".l-balance > .l-pill.tier", 0, "không còn viên hạng rời bên ngoài"
   end
 
-  # Viên hạng rời bên phải thẻ không được còn nữa, nếu không lại thành hai viên.
-  test "không còn viên hạng riêng bên ngoài" do
+  test "viên điểm dẫn tới trang quyền lợi hạng" do
     get base
-    assert_select ".l-balance > .l-pill.tier", 0
+    assert_select ".l-balance a.l-ptspill[href=?]", "#{base}/tier", 1
   end
 
-  test "hạng vẫn dẫn tới trang quyền lợi hạng" do
-    get base
-    assert_select ".l-balance .l-ptspill a.tier[href=?]", "#{base}/tier"
-  end
-
-  # Chương trình không bật hạng thì viên chỉ còn số điểm, không để hở một bên.
-  test "không có hạng thì viên vẫn cân" do
+  # Không bật hạng thì viên vẫn còn, và dẫn về lịch sử điểm thay vì trang hạng.
+  test "không có hạng thì viên dẫn về lịch sử điểm" do
     ActsAsTenant.with_tenant(@ws) { @ws.tiers.destroy_all; @member.update_columns(tier_key: nil) }
     get base
-    assert_select ".l-balance .l-ptspill", 1
-    assert_select ".l-balance .l-ptspill a.tier", 0
+    assert_select ".l-balance a.l-ptspill[href=?]", "#{base}/history", 1
+    assert_select ".l-balance .l-ptspill svg", 0
+  end
+
+  test "dòng dưới nói còn bao xa tới hạng kế" do
+    get base
+    assert_select ".l-balance .sub", /#{Regexp.escape(@silver.name)}/
+    assert_select ".l-balance .l-bar", 1, "có thanh tiến độ"
+  end
+
+  # Điểm sắp hết hạn là thứ duy nhất ở đây có hạn chót, nên nó giành dòng dưới.
+  test "điểm sắp hết hạn thay chỗ dòng hạng" do
+    ActsAsTenant.with_tenant(@ws) do
+      @ws.program.update!(points_expiry_months: 6)
+      PointTransaction.where(member: @member).update_all(expires_at: 10.days.from_now)
+    end
+    get base
+    assert_select ".l-balance .sub.expiring", 1
+    assert_select ".l-balance .sub", { count: 1 }, "chỉ một dòng dưới, không chồng hai"
   end
 end

@@ -573,25 +573,28 @@ a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--prima
 .l-balance .v { font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1.05;
   font-variant-numeric:tabular-nums; margin-top:6px; }
 .l-balance .v small { font-size:.62em; font-weight:700; letter-spacing:0; margin-left:2px; }
+/* Hàng ngang: ảnh đại diện, rồi tên + điểm, rồi ghi chú thụt vào dưới tên. */
+.l-balance .idrow { display:flex; align-items:flex-start; gap:11px; }
+.l-balance .av { width:42px; height:42px; border-radius:50%; flex:none; overflow:hidden;
+  display:grid; place-items:center; background: var(--primary-soft); color: var(--primary);
+  font-weight:700; font-size:14px; }
+.l-balance .who { flex:1; min-width:0; }
+.l-balance .toprow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .l-balance .greet { font-size:18px; font-weight:700; letter-spacing:-.02em; line-height:1.2; }
-.l-balance .lbl { font-size:13px; font-weight:600; color: var(--ink-2); margin-top:10px; }
+.l-balance .sub { font-size:12.5px; color: var(--ink-2); margin-top:4px; line-height:1.4; }
+.l-balance .sub.expiring { color: var(--amber); font-weight:600; }
 
-/* Số điểm và hạng trong MỘT viên.
+/* Điểm và huy hiệu hạng trong một viên, cạnh tên.
    Hạng từng là một viên pill riêng đứng lẻ bên phải thẻ — hai hình viên thuốc
-   cạnh nhau nói hai chuyện khác nhau, mắt phải nhảy qua lại. Giờ hạng là nửa
-   sau của cùng một viên, giữ màu của chính nó nên vẫn đọc ra ngay là hạng. */
-.l-ptspill { display:inline-flex; align-items:center; gap:7px; margin-top:8px;
-  padding:7px 8px 7px 17px; border-radius:999px;
+   cạnh nhau nói hai chuyện khác nhau, mắt phải nhảy qua lại. */
+.l-ptspill { display:inline-flex; align-items:center; gap:5px; flex:none;
+  padding:6px 12px; border-radius:999px; text-decoration:none;
   background: var(--primary); color: var(--on-primary);
-  letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums;
-  box-shadow: 0 3px 12px color-mix(in srgb, var(--primary) 26%, transparent); }
-.l-ptspill .n { font-size:25px; font-weight:700; }
-.l-ptspill small { font-size:13px; font-weight:700; letter-spacing:0; opacity:.9; margin-right:2px; }
-.l-ptspill .tier { display:inline-flex; align-items:center; gap:5px; flex:none;
-  padding:7px 12px; border-radius:999px; text-decoration:none;
-  font-size:13px; font-weight:700; letter-spacing:0; white-space:nowrap; }
-/* Không có hạng thì viên thu lại cho cân, không để hở một bên. */
-.l-ptspill:not(:has(.tier)) { padding-right:17px; }
+  letter-spacing:-.015em; line-height:1; font-variant-numeric:tabular-nums;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 22%, transparent); }
+.l-ptspill .n { font-size:17px; font-weight:700; }
+.l-ptspill small { font-size:12px; font-weight:700; letter-spacing:0; opacity:.9; }
+.l-ptspill svg { opacity:.95; margin-left:1px; }
 .l-balance .link { display:inline-flex; align-items:center; gap:5px; margin-top:12px;
   font-size:13.5px; font-weight:700; color: var(--primary); text-decoration:none; }
 

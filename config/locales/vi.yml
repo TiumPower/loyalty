@@ -1909,6 +1909,8 @@ vi:
       open_until: "Mở tới %{time}"
       closed_until: "Mở lại lúc %{time}"
       greeting_hey: "Hey, %{name}!"
+      to_next: "Còn %{n} điểm nữa là lên hạng %{tier}"
+      expiring_plain: "%{n} điểm sẽ hết hạn %{date}"
     profile:
       email_code_valid: "Mã còn hiệu lực"
       email_confirm_heading: "Xác nhận email mới"
