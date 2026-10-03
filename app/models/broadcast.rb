@@ -59,8 +59,14 @@ class Broadcast < ApplicationRecord
         title: title, body: body, kind: "promo", created_at: now, updated_at: now }
     end
     Notification.insert_all(rows) if rows.any?
-    update!(sent_count: rows.size, sent_at: now)
+    ids = members.map(&:id)
+    # Đếm NGAY lúc gửi: ai cài app lúc này mới nhận được đẩy, cài sau thì không.
+    # Danh sách chỉ hiện `sent_count` kèm chữ "khách" đã khiến chủ quán đọc ra
+    # "10 người đã nhận thông báo" rồi không hiểu sao điện thoại không reo —
+    # trong khi con số đó là thư vào hộp thư trong app, còn số cài app là 0.
+    reach = PushSender.configured? ? PushSubscription.where(member_id: ids).distinct.count(:member_id) : 0
+    update!(sent_count: rows.size, sent_at: now, push_count: reach)
     # Push to installed PWAs (in-app inbox is populated above regardless).
-    PushJob.perform_later(workspace_id, members.map(&:id), title, body.to_s, "/notifications") if rows.any?
+    PushJob.perform_later(workspace_id, ids, title, body.to_s, "/notifications") if rows.any?
   end
 end

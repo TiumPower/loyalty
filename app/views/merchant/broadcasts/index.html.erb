@@ -23,6 +23,8 @@
     font-size:12px; font-weight:700; white-space:nowrap;}
   .bc-badge.sent{background:var(--primary-soft,#F3E6DF); color:var(--primary);}
   .bc-badge.sched{background:var(--surface-2,#EEF0F3); color:var(--ink-2);}
+  .bc-push{font-size:11.5px; color:var(--ink-2); margin-top:7px; white-space:nowrap;}
+  .bc-push.none{color:var(--warn);}
   @media (max-width:600px){ .bc-card{padding:13px;} .bc-title{white-space:normal;} }
 </style>
 
@@ -31,8 +33,10 @@
     <div class="l-eyebrow"><%= t("merchant.broadcasts.sent_title") %></div>
     <div class="sub"><%= t("merchant.broadcasts.list_sub", n: @broadcasts.respond_to?(:total_count) ? @broadcasts.total_count : @broadcasts.size) %></div>
   </div>
+  <%# Chuỗi `compose` đã mang sẵn biểu tượng, nên dòng này từng vẽ ra hai cái
+      phong bì cạnh nhau. Dùng ui_icon như mọi nút khác trong dashboard. %>
   <%= link_to new_merchant_broadcast_path, class: "l-btn l-btn-primary" do %>
-    ✉ <%= t("merchant.broadcasts.compose") %>
+    <%= ui_icon(:mail, size: 16) %> <%= t("merchant.broadcasts.compose") %>
   <% end %>
 </div>
 
@@ -44,60 +48,46 @@
     <%= link_to t("merchant.broadcasts.compose"), new_merchant_broadcast_path, class: "l-btn l-btn-primary" %>
   </div>
 <% else %>
-  <div class="l-panel" style="padding:0;">
-    <div style="overflow-x:auto;">
-      <table class="m-table" style="min-width:800px;">
-        <thead>
-          <tr>
-            <th style="padding-left:18px;"><%= t("merchant.broadcasts.col_message") %></th>
-            <th><%= t("merchant.broadcasts.col_audience") %></th>
-            <th><%= t("merchant.broadcasts.col_when") %></th>
-            <th><%= t("merchant.broadcasts.col_status") %></th>
-            <th style="padding-right:18px;"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @broadcasts.each do |b| %>
-            <tr>
-              <td style="padding-left:18px;">
-                <div style="display:flex; align-items:center; gap:11px;">
-                  <span style="width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center;
-                               background:var(--primary-soft); font-size:17px;"><%= MemberSegments.icon(b.segment_key) %></span>
-                  <div style="min-width:0;">
-                    <div style="font-weight:600;"><%= b.title %></div>
-                    <% if b.body.present? %>
-                      <div style="font-size:12px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:320px;"><%= b.body %></div>
-                    <% end %>
-                  </div>
-                </div>
-              </td>
-              <td style="color:var(--ink-2); font-size:12.5px;"><%= b.audience_display %></td>
-              <td style="color:var(--ink-2); white-space:nowrap; font-size:12.5px;">
-                <%= l(b.scheduled? ? b.scheduled_at : b.created_at, format: :short) %>
-              </td>
-              <td>
-                <% if b.scheduled? %>
-                  <span class="m-badge amber"><%= t("merchant.broadcasts.scheduled_word") %></span>
-                <% else %>
-                  <span class="m-badge up"><%= t("merchant.broadcasts.count", n: b.sent_count) %></span>
-                <% end %>
-              </td>
-              <td style="padding-right:18px; white-space:nowrap;">
-                <%# Scheduling with no way to call it back left a manager who
-                    changed their mind watching it go out. %>
-                <% if b.scheduled? && current_membership&.can_manage? %>
-                  <%= button_to t("merchant.broadcasts.cancel"), merchant_broadcast_path(b), method: :delete,
-                        class: "l-btn l-btn-ghost", style: "padding:5px 12px; font-size:12.5px; color:var(--warn);",
-                        form: { style: "display:inline; margin:0;",
-                                data: { turbo_confirm: t("merchant.broadcasts.cancel_confirm",
-                                                         time: l(b.scheduled_at, format: :short)) } } %>
-                <% end %>
-              </td>
-            </tr>
+  <div class="bc-list">
+    <% @broadcasts.each do |b| %>
+      <div class="bc-card">
+        <span class="bc-ava"><%= MemberSegments.icon(b.segment_key) %></span>
+        <div class="bc-main">
+          <div class="bc-title"><%= b.title %></div>
+          <% if b.body.present? %><div class="bc-body"><%= b.body %></div><% end %>
+          <div class="bc-meta">
+            <span><%= b.audience_display %></span>
+            <span class="dot"></span>
+            <span><%= l(b.scheduled? ? b.scheduled_at : b.created_at, format: :short) %></span>
+          </div>
+        </div>
+        <div class="bc-side">
+          <% if b.scheduled? %>
+            <span class="bc-badge sched"><%= t("merchant.broadcasts.scheduled_word") %></span>
+            <%# Lên lịch mà không gọi lại được thì người đổi ý chỉ còn cách ngồi
+                nhìn nó đi tới điện thoại từng khách. %>
+            <% if current_membership&.can_manage? %>
+              <%= button_to t("merchant.broadcasts.cancel"), merchant_broadcast_path(b), method: :delete,
+                    class: "l-btn l-btn-ghost", style: "padding:4px 10px; font-size:12px; color:var(--warn); margin-top:8px;",
+                    form: { style: "margin:0;",
+                            data: { turbo_confirm: t("merchant.broadcasts.cancel_confirm",
+                                                     time: l(b.scheduled_at, format: :short)) } } %>
+            <% end %>
+          <% else %>
+            <span class="bc-badge sent"><%= t("merchant.broadcasts.count", n: b.sent_count) %></span>
+            <%# Hai con số khác nhau và trước đây chỉ một cái được hiện: "10
+                khách" là thư vào hộp thư trong app, còn bao nhiêu điện thoại
+                thật sự reo là chuyện khác. Chủ quán đọc một con số rồi tưởng
+                mình đã chạm tới cả mười người. %>
+            <% if b.push_count %>
+              <span class="bc-push <%= 'none' if b.push_count.zero? %>">
+                <%= b.push_count.zero? ? t("merchant.broadcasts.push_none") : t("merchant.broadcasts.push_count", n: b.push_count) %>
+              </span>
+            <% end %>
           <% end %>
-        </tbody>
-      </table>
-    </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <p style="font-size:12.5px; color:var(--ink-2); line-height:1.55; margin-top:14px;">

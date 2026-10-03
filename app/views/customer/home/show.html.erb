@@ -13,9 +13,16 @@
     <div class="s"><%= t("customer.home.greeting_sub") %></div>
   </div>
   <div class="sp">
-    <%= link_to member_notifications_path, class: "l-iconbtn", "aria-label": t("customer.notifications.title") do %>
+    <%# Chấm đỏ chỉ nói "có gì đó mới". Con số nói CÓ BAO NHIÊU, tức là có đáng
+        mở ngay không — kiểu .l-iconbtn .num đã được viết sẵn trong CSS nhưng
+        chưa chỗ nào dùng. Quá 9 thì "9+": ô chuông chỉ rộng chừng đó, mà sau
+        con số thứ hai thì "nhiều" đã là đủ thông tin. %>
+    <%= link_to member_notifications_path, class: "l-iconbtn",
+          "aria-label": t("customer.notifications.unread_aria", n: @unread.to_i, default: t("customer.notifications.title")) do %>
       <%= ui_icon(:bell, size: 19) %>
-      <% if @unread.to_i.positive? %><span class="dot"></span><% end %>
+      <% if @unread.to_i.positive? %>
+        <span class="num"><%= @unread.to_i > 9 ? "9+" : @unread.to_i %></span>
+      <% end %>
     <% end %>
   </div>
 </header>
