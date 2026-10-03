@@ -1621,8 +1621,14 @@ details[open] > summary .sc-edit::after { transform: rotate(180deg); }
 .m-phone { border:1px solid var(--line); border-radius:22px; background: var(--surface); padding:14px;
   box-shadow: var(--shadow); }
 .m-phone .scr { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-.m-phone .art { aspect-ratio:16/10; background: var(--surface-2); display:grid; place-items:center; font-size:38px; }
-.m-phone .art img { width:100%; height:100%; object-fit:cover; display:block; }
+/* `aspect-ratio` một mình KHÔNG giữ được khung này: đây là grid container, và
+   một ảnh cao hơn khung sẽ kéo hàng grid giãn ra, khung cao theo. Lỗi đó ẩn
+   suốt vì ảnh do máy chủ render đã được cắt sẵn đúng 16:10; bản xem trước trực
+   tiếp chèn FILE GỐC chưa cắt nên mới lộ. Ảnh ra khỏi dòng chảy (absolute) thì
+   kích thước thật của nó không chi phối được khung nữa. */
+.m-phone .art { aspect-ratio:16/10; background: var(--surface-2); display:grid; place-items:center;
+  font-size:38px; position:relative; overflow:hidden; min-height:0; }
+.m-phone .art img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
 
 /* Chọn ảnh phần thưởng: vừa là nút bấm, vừa là đích kéo thả.
    <input type="file"> trần không dùng được ở đây — nút "Choose File" do trình

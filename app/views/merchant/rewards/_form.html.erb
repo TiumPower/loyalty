@@ -69,10 +69,14 @@
           <div class="tt"><%= t("merchant.rewards.image_drop") %></div>
           <div class="fn" data-imagepick-target="name"><%= reward.image.attached? ? reward.image.filename.to_s : t("merchant.rewards.image_none") %></div>
         </div>
-        <%# Chưa chọn ảnh thì không có gì để bỏ — nút chỉ xuất hiện khi cần. %>
+        <%# Nút này CHỈ huỷ tệp vừa chọn trong lần sửa này, trả khung xem trước
+            về ảnh đang lưu — khác hẳn ô "Xoá ảnh hiện tại" bên dưới, thứ sẽ xoá
+            hẳn ảnh đã lưu khi bấm Lưu. Hai thứ đứng cạnh nhau mà cùng nói "bỏ
+            ảnh" thì không ai đoán được cái nào làm gì, nên nút này ẩn cho tới
+            khi thật sự có một tệp vừa chọn, và nói rõ nó bỏ cái gì. %>
         <button type="button" class="l-btn l-btn-soft" style="padding:6px 12px; font-size:12.5px;"
                 data-imagepick-target="clear" data-action="imagepick#clear"
-                <%= "hidden" unless reward.image.attached? %>><%= t("merchant.rewards.image_clear") %></button>
+                hidden><%= t("merchant.rewards.image_clear") %></button>
       </div>
       <div class="m-droperr" data-imagepick-target="error" hidden></div>
       <div style="font-size:12px; color:var(--ink-2); margin-top:6px;"><%= t("merchant.rewards.image_hint") %></div>
