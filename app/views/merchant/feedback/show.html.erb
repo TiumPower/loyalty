@@ -12,11 +12,13 @@
   <% end %>
 </div>
 
-<%# ---- Score, spread, and the settings that shape both ---- %>
-<%# `align-items:stretch` kéo ba thẻ cao bằng thẻ cao nhất — mà thẻ cài đặt có
-    bốn ô nhập, nên hai thẻ số liệu bị thổi thành hai mảng trống lớn. Mỗi thẻ
-    giờ cao đúng phần nội dung của nó. %>
-<div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1.5fr) minmax(0,1.2fr); gap:16px; align-items:start; margin-bottom:16px;">
+<%# ---- Score and spread ---- %>
+<%# Thẻ cài đặt từng đứng làm cột thứ ba ở đây. Nó có bốn ô nhập nên cao gấp
+    mấy lần hai thẻ số liệu: để `stretch` thì hai thẻ kia bị thổi thành mảng
+    trống, để `start` thì cả hàng vẫn chừa một khoảng chết bên trái và đẩy hộp
+    thư xuống dưới màn hình. Cài đặt là thứ chỉnh một lần rồi thôi, còn hộp thư
+    mới là việc hằng ngày — nên nó xuống dưới và gập lại. %>
+<div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1fr); gap:16px; align-items:start; margin-bottom:16px;">
   <div class="l-panel" style="text-align:center;">
     <div style="font-size:42px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
     <div style="color:var(--primary-2); font-size:17px; letter-spacing:2px; margin-top:6px;"><%= stars.call(@avg) %></div>
@@ -34,11 +36,19 @@
     <% end %>
   </div>
 
-<%= form_with url: merchant_feedback_path, method: :patch do %>
-  <div class="l-panel">
-    <h3 class="l-display" style="font-size:17px; margin-bottom:2px;"><%= t("merchant.feedback.settings_title") %></h3>
-    <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.feedback.settings_note") %></p>
+</div>
 
+<%= form_with url: merchant_feedback_path, method: :patch do %>
+  <details class="l-foldpanel" <%= "open" if flash[:alert].present? %>>
+    <summary>
+      <div style="flex:1; min-width:0;">
+        <h3 class="l-display" style="font-size:17px;"><%= t("merchant.feedback.settings_title") %></h3>
+        <p style="color:var(--ink-2); font-size:13px; margin-top:2px;"><%= t("merchant.feedback.settings_note") %></p>
+      </div>
+      <span class="l-foldpanel-cue"><%= t("merchant.feedback.settings_toggle") %></span>
+    </summary>
+    <div class="l-foldpanel-body">
+    <div>
     <input type="hidden" name="feedback_public" value="0">
     <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; padding:8px 0;">
       <input type="checkbox" name="feedback_public" value="1" <%= "checked" if current_workspace.feedback_public? %>
@@ -55,8 +65,9 @@
             class: "l-field", placeholder: "https://g.page/r/…/review" %>
       <p style="color:var(--ink-2); font-size:12.5px; margin-top:5px;"><%= t("merchant.feedback.google_note") %></p>
     </div>
+    </div>
 
-    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
+    <div class="l-foldpanel-col">
       <% low = current_workspace.automation(:low_rating) %>
       <input type="hidden" name="low_rating_enabled" value="0">
       <label style="display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer;">
@@ -87,15 +98,18 @@
         </div>
       </div>
     </div>
-
+    </div>
     <%= submit_tag t("merchant.feedback.save"), class: "l-btn l-btn-primary", style: "margin-top:16px;" %>
-  </div>
+  </details>
 <% end %>
 
-</div>
-
 <%# ---- Inbox: the list on the left, one review open on the right ---- %>
-<div class="m-ops" style="grid-template-columns:minmax(0,420px) minmax(0,1fr);">
+<%# Cả hộp thư nằm trong một turbo frame: bấm sang đánh giá khác chỉ thay phần
+    này, không tải lại trang. Phải bọc CẢ danh sách chứ không chỉ ô đọc bên
+    phải — nếu không, viền "đang chọn" bên danh sách không chạy theo.
+    `turbo_action: "advance"` để URL vẫn đổi, nên F5 hay nút Back vẫn đúng chỗ. %>
+<%= turbo_frame_tag "review_inbox", data: { turbo_action: "advance" } do %>
+<div class="m-ops" style="--ops-cols:minmax(0,420px) minmax(0,1fr);">
   <div class="l-panel">
     <%# Đầu hộp thư: tiêu đề + số lượng, ô tìm, rồi bộ lọc — như design xếp.
         Trước đây bộ lọc là một thanh riêng nằm trên CẢ hai cột, nên nó trông
@@ -104,7 +118,7 @@
       <h3 class="l-display" style="font-size:17px; flex:1; min-width:0;"><%= t("merchant.feedback.inbox_title") %></h3>
       <span style="font-size:12.5px; color:var(--ink-2); flex:none;"><%= t("merchant.feedback.reviews_count", n: @count_filtered) %></span>
     </div>
-    <%= form_with url: merchant_feedback_path, method: :get, data: { turbo: false } do %>
+    <%= form_with url: merchant_feedback_path, method: :get do %>
       <%= hidden_field_tag :filter, @filter %>
       <div style="display:flex; gap:8px;">
         <%= search_field_tag :q, @q, class: "l-field", placeholder: t("merchant.feedback.search_ph"), style: "flex:1; min-width:0;" %>
@@ -194,7 +208,7 @@
                     time: l(r.replied_at, format: :short)) %>
             </div>
           <% end %>
-          <%= form_with url: merchant_reply_feedback_path(r), method: :patch do %>
+          <%= form_with url: merchant_reply_feedback_path(r), method: :patch, data: { turbo_frame: "_top" } do %>
             <%= text_area_tag :reply_body, r.reply_body, class: "l-field", rows: 4,
                   style: "margin-top:10px;", placeholder: t("merchant.feedback.reply_ph") %>
             <%= submit_tag t("merchant.feedback.reply_save"), class: "l-btn l-btn-primary", style: "margin-top:12px;" %>
@@ -203,3 +217,4 @@
       </div>
     <% end %>
   </div>
+<% end %>

@@ -19,7 +19,10 @@ class MerchantNavTest < ActionDispatch::IntegrationTest
   end
 
   test "đúng chín mục, theo đúng thứ tự đã chốt" do
-    assert_equal %i[overview customers loyalty marketing vouchers operations admin settings],
+    # Voucher đứng trước Marketing: các màn marketing (chiến dịch, nhiệm vụ,
+    # thẻ tem) đều gắn một voucher làm phần thưởng, nên mẫu voucher phải có
+    # trước thì mới dựng được chúng.
+    assert_equal %i[overview customers loyalty vouchers marketing operations admin settings],
                  sections.map { |s| s[:key] }
   end
 

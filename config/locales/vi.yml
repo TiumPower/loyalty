@@ -814,6 +814,7 @@ vi:
       no_comment: "(khách chỉ chấm sao, không viết gì)"
       settings_title: "Cài đặt trang đánh giá"
       settings_note: "Quyết định khách thấy gì sau khi đánh giá, và điều gì xảy ra khi họ chấm thấp."
+      settings_toggle: "Chỉnh"
       save: "Lưu cài đặt"
       saved: "Đã lưu cài đặt đánh giá."
       google_label: "Link đánh giá công khai (Google Maps / Facebook)"

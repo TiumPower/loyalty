@@ -31,16 +31,16 @@ module MerchantHelper
         [:tiers,   t("merchant.nav.tiers"),   merchant_tiers_path,           manage],
         [:games,   t("merchant.nav.games"),   merchant_games_admin_path,     manage]
       ] },
+      # Reward trong hệ thống CHÍNH LÀ mẫu voucher: đặt tên gì thì nó vẫn là
+      # một màn, nên nó ở đây chứ không nhân đôi sang mục Thành viên.
+      { key: :vouchers, icon: :ticket, label: t("merchant.nav.sec_vouchers"), items: [
+        [:rewards, t("merchant.nav.voucher_templates"), merchant_rewards_path, manage]
+      ] },
       { key: :marketing, icon: :target, label: t("merchant.nav.sec_marketing"), items: [
         [:campaigns,      t("merchant.nav.campaigns"),   merchant_campaigns_path,       manage],
         [:messages,       t("merchant.nav.messages"),    merchant_broadcasts_path,      true],
         [:missions_setup, t("merchant.nav.missions"),    merchant_missions_admin_path,  manage],
         [:stamp_cards,    t("merchant.nav.stamp_cards"), merchant_stamp_cards_admin_path, manage]
-      ] },
-      # Reward trong hệ thống CHÍNH LÀ mẫu voucher: đặt tên gì thì nó vẫn là
-      # một màn, nên nó ở đây chứ không nhân đôi sang mục Thành viên.
-      { key: :vouchers, icon: :ticket, label: t("merchant.nav.sec_vouchers"), items: [
-        [:rewards, t("merchant.nav.voucher_templates"), merchant_rewards_path, manage]
       ] },
       { key: :operations, icon: :store, label: t("merchant.nav.sec_operations"), items: [
         [:outlets,      t("merchant.nav.outlets"),      merchant_outlets_path,          manage],

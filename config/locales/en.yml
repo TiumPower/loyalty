@@ -811,6 +811,7 @@ en:
       no_comment: "(rated without a comment)"
       settings_title: "Review page settings"
       settings_note: "What a customer sees after rating you, and what happens when the score is low."
+      settings_toggle: "Edit"
       save: "Save settings"
       saved: "Review settings saved."
       google_label: "Public review link (Google Maps / Facebook)"

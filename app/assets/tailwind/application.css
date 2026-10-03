@@ -1442,6 +1442,34 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .sc-del-form { display:inline; margin:0; }
 .sc-new { border-top:1px dashed var(--line); margin-top:16px; padding-top:14px; }
 
+/* =====================================================================
+   Fold panel: a settings block that is set once and then read rarely.
+
+   Configuration forms are tall, and standing one next to a short stat card
+   leaves a dead column and pushes the day-to-day work below the fold. Folded
+   away, the page leads with what the shop actually looks at.
+   ===================================================================== */
+.l-foldpanel { border:1px solid var(--line); border-radius:var(--radius); background: var(--card);
+  box-shadow: var(--shadow); margin-bottom:16px; }
+.l-foldpanel > summary { display:flex; align-items:center; gap:12px; padding:16px 18px;
+  cursor:pointer; list-style:none; }
+.l-foldpanel > summary::-webkit-details-marker { display:none; }
+.l-foldpanel-cue { flex:none; font-size:12.5px; font-weight:600; color: var(--primary);
+  display:inline-flex; align-items:center; gap:6px; }
+.l-foldpanel-cue::after { content:"▾"; transition: transform .15s; }
+.l-foldpanel[open] > summary { border-bottom:1px solid var(--line); }
+.l-foldpanel[open] .l-foldpanel-cue::after { transform: rotate(180deg); }
+/* Two halves side by side, so opening it does not produce the tall column the
+   fold was hiding in the first place. */
+.l-foldpanel-body { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px;
+  padding:16px 18px 0; }
+.l-foldpanel-col { padding-left:22px; border-left:1px solid var(--line); }
+.l-foldpanel > summary ~ .l-btn, .l-foldpanel [type="submit"] { margin:16px 18px 18px; }
+@media (max-width:860px) {
+  .l-foldpanel-body { grid-template-columns:1fr; gap:16px; }
+  .l-foldpanel-col { padding-left:0; border-left:none; padding-top:16px; border-top:1px solid var(--line); }
+}
+
 /* Two ways to sign in (phone / email) as one segmented control, so neither
    reads as the "other" option buried under the form. */
 .l-authtabs { display:flex; gap:4px; padding:4px; border-radius:14px;
@@ -1483,13 +1511,22 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-sec > .l-btn { flex:none; white-space:nowrap; }
 
 /* Tabs under the page title. */
+/* Two levels of tabs used to render identically — a filled brown pill for the
+   section AND for the screen inside it — so a page showed two rows of the same
+   control and neither said which was which. The default is now the SUBORDINATE
+   style (tinted, not filled); only the app's top-level section strip opts into
+   the filled pill, so exactly one control on screen says "you are here". */
 .m-subnav { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.m-subnav a { padding:8px 14px; border-radius:999px; font-size:13.5px; font-weight:600;
-  color: var(--ink-2); text-decoration:none; }
+.m-subnav a { padding:7px 13px; border-radius:999px; font-size:13px; font-weight:600;
+  color: var(--ink-2); text-decoration:none; transition: background .15s, color .15s; }
 @media (hover: hover) and (pointer: fine) {
 .m-subnav a:not(.active):hover { color: var(--ink); background: var(--surface-2); }
 }
-.m-subnav a.active { background: var(--primary); color: var(--on-primary); }
+.m-subnav a.active { background: var(--primary-soft); color: var(--primary-ink); }
+
+/* Level 1: which section of the app you are in. */
+.m-subnav-primary a { padding:8px 16px; font-size:13.5px; }
+.m-subnav-primary a.active { background: var(--primary); color: var(--on-primary); }
 .m-subnav .note { margin-left:auto; font-size:12px; color: var(--ink-2); }
 
 /* Data table. */
@@ -1532,7 +1569,13 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .m-quick .mt { font-size:12px; color: var(--ink-2); margin-top:3px; line-height:1.4; }
 
 /* Two-column operational row: table left, actions right. */
-.m-ops { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:16px; align-items:start; }
+/* Per-page column ratio arrives as a custom property, NOT as an inline
+   grid-template-columns: an inline declaration outranks the breakpoint below,
+   so all seven pages that tuned their ratio had silently lost the stacked
+   layout on a narrow screen — the right column got squeezed until names broke
+   one letter per line. */
+.m-ops { display:grid; grid-template-columns: var(--ops-cols, minmax(0,1.7fr) minmax(0,1fr));
+  gap:16px; align-items:start; }
 @media (max-width:1000px){ .m-ops { grid-template-columns:minmax(0,1fr); } }
 
 /* ---------- merchant editors ---------- */
