@@ -10,7 +10,9 @@
   <% checkin_url = customer_scan_url(current_workspace, checkin: Checkin.encode(current_workspace, @qr_outlet)) %>
   <div style="text-align:center; max-width:420px; margin:0 auto;">
     <% if @qr_outlets.size > 1 %>
-      <%= form_with url: merchant_scanner_checkin_qr_path, method: :get, data: { turbo: false }, style: "margin-bottom:16px;" do %>
+      <%# Giữ nguyên chế độ (quầy hay thanh menu) khi đổi chi nhánh — nếu không,
+          một lần đổi là nhảy sang chrome khác. %>
+      <%= form_with url: merchant_scanner_checkin_qr_path(kiosk: (1 if @kiosk)), method: :get, data: { turbo: false }, style: "margin-bottom:16px;" do %>
         <label class="l-label"><%= t("merchant.scan.checkin_pick_branch") %></label>
         <select name="qr_outlet" class="l-field" onchange="this.form.requestSubmit()">
           <% @qr_outlets.each do |o| %>

@@ -1,7 +1,11 @@
 <% content_for :title, t("merchant.scan.checkin_home") %>
 <div style="max-width:520px; margin:0 auto;">
-  <%= link_to "← " + t("merchant.scan.back_home"), merchant_scan_home_path, data: { turbo: false },
-        style: "display:inline-block; margin-bottom:14px; color:var(--ink-2); font-size:13px; text-decoration:none;" %>
+  <%# Chỉ ở chế độ quầy mới có "về trang quầy" — mở từ thanh menu thì sidebar
+      đã là đường về rồi. %>
+  <% if @kiosk %>
+    <%= link_to "← " + t("merchant.scan.back_home"), merchant_scan_home_path(kiosk: 1), data: { turbo: false },
+          style: "display:inline-block; margin-bottom:14px; color:var(--ink-2); font-size:13px; text-decoration:none;" %>
+  <% end %>
   <div class="l-panel">
     <%= render "checkin_qr" %>
   </div>

@@ -40,7 +40,13 @@ module Merchant
     def checkin_qr
       @qr_outlets = checkin_qr_outlets
       @qr_outlet  = @qr_outlets.find { |o| o.id.to_s == params[:qr_outlet].to_s } || @qr_outlets.first
-      render layout: "scanner_kiosk"
+      # Màn này tới từ HAI chỗ. Từ mục Vận hành trên thanh menu thì nó là một
+      # trang quản lý như mọi trang khác và phải có sidebar; từ trang quầy trên
+      # điện thoại nhân viên thì mới dùng chrome tối giản. Trước đây lúc nào
+      # cũng là chrome kiosk, nên mở từ menu là mất sidebar và có một nút "Về
+      # trang quầy" dẫn đi đâu đó không ai ngờ.
+      @kiosk = params[:kiosk].present?
+      render layout: "scanner_kiosk" if @kiosk
     end
 
     private

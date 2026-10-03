@@ -63,7 +63,7 @@
   <% if @has_checkin_qr %>
     <div class="l-eyebrow" style="margin:20px 0 8px;"><%= sc.(:tools) %></div>
     <div class="k-tools">
-      <%= link_to merchant_scanner_checkin_qr_path, data: { turbo: false } do %>
+      <%= link_to merchant_scanner_checkin_qr_path(kiosk: 1), data: { turbo: false } do %>
         <%= ui_icon(:qrcode, size: 20) %><span><%= sc.(:checkin_home) %></span>
       <% end %>
     </div>
