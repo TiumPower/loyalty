@@ -24,6 +24,21 @@ module ApplicationHelper
 
   # Icon for a mission: the real brand logo for a per-network social_share task,
   # otherwise the mission's emoji.
+  # Glyph trắng cho đĩa tròn nền đặc ở trang chủ.
+  #
+  # `mission_icon` trả emoji (hoặc logo mạng xã hội) — hợp cho thẻ nền nhạt ở
+  # trang Nhiệm vụ, nhưng emoji nhiều màu đặt trên đĩa màu thương hiệu thì đọc
+  # không ra. Trước đây chỗ đó in SỐ LẦN CÒN LẠI để né chuyện này, nhưng với
+  # nhiệm vụ mục tiêu 1 nó ra một chữ "1" to, đọc như số thứ tự.
+  MISSION_GLYPHS = {
+    "checkin" => :pin, "spend" => :coins, "visit" => :store,
+    "refer" => :users, "review" => :star, "social_share" => :megaphone
+  }.freeze
+
+  def mission_glyph(mission, size: 18)
+    ui_icon(MISSION_GLYPHS.fetch(mission.mission_type, :target), size: size)
+  end
+
   def mission_icon(mission, size: 22)
     if mission.respond_to?(:platform) && (logo = social_logo(mission.platform, size: size))
       logo

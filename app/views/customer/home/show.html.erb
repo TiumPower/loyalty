@@ -205,11 +205,13 @@
         <% left = [m.goal.to_i - mp.progress.to_i, 0].max %>
         <%= link_to member_missions_path, class: "l-mini" do %>
           <div class="hd">
-            <%# The badge counts what is left to DO. A spend goal is money, not a
-                count, so that one keeps its icon instead of showing "100000". %>
-            <% countable = m.mission_type != "spend" && left <= 99 %>
-            <span class="ic count" style="<%= 'font-size:16px;' unless countable %>">
-              <%= mp.completed? ? "✓" : (countable ? left : mission_icon(m, size: 16)) %>
+            <%# Ô tròn này từng in SỐ LẦN CÒN LẠI. Với nhiệm vụ mục tiêu 1 — tức
+                hầu hết nhiệm vụ hằng ngày — nó ra một chữ "1" to tướng, đọc như
+                số thứ tự chứ không phải việc còn lại; mà dòng phụ ngay bên cạnh
+                đã nói rõ "Còn 1 lần check-in" rồi. Ô này giờ là ICON như ở
+                trang Nhiệm vụ, để hai màn nói cùng một ngôn ngữ. %>
+            <span class="ic">
+              <%= mp.completed? ? "✓" : mission_glyph(m, size: 18) %>
             </span>
             <div style="min-width:0;">
               <div class="tt"><%= truncate(m.title, length: 30) %></div>

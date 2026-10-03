@@ -1280,7 +1280,6 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
    khác nhau. */
 .l-mini .ic { width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center;
   background: var(--primary); color: var(--on-primary); font-size:18px; }
-.l-mini .ic.count { width:44px; height:44px; font-weight:700; font-size:16px; }
 /* Tiêu đề và phụ đề bị chặn số dòng: tên quán hay tên thẻ tem dài ngắn tuỳ
    quán, mà hai thẻ nằm cạnh nhau thì phần đầu phải cao bằng nhau, nếu không
    mọi thứ bên dưới lệch theo. */
