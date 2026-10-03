@@ -143,6 +143,33 @@ module ApplicationHelper
     end
   end
 
+  # Đĩa huy hiệu trên màn hình chính dùng glyph TRẮNG trên nền đặc màu thương
+  # hiệu, cùng ngôn ngữ với đĩa nhiệm vụ và thẻ tem ngay phía trên. Emoji của
+  # quán (`badge.display_icon`) vẫn là thứ hiện ở trang Huy hiệu, nơi nền nhạt
+  # và emoji nhiều màu đọc được.
+  BADGE_GLYPHS = {
+    "first_purchase" => :sparkles, "purchases_count" => :store,
+    "points_total" => :coins, "night_owl" => :clock
+  }.freeze
+
+  def badge_glyph(badge, size: 18)
+    ui_icon(BADGE_GLYPHS.fetch(badge.criteria_type.to_s, :award), size: size)
+  end
+
+  # Dòng một hơi dưới đĩa huy hiệu: CÒN BAO NHIÊU nữa, không phải điều kiện
+  # đầy đủ. Dưới một đĩa rộng 56px thì "Mua đủ 10 lần" và "còn 3 lần" chiếm
+  # cùng chỗ, nhưng chỉ cái sau nói được khách đang ở đâu.
+  def badge_left_text(badge, done, target)
+    left = [target.to_i - done.to_i, 0].max
+    case badge.criteria_type.to_s
+    when "first_purchase"  then t("customer.badges.left_first")
+    when "purchases_count" then t("customer.badges.left_count", n: left)
+    when "points_total"    then t("customer.badges.left_points", n: number_with_delimiter(left))
+    when "night_owl"       then t("customer.badges.left_night", n: left)
+    else badge.requirement_text
+    end
+  end
+
   # Which half of the day the customer is opening the app in — the home screen
   # greets them with it. Uses the app time zone, not the browser's.
   def greeting_period

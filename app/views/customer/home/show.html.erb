@@ -230,4 +230,36 @@
       <% end %>
     </div>
   <% end %>
+
+  <%# ---- Huy hiệu: một dải ngang, đứng cuối ----
+      Vòng quay, thẻ tem, nhiệm vụ là việc để LÀM; huy hiệu là thứ những việc
+      đó cộng lại thành, nên nó đóng trang chứ không chen vào giữa hai khối
+      việc. Đã đạt thì đĩa đặc màu thương hiệu, chưa đạt thì đĩa viền nhạt —
+      chỗ trống trong bộ sưu tập chính là thứ mục này muốn nói. %>
+  <% if @badge_strip.present? %>
+    <div class="l-sec">
+      <h3><%= t("customer.badges.title") %></h3>
+      <%= link_to t("customer.common.see_all"), member_badges_path, class: "l-pill good" %>
+    </div>
+    <div class="l-badges">
+      <div class="hd">
+        <span class="ic"><%= ui_icon(:trophy, size: 18) %></span>
+        <div style="min-width:0;">
+          <div class="tt"><%= t("customer.badges.of_total", n: @badge_done.size, total: @badge_total) %></div>
+          <div class="mt"><%= t("customer.badges.subtitle") %></div>
+        </div>
+      </div>
+      <div class="row">
+        <% @badge_strip.each do |b| %>
+          <% done, target = @badge_progress[b] %>
+          <% got = @badge_done.include?(b) %>
+          <%= link_to member_badge_path(b), class: "chip #{'off' unless got}" do %>
+            <span class="d"><%= badge_glyph(b, size: 20) %></span>
+            <span class="n"><%= truncate(b.name, length: 18) %></span>
+            <span class="s"><%= got ? t("customer.badges.earned") : badge_left_text(b, done, target) %></span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>

@@ -8,7 +8,7 @@ module Customer
       Gamification.evaluate_badges(@member, current_workspace) # reflect existing history
       @badges = current_workspace.badges.ordered.to_a
       @earned = @member.member_badges.pluck(:badge_id).to_set
-      @progress = @badges.index_with { |b| b.progress_for(@member) }
+      @progress = Badge.progress_map(@badges, @member)
     end
 
     # One badge, with how it was (or will be) earned.

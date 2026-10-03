@@ -46,6 +46,7 @@ module Customer
           # "Win up to 100 pts" on the home card — the best point prize the
           # wheel actually carries, not a number typed into the design.
           @wheel_top_prize = @wheel&.resolved_segments.to_a.select { |s| s["kind"] == "points" }.map { |s| s["value"].to_i }.max.to_i
+          load_badge_strip
         end
         if prog.stamps_enabled
           @stamp_card = current_workspace.stamp_cards.active.ordered.detect(&:running?)
@@ -56,6 +57,53 @@ module Customer
         @shop_rating = current_workspace.feedback_public? ? Rating.average(:stars)&.round(1) : nil
         render :show
       end
+    end
+
+    private
+
+    # Dải huy hiệu ở cuối màn hình chính.
+    #
+    # Huy hiệu trước đây chỉ đến được qua trang Hạng, nên hầu như không ai biết
+    # quán có huy hiệu. Nó không phải một việc để làm như vòng quay hay thẻ tem
+    # — nó là BỘ SƯU TẬP mà những việc kia cộng lại thành, và điều đáng nói của
+    # một bộ sưu tập là chỗ còn trống. Nên đây là một dải ngang nhiều đĩa chứ
+    # không phải thêm một thẻ vuông vào lưới "Chơi & tích": thẻ vuông chỉ khoe
+    # được một cái.
+    #
+    # KHÔNG gọi `Gamification.evaluate_badges` ở đây như trang Huy hiệu: nó ghi
+    # bản ghi, cộng điểm và bắn thông báo, quá nặng cho trang được mở nhiều
+    # nhất. Thay vào đó, huy hiệu nào đã đủ tiến độ thì coi như đã đạt để hiển
+    # thị — tránh cảnh "25/25 chưa đạt" khi quán vừa thêm huy hiệu mới mà khách
+    # chưa mở trang Huy hiệu.
+    STRIP_SIZE = 6
+    EARNED_SHOWN = 4
+
+    def load_badge_strip
+      all = current_workspace.badges.ordered.to_a
+      return if all.empty?
+
+      progress = Badge.progress_map(all, @member)
+      owned = @member.member_badges.pluck(:badge_id).to_set
+      @badge_done = all.select do |b|
+        done, target = progress[b]
+        owned.include?(b.id) || (target.positive? && done >= target)
+      end
+
+      # Gần đạt nhất trước: tỉ lệ hoàn thành giảm dần. Huy hiệu chưa có mốc nào
+      # (target 0) xuống cuối thay vì chia cho 0.
+      near = (all - @badge_done).sort_by do |b|
+        done, target = progress[b]
+        target.positive? ? -(done.to_f / target) : 1.0
+      end
+
+      # Luôn chừa chỗ cho tối đa hai cái CHƯA đạt: mục này tồn tại để khách biết
+      # quán có huy hiệu gì, không chỉ để khoe cái đã có. Nhưng chừa chỗ mà
+      # không có gì để xếp vào thì dải bị ngắn lại một cách vô cớ, nên thiếu
+      # bao nhiêu thì lấp nốt bằng huy hiệu đã đạt.
+      locked = near.first(STRIP_SIZE - EARNED_SHOWN)
+      @badge_strip = (@badge_done.first(STRIP_SIZE - locked.size) + near).first(STRIP_SIZE)
+      @badge_progress = progress
+      @badge_total = all.size
     end
   end
 end
