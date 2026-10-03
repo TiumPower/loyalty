@@ -63,12 +63,13 @@ class BroadcastReachTest < ActionDispatch::IntegrationTest
     assert_empty css_select(".bc-push")
   end
 
-  # Thiết kế thẻ đã nằm sẵn trong file từ đầu nhưng markup vẫn là <table> ép
-  # rộng 800px — trên màn hẹp phải kéo ngang mới đọc được trạng thái.
-  test "danh sách là thẻ, không phải bảng kéo ngang" do
+  # Bảng dùng chung .m-table như các trang khác, và KHÔNG ép bề rộng tối thiểu
+  # — bản cũ đặt min-width:800px nên màn hẹp phải kéo ngang mới thấy cột trạng
+  # thái.
+  test "danh sách là bảng chuẩn, không ép kéo ngang" do
     send_to([@without])
     get merchant_broadcasts_path
-    assert_select ".bc-card"
-    assert_empty css_select("table.m-table")
+    assert_select "table.m-table"
+    assert_no_match(/min-width:\s*800px/, response.body)
   end
 end

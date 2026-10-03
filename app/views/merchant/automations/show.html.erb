@@ -61,8 +61,11 @@
                 Chỉnh sửa — nhìn vào bảng không ai biết bật ở đâu. Đặt luôn hành
                 động ngay cạnh trạng thái nó đổi. %>
             <div style="display:flex; align-items:center; gap:14px; justify-content:flex-end;">
+              <%# Nút nhỏ, nền nhạt: ba nút đặc màu thương hiệu trong một bảng
+                  bốn cột hút hết mắt khỏi chính nội dung bảng. Việc cần là làm
+                  cho công tắc TÌM THẤY ĐƯỢC, không phải làm nó to nhất trang. %>
               <%= button_to on ? a.(:turn_off) : a.(:turn_on), merchant_toggle_automation_path(kind),
-                    method: :post, class: "l-btn l-btn-sm #{on ? 'l-btn-soft' : 'l-btn-primary'}" %>
+                    method: :post, class: "l-btn l-btn-soft l-btn-sm", form: { style: "margin:0;" } %>
               <%= link_to a.(:edit), merchant_edit_automation_path(kind),
                     style: "font-size:13px; font-weight:600; color:var(--primary); text-decoration:none;" %>
             </div>

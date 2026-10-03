@@ -1607,6 +1607,27 @@ details[open] > summary .sc-edit::after { transform: rotate(180deg); }
   white-space:nowrap; }
 .m-table td { padding:13px 12px; border-bottom:1px solid var(--line-soft); font-size:13.5px; vertical-align:middle; }
 .m-table tr:last-child td { border-bottom:none; }
+
+/* ---------- super admin: trang chi tiết workspace ----------
+   Bố cục cũ dồn mọi thứ vào cột phải 320px (cấu hình, nút mở app, bảng địa chỉ
+   và cả vùng xoá vĩnh viễn) trong khi cột trái rộng chỉ có ba ô số rồi bỏ
+   trống nửa màn hình. Việc giờ nằm ở cột chính; cột phải còn đúng vai trò một
+   thanh bên. */
+.aw-grid { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:20px; align-items:start; }
+.aw-main { min-width:0; }
+.aw-side { min-width:0; }
+.aw-id { display:flex; align-items:center; gap:12px; }
+.aw-id .sw { width:44px; height:44px; border-radius:12px; flex:none; }
+/* Sáu ô xếp dọc trong một cột hẹp thành một cột dài ngoằng, không nhìn ra cái
+   nào thuộc nhóm nào. */
+.aw-fields { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px 16px; }
+.aw-fields .aw-hint { grid-column:1 / -1; font-size:12.5px; color:var(--ink-2); line-height:1.5;
+  margin-top:-4px; }
+.aw-danger { border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+@media (max-width: 1000px) {
+  .aw-grid { grid-template-columns:minmax(0,1fr); }
+  .aw-fields { grid-template-columns:minmax(0,1fr); }
+}
 .m-table th:last-child, .m-table td:last-child { text-align:right; }
 .m-who { display:flex; align-items:center; gap:10px; min-width:0; }
 .m-who .av { width:32px; height:32px; border-radius:50%; flex:none; display:grid; place-items:center;

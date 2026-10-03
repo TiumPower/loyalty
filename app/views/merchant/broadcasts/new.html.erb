@@ -57,13 +57,28 @@
             <div class="bd"><div class="tt"><%= t("merchant.campaigns.ch_inapp") %></div><div class="ds"><%= t("merchant.campaigns.ch_inapp_sub") %></div></div>
             <div class="st"><%= t("merchant.campaigns.ch_on") %></div>
           </div>
-          <div class="m-channel <%= 'on' if PushSender.configured? %>">
-            <div class="ic"><%= ui_icon(:phone, size: 16) %></div>
+          <%# "Bật" ở đây từng chỉ nói máy chủ có khoá đẩy, không nói có ai nhận
+              được. Nhóm không một người nào cài app vẫn hiện "Bật" màu xanh —
+              bấm gửi xong rồi ngồi đợi điện thoại reo. Kênh chỉ thật sự "bật"
+              khi có người ở đầu bên kia. %>
+          <% push_live = PushSender.configured? && @push_ready.to_i.positive? %>
+          <div class="m-channel <%= 'on' if push_live %>">
+            <div class="ic"><%= ui_icon(:smartphone, size: 16) %></div>
             <div class="bd">
               <div class="tt"><%= t("merchant.campaigns.ch_push") %></div>
-              <div class="ds"><%= b.(:push_reach, n: @push_ready.to_i) %></div>
+              <div class="ds">
+                <% if !PushSender.configured? %>
+                  <%= t("merchant.campaigns.ch_push_unconfigured") %>
+                <% elsif @push_ready.to_i.zero? %>
+                  <%= b.(:push_reach_none) %>
+                <% else %>
+                  <%= b.(:push_reach, n: @push_ready.to_i) %>
+                <% end %>
+              </div>
             </div>
-            <div class="st"><%= PushSender.configured? ? t("merchant.campaigns.ch_on") : t("merchant.campaigns.ch_off") %></div>
+            <div class="st" style="<%= 'color:var(--warn);' unless push_live %>">
+              <%= push_live ? t("merchant.campaigns.ch_on") : t("merchant.campaigns.ch_off") %>
+            </div>
           </div>
           <div class="m-channel">
             <div class="ic"><%= ui_icon(:mail, size: 16) %></div>

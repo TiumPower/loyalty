@@ -214,7 +214,7 @@
             <div class="st"><%= c.(:ch_on) %></div>
           </div>
           <div class="m-channel <%= 'on' if PushSender.configured? %>">
-            <div class="ic"><%= ui_icon(:phone, size: 16) %></div>
+            <div class="ic"><%= ui_icon(:smartphone, size: 16) %></div>
             <div class="bd"><div class="tt"><%= c.(:ch_push) %></div><div class="ds"><%= c.(:ch_push_sub) %></div></div>
             <div class="st"><%= PushSender.configured? ? c.(:ch_on) : c.(:ch_off) %></div>
           </div>

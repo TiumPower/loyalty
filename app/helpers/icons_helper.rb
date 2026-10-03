@@ -120,6 +120,11 @@ module IconsHelper
 
     phone:   %(<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>),
 
+    # Kênh "thông báo đẩy" từng mượn `phone` — cái ống nghe. Nó nói "gọi điện
+    # cho khách", không nói "hiện trên màn hình khoá của máy họ". (Lucide
+    # smartphone.)
+    smartphone: %(<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>),
+
     mail:    %(<path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/>),
 
     navigate: %(<polygon points="3 11 22 2 13 21 11 13 3 11"/>),

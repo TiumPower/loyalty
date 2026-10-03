@@ -14,95 +14,149 @@
     </div>
   </div>
 <% end %>
-<div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
-  <div class="l-panel">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-      <span style="width:44px; height:44px; border-radius:12px; background:<%= @workspace.theme_value(:primary) %>;"></span>
-      <div><h2 class="l-display" style="font-size:22px;"><%= @workspace.name %></h2>
-        <div style="color:var(--ink-2); font-size:13px;"><%= @workspace.subdomain %> · <%= @workspace.industry %> · <%= @workspace.status_label %></div></div>
-    </div>
-    <div class="l-kpis">
-      <div class="l-kpi"><div class="k">Thành viên</div><div class="v"><%= number_with_delimiter(@members_count) %></div></div>
-      <div class="l-kpi"><div class="k">Điểm đã phát</div><div class="v"><%= number_with_delimiter(@points_issued) %></div></div>
-      <div class="l-kpi"><div class="k">Gói</div><div class="v" style="font-size:22px;"><%= @workspace.plan %></div><div class="d" style="color:var(--ink-2);"><%= number_with_delimiter(@workspace.monthly_price) %>đ/tháng</div></div>
-    </div>
-  </div>
-
-  <div class="l-panel">
-    <h3 class="l-display" style="font-size:18px; margin-bottom:10px;">Quản trị</h3>
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
-      <% if @workspace.pending? || @workspace.status == "suspended" %>
-        <%= button_to "✓ Duyệt / Kích hoạt", approve_admin_workspace_path(@workspace), method: :patch, class: "l-btn l-btn-primary", style: "flex:1;" %>
-      <% elsif @workspace.active? %>
-        <%= button_to "Tạm ngưng", suspend_admin_workspace_path(@workspace), method: :patch, class: "l-btn l-btn-ghost", style: "flex:1;", form: { data: { turbo_confirm: "Tạm ngưng?" } } %>
-      <% end %>
-    </div>
-    <%= form_with model: @workspace, url: admin_workspace_path(@workspace), method: :patch do |f| %>
-      <label class="l-label">Subdomain</label>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <%= f.text_field :subdomain, class: "l-field", style: "text-align:right;" %>
-        <span class="l-mono" style="color:var(--ink-2); white-space:nowrap; font-size:12px;">.quenly.tiumpower.com</span>
+<%# Bố cục cũ dồn mọi thứ vào cột phải 320px — cấu hình, nút mở app, bảng địa
+    chỉ, và cả vùng xoá vĩnh viễn — trong khi cột trái rộng chỉ có ba ô số rồi
+    bỏ trống nửa màn hình. Đảo lại: việc nằm ở cột chính, cột phải còn đúng vai
+    trò của một thanh bên (hành động nhanh + địa chỉ).  %>
+<div class="aw-grid">
+  <div class="aw-main">
+    <div class="l-panel">
+      <div class="aw-id">
+        <span class="sw" style="background:<%= @workspace.theme_value(:primary) %>;"></span>
+        <div style="min-width:0;">
+          <h2 class="l-display" style="font-size:22px;"><%= @workspace.name %></h2>
+          <div class="l-mono" style="color:var(--ink-2); font-size:12.5px; margin-top:2px;"><%= @workspace.subdomain %> · <%= @workspace.industry %></div>
+        </div>
+        <span class="l-chip <%= 'l-chip-brand' if @workspace.active? %>" style="margin-left:auto; flex:none;"><%= @workspace.status_label %></span>
       </div>
-      <label class="l-label" style="margin-top:12px;">Tên miền riêng (tuỳ chọn)</label>
-      <%= f.text_field :custom_domain, class: "l-field", placeholder: "loyalty.tenshop.vn" %>
-      <label class="l-label" style="margin-top:12px;">Trạng thái</label>
-      <%= f.select :status, Workspace::STATUSES.map { |s| [Workspace::STATUS_LABELS[s], s] }, {}, class: "l-field" %>
-      <label class="l-label" style="margin-top:12px;">Gói dịch vụ</label>
-      <%= f.select :plan, Workspace::PLANS.map { |p| [p.capitalize, p] }, {}, class: "l-field" %>
+      <div class="l-kpis" style="margin-top:16px;">
+        <div class="l-kpi"><div class="k">Thành viên</div><div class="v"><%= number_with_delimiter(@members_count) %></div></div>
+        <div class="l-kpi"><div class="k">Điểm đã phát</div><div class="v"><%= number_with_delimiter(@points_issued) %></div></div>
+        <div class="l-kpi"><div class="k">Gói</div><div class="v" style="font-size:22px;"><%= @workspace.plan %></div><div class="d" style="color:var(--ink-2);"><%= number_with_delimiter(@workspace.monthly_price) %>đ/tháng</div></div>
+        <%# Ngày hết hạn là thứ người vận hành phải biết TRƯỚC khi mở form sửa,
+            chứ không phải đọc được sau khi cuộn xuống cuối một dòng chú thích. %>
+        <div class="l-kpi">
+          <div class="k"><%= @workspace.trial? ? "Dùng thử còn" : "Hạn thanh toán" %></div>
+          <% if @workspace.paid_until %>
+            <% left = (@workspace.paid_until.to_date - Date.current).to_i %>
+            <div class="v" style="font-size:22px; <%= 'color:var(--warn);' if left <= 3 %>"><%= left >= 0 ? "#{left} ngày" : "Đã hết" %></div>
+            <div class="d" style="color:var(--ink-2);"><%= l(@workspace.paid_until.to_date, format: :short) %></div>
+          <% else %>
+            <div class="v" style="font-size:22px; color:var(--ink-2);">—</div>
+            <div class="d" style="color:var(--ink-2);">chưa đặt</div>
+          <% end %>
+        </div>
+      </div>
+    </div>
 
-      <%# Số ngày dùng thử của riêng shop này. Một chuỗi nhiều chi nhánh mất hai
-          tuần chỉ để nhập dữ liệu — hai tuần đó trôi qua trước khi họ kịp dùng
-          thử thật. %>
-      <label class="l-label" style="margin-top:12px;">Số ngày dùng thử</label>
-      <%= f.number_field :trial_days, value: @workspace.settings["trial_days"],
-            min: Workspace::TRIAL_DAYS_RANGE.min, max: Workspace::TRIAL_DAYS_RANGE.max,
-            class: "l-field", placeholder: "Mặc định #{Workspace::TRIAL_DAYS} ngày" %>
-      <p style="color:var(--ink-2); font-size:12px; margin:5px 0 0; line-height:1.45;">
-        Để trống là dùng mặc định <%= Workspace::TRIAL_DAYS %> ngày.
-        <% if @workspace.trial? %>
-          Đang dùng thử <strong><%= @workspace.trial_days %> ngày</strong> tính từ
-          <%= l(@workspace.trial_started_at.to_date, format: :short) %><% if @workspace.paid_until %>,
-          hết hạn <strong><%= l(@workspace.paid_until.to_date, format: :short) %></strong><% end %>.
-          Đổi số này sẽ dời luôn ngày hết hạn.
-        <% else %>
-          Shop này không ở trạng thái dùng thử, nên số ngày chỉ áp dụng nếu sau này bật lại dùng thử.
-        <% end %>
-      </p>
-
-      <%= f.submit "Cập nhật", class: "l-btn l-btn-soft l-btn-block", style: "margin-top:16px;" %>
-    <% end %>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">
-      <%= link_to merchant_url_for(@workspace), target: "_blank", rel: "noopener",
-            class: "l-btn l-btn-primary l-btn-block" do %>
-        <%= ui_icon(:launch, size: 16) %> Mở dashboard merchant
-      <% end %>
-      <%= link_to customer_url_for(@workspace), target: "_blank", rel: "noopener",
-            class: "l-btn l-btn-ghost l-btn-block" do %>
-        <%= ui_icon(:launch, size: 16) %> Mở app khách
+    <div class="l-panel" style="margin-top:20px;">
+      <h3 class="l-display" style="font-size:18px; margin-bottom:4px;">Cấu hình</h3>
+      <p style="color:var(--ink-2); font-size:13px; margin:0 0 16px;">Địa chỉ, trạng thái dịch vụ và điều khoản thương mại của shop này.</p>
+      <%= form_with model: @workspace, url: admin_workspace_path(@workspace), method: :patch do |f| %>
+        <%# Hai cột: xếp dọc trong một cột hẹp thì sáu ô thành một cột dài ngoằng
+            và cái nào thuộc nhóm nào thì không nhìn ra. %>
+        <div class="aw-fields">
+          <div>
+            <label class="l-label">Subdomain</label>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <%= f.text_field :subdomain, class: "l-field", style: "text-align:right;" %>
+              <span class="l-mono" style="color:var(--ink-2); white-space:nowrap; font-size:12px;">.quenly.tiumpower.com</span>
+            </div>
+          </div>
+          <div>
+            <label class="l-label">Tên miền riêng (tuỳ chọn)</label>
+            <%= f.text_field :custom_domain, class: "l-field", placeholder: "loyalty.tenshop.vn" %>
+          </div>
+          <div>
+            <label class="l-label">Trạng thái</label>
+            <%= f.select :status, Workspace::STATUSES.map { |s| [Workspace::STATUS_LABELS[s], s] }, {}, class: "l-field" %>
+          </div>
+          <div>
+            <label class="l-label">Gói dịch vụ</label>
+            <%= f.select :plan, Workspace::PLANS.map { |p| [p.capitalize, p] }, {}, class: "l-field" %>
+          </div>
+          <%# Số ngày dùng thử của riêng shop này. Một chuỗi nhiều chi nhánh mất
+              hai tuần chỉ để nhập dữ liệu — hai tuần đó trôi qua trước khi họ
+              kịp dùng thử thật. %>
+          <div>
+            <label class="l-label">Số ngày dùng thử</label>
+            <%= f.number_field :trial_days, value: @workspace.settings["trial_days"],
+                  min: Workspace::TRIAL_DAYS_RANGE.min, max: Workspace::TRIAL_DAYS_RANGE.max,
+                  class: "l-field", placeholder: "Mặc định #{Workspace::TRIAL_DAYS} ngày" %>
+          </div>
+          <div class="aw-hint">
+            Để trống là dùng mặc định <%= Workspace::TRIAL_DAYS %> ngày.
+            <% if @workspace.trial? %>
+              Đang dùng thử <strong><%= @workspace.trial_days %> ngày</strong> tính từ
+              <%= l(@workspace.trial_started_at.to_date, format: :short) %>. Đổi số này sẽ dời luôn ngày hết hạn.
+            <% else %>
+              Shop này không ở trạng thái dùng thử, nên số ngày chỉ áp dụng nếu sau này bật lại dùng thử.
+            <% end %>
+          </div>
+        </div>
+        <%= f.submit "Lưu thay đổi", class: "l-btn l-btn-primary", style: "margin-top:18px;" %>
       <% end %>
     </div>
-    <div style="margin-top:14px; padding:12px 14px; border-radius:12px; background:var(--surface-2); font-size:12px; color:var(--ink-2); line-height:1.5;">
-      <div style="font-weight:600; color:var(--ink);">Dashboard merchant</div>
-      <div class="l-mono" style="overflow-wrap:anywhere;"><%= @workspace.subdomain %>.quenly.tiumpower.com/merchant</div>
-      <div style="font-weight:600; color:var(--ink); margin-top:8px;">App khách</div>
-      <div class="l-mono" style="overflow-wrap:anywhere;"><%= @workspace.subdomain %>.quenly.tiumpower.com</div>
-      <div class="l-mono" style="overflow-wrap:anywhere; opacity:.75;">hoặc quenly.tiumpower.com/w/<%= @workspace.slug %></div>
-    </div>
-    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
-      <div style="font-weight:700; color:var(--warn,#B4402F); margin-bottom:4px;">Vùng nguy hiểm</div>
-      <p style="font-size:12.5px; color:var(--ink-2); margin:0 0 10px; line-height:1.5;">
+
+    <%# Hành động phá huỷ nhất của sản phẩm. Trước đây nó nằm cuối một thanh bên
+        hẹp, ngay dưới mấy nút tiện ích bình thường — cùng một chỗ, cùng một cỡ
+        chữ với "Mở app khách". Tách hẳn ra, viền cảnh báo. %>
+    <div class="l-panel aw-danger" style="margin-top:20px;">
+      <h3 class="l-display" style="font-size:17px; color:var(--warn); margin-bottom:4px;">Vùng nguy hiểm</h3>
+      <p style="font-size:13px; color:var(--ink-2); margin:0 0 14px; line-height:1.55; max-width:62ch;">
         Xoá vĩnh viễn workspace này cùng toàn bộ khách hàng, điểm, ưu đãi, hoá đơn và tệp đã tải lên.
         <strong>Không thể hoàn tác.</strong> Nếu chỉ muốn ngừng dịch vụ, hãy dùng “Tạm ngưng”.
       </p>
       <%= form_with url: admin_workspace_path(@workspace), method: :delete do %>
         <label class="l-label">Gõ <span class="l-mono"><strong><%= @workspace.subdomain %></strong></span> để xác nhận</label>
-        <%= text_field_tag :confirm, nil, class: "l-field", autocomplete: "off",
-              placeholder: @workspace.subdomain %>
-        <%= submit_tag "Xoá vĩnh viễn workspace", class: "l-btn l-btn-ghost l-btn-block",
-              style: "margin-top:10px; color:var(--warn,#B4402F);",
-              data: { turbo_confirm: "Xoá vĩnh viễn “#{@workspace.name}”? Không thể hoàn tác." } %>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <%= text_field_tag :confirm, nil, class: "l-field", autocomplete: "off",
+                placeholder: @workspace.subdomain, style: "max-width:280px;" %>
+          <%= submit_tag "Xoá vĩnh viễn workspace", class: "l-btn l-btn-ghost",
+                style: "color:var(--warn);",
+                data: { turbo_confirm: "Xoá vĩnh viễn “#{@workspace.name}”? Không thể hoàn tác." } %>
+        </div>
       <% end %>
     </div>
-
   </div>
+
+  <aside class="aw-side">
+    <div class="l-panel">
+      <h3 class="l-display" style="font-size:17px; margin-bottom:12px;">Hành động nhanh</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <%# Workspace đang dùng thử trước đây không có nút nào: điều kiện cũ chỉ
+            xét chờ-duyệt / tạm-ngưng / đang-hoạt-động, nên một shop dùng thử trả
+            tiền xong vẫn phải đi tìm ô chọn trạng thái. %>
+        <% unless @workspace.active? %>
+          <%= button_to (@workspace.pending? ? "✓ Duyệt workspace" : "✓ Kích hoạt"),
+                approve_admin_workspace_path(@workspace), method: :patch,
+                class: "l-btn l-btn-primary l-btn-block", form: { style: "margin:0;" } %>
+        <% end %>
+        <% if @workspace.active? || @workspace.trial? %>
+          <%= button_to "Tạm ngưng", suspend_admin_workspace_path(@workspace), method: :patch,
+                class: "l-btn l-btn-soft l-btn-block", form: { style: "margin:0;" },
+                data: { turbo_confirm: "Tạm ngưng?" } %>
+        <% end %>
+        <%= link_to merchant_url_for(@workspace), target: "_blank", rel: "noopener",
+              class: "l-btn l-btn-ghost l-btn-block" do %>
+          <%= ui_icon(:launch, size: 16) %> Mở dashboard merchant
+        <% end %>
+        <%= link_to customer_url_for(@workspace), target: "_blank", rel: "noopener",
+              class: "l-btn l-btn-ghost l-btn-block" do %>
+          <%= ui_icon(:launch, size: 16) %> Mở app khách
+        <% end %>
+      </div>
+    </div>
+
+    <div class="l-panel" style="margin-top:16px;">
+      <h3 class="l-display" style="font-size:17px; margin-bottom:10px;">Địa chỉ</h3>
+      <div style="font-size:12px; color:var(--ink-2); line-height:1.5;">
+        <div style="font-weight:600; color:var(--ink);">Dashboard merchant</div>
+        <div class="l-mono" style="overflow-wrap:anywhere;"><%= @workspace.subdomain %>.quenly.tiumpower.com/merchant</div>
+        <div style="font-weight:600; color:var(--ink); margin-top:10px;">App khách</div>
+        <div class="l-mono" style="overflow-wrap:anywhere;"><%= @workspace.subdomain %>.quenly.tiumpower.com</div>
+        <div class="l-mono" style="overflow-wrap:anywhere; opacity:.75;">hoặc quenly.tiumpower.com/w/<%= @workspace.slug %></div>
+      </div>
+    </div>
+  </aside>
 </div>
