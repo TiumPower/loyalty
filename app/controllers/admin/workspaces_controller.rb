@@ -140,7 +140,7 @@ module Admin
     end
 
     def update_params
-      params.require(:workspace).permit(:name, :subdomain, :custom_domain, :industry, :status, :plan, :locale_default)
+      params.require(:workspace).permit(:name, :subdomain, :custom_domain, :industry, :status, :plan, :locale_default, :trial_days)
     end
 
     def preset_theme(industry)

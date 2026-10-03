@@ -63,8 +63,9 @@ class AdminPageSmokeTest < ActionDispatch::IntegrationTest
   end
 
   # The dashboard shipped with these hardcoded to 0 and a "Phase 1+" caption,
-  # so the operator's first screen disagreed with /admin/monitoring.
-  test "the dashboard reports the same points as monitoring" do
+  # so the operator's first screen reported no points on a platform that had
+  # issued plenty.
+  test "the dashboard counts points" do
     ActsAsTenant.with_tenant(@ws) do
       member = create(:member, workspace: @ws)
       PointTransaction.create!(workspace: @ws, member: member, kind: "earn", amount: 1234)
@@ -73,9 +74,13 @@ class AdminPageSmokeTest < ActionDispatch::IntegrationTest
     get "/admin"
     assert_response :success
     assert_match "1.234", response.body, "the dashboard is not counting points"
+  end
 
+  # Giám sát đã gộp vào Tổng quan; đường cũ còn nằm trong dấu trang của người
+  # vận hành nên phải dẫn về chứ không được 404.
+  test "đường /admin/monitoring cũ dẫn về Tổng quan" do
     get "/admin/monitoring"
-    assert_match "1.234", response.body
+    assert_redirected_to "/admin"
   end
 
   test "no development placeholder is left on the dashboard" do

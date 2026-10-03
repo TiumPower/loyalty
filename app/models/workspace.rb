@@ -70,12 +70,52 @@ class Workspace < ApplicationRecord
   def active?  = status == "active"
   def trial?   = status == "trial"
 
-  TRIAL_DAYS = 14 # self-serve signups get a working trial, no manual approval
+  TRIAL_DAYS = 14 # mặc định: shop tự đăng ký có ngay bản dùng thử, không chờ duyệt
+  TRIAL_DAYS_RANGE = (1..365)
+
+  # Số ngày dùng thử của RIÊNG workspace này.
+  #
+  # Mặc định là 14, nhưng người vận hành nâng được cho từng shop: một chuỗi
+  # nhiều chi nhánh cần hai tuần chỉ để nhập dữ liệu, hai tuần đó trôi qua trước
+  # khi họ kịp dùng thử thật.
+  def trial_days = settings["trial_days"].presence&.to_i || TRIAL_DAYS
+
+  def trial_days=(value)
+    raw = value.to_s.strip
+    # Để trống là "dùng mặc định", không phải 0 — nếu không, xoá ô là khoá shop.
+    self.settings = settings.merge("trial_days" => raw.presence&.to_i).compact
+  end
+
+  validate :trial_days_in_range
+
+  # Mốc bắt đầu tính. Workspace có trước khi mốc này được ghi thì lấy ngày tạo —
+  # với shop tự đăng ký thì hai cái là một.
+  def trial_started_at
+    parsed = settings["trial_started_at"].presence && Time.zone.parse(settings["trial_started_at"].to_s)
+    parsed || created_at || Time.current
+  rescue ArgumentError
+    created_at || Time.current
+  end
+
+  def trial_ends_at = trial? ? paid_until : nil
 
   # Start (or restart) a free trial: a real clock via paid_until so the whole
   # billing lifecycle (expiry warning, invoice, grace, auto-suspend) just works.
-  def start_trial!(days = TRIAL_DAYS)
+  def start_trial!(days = trial_days)
+    self.settings = settings.merge("trial_started_at" => Time.current.iso8601)
     update!(status: "trial", paid_until: days.days.from_now)
+  end
+
+  # Đổi số ngày dùng thử của một shop ĐANG dùng thử thì phải dời luôn hạn. Nếu
+  # không, con số chỉ là trang trí: đồng hồ thật của mọi thứ (nhắc hết hạn, xuất
+  # hoá đơn, gia hạn ân hạn, tự ngưng) nằm ở `paid_until`.
+  after_update :resync_trial_deadline
+
+  def resync_trial_deadline
+    return unless trial?
+    before, after = saved_change_to_settings
+    return if before.nil? || before.to_h["trial_days"] == after.to_h["trial_days"]
+    update_column(:paid_until, trial_started_at + trial_days.days)
   end
 
   # Every shop must have at least one branch (the check-in QR lives on branches).
@@ -136,16 +176,26 @@ class Workspace < ApplicationRecord
   # no caps — so they can evaluate everything; they pick a plan when they pay.
   def full_access? = trial?
 
+  # Những tính năng mà gói thật sự quyết định. Đây là nguồn DUY NHẤT cho cả
+  # `plan_allows?` lẫn bảng "Gói ... đang mở những gì" ở trang Doanh thu.
+  #
+  # Trước đây bảng đó tự dựng danh sách bằng cách dò mọi cột `allow_*` của bảng
+  # plans. Nên nó quảng cáo "Thử nghiệm A/B" — một tính năng chưa ai viết một
+  # dòng nào: cột tồn tại, còn thứ nó mở ra thì không. Một cột trong cơ sở dữ
+  # liệu không phải là một tính năng.
+  PLAN_FEATURES = %i[stamps gamification campaigns custom_domain].freeze
+
   def plan_allows?(feature)
     return true if full_access?
-    case feature.to_sym
-    when :stamps        then plan_record.allow_stamps
-    when :gamification  then plan_record.allow_gamification
-    when :campaigns     then plan_record.allow_campaigns
-    when :custom_domain then plan_record.allow_custom_domain
-    when :ab_testing    then plan_record.allow_ab_testing
-    else true
-    end
+    return true unless PLAN_FEATURES.include?(feature.to_sym)
+    plan_record.public_send("allow_#{feature}")
+  end
+
+  def trial_days_in_range
+    raw = settings["trial_days"]
+    return if raw.nil?
+    return if raw.to_i.positive? && TRIAL_DAYS_RANGE.cover?(raw.to_i)
+    errors.add(:base, "Số ngày dùng thử phải từ #{TRIAL_DAYS_RANGE.min} đến #{TRIAL_DAYS_RANGE.max} ngày.")
   end
 
   def outlet_limit = full_access? ? nil : plan_record.max_outlets

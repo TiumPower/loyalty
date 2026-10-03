@@ -15,6 +15,9 @@ module Merchant
       @workspace = Workspace.new(workspace_params)
       @workspace.status     = "trial"    # self-serve: live immediately, no approval gate
       @workspace.paid_until = Workspace::TRIAL_DAYS.days.from_now
+      # Ghi mốc bắt đầu để sau này người vận hành nâng số ngày dùng thử thì hạn
+      # được tính lại từ đúng ngày shop bắt đầu, không phải từ lúc bấm sửa.
+      @workspace.settings   = @workspace.settings.merge("trial_started_at" => Time.current.iso8601)
       @workspace.plan       = "starter"
       @workspace.theme  = AppearancesController::PRESETS.dig(preset_for(@workspace.industry), "theme") || {}
       @email = params[:email].to_s.downcase.strip

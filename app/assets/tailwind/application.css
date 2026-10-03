@@ -1325,14 +1325,20 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   place-items:center; background: var(--primary); color: var(--on-primary); }
 .l-badges .hd .tt { font-weight:700; font-size:15px; }
 .l-badges .hd .mt { font-size:12px; color: var(--ink-2); margin-top:2px; }
-.l-badges .row { display:flex; gap:12px; overflow-x:auto; margin-top:14px; padding-bottom:2px;
-  scrollbar-width:none; }
+/* Chia đều hết bề ngang khi ít huy hiệu, tự cuộn khi nhiều — không phải hai
+   bố cục, chỉ là một `minmax`. Hàng flex với bề rộng cố định thì bốn đĩa dồn
+   về trái và bỏ trống một khoảng bên phải; `1fr` chia đều phần có, còn sàn
+   72px buộc tràn ra (và cuộn) khi số đĩa nhiều tới mức mỗi cái hẹp hơn thế. */
+.l-badges .row { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(72px, 1fr);
+  gap:12px; overflow-x:auto; margin-top:14px; padding-bottom:2px; scrollbar-width:none; }
 .l-badges .row::-webkit-scrollbar { display:none; }
-.l-badges .chip { flex:0 0 72px; display:flex; flex-direction:column; align-items:center;
+.l-badges .chip { display:flex; flex-direction:column; align-items:center;
   gap:6px; text-align:center; text-decoration:none; color: var(--ink); }
 .l-badges .chip .d { width:56px; height:56px; border-radius:50%; display:grid; place-items:center;
   background: var(--primary); color: var(--on-primary); }
-.l-badges .chip .n { font-size:11.5px; font-weight:700; line-height:1.25;
+/* Chừa đúng hai dòng dù tên ngắn: tên dài ngắn khác nhau thì dòng "còn bao
+   nhiêu" bên dưới mỗi đĩa một độ cao, cả hàng trông như bị xô lệch. */
+.l-badges .chip .n { font-size:11.5px; font-weight:700; line-height:1.25; min-height:2.5em;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .l-badges .chip .s { font-size:10.5px; color: var(--ink-2); line-height:1.2; }
 /* Chưa đạt: đĩa rỗng, viền nét đứt. Chỗ trống phải TRÔNG như chỗ trống chứ

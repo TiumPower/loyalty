@@ -15,11 +15,10 @@ module Merchant
         { key: :outlets, used: current_workspace.outlets.count,   cap: @plan.max_outlets },
         { key: :staff,   used: current_workspace.memberships.count, cap: nil },
       ]
-      # The feature switches that live on the plan row, so this list cannot drift
-      # from what the code actually checks.
-      @flags = %w[stamps gamification campaigns custom_domain ab_testing]
-               .select { |f| @plan.respond_to?("allow_#{f}") }
-               .map { |f| [f, @plan.public_send("allow_#{f}")] }
+      # Đọc thẳng danh sách tính năng mà gói thật sự quyết định, thay vì dò các
+      # cột `allow_*` — dò cột là cách "Thử nghiệm A/B" lọt lên trang này dù
+      # chưa ai viết tính năng đó.
+      @flags = Workspace::PLAN_FEATURES.map { |f| [f.to_s, @plan.public_send("allow_#{f}")] }
     end
 
     private

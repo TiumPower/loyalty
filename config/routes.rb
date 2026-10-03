@@ -45,7 +45,12 @@ Rails.application.routes.draw do
         patch :reactivate
       end
     end
-    get "monitoring", to: "monitoring#show"
+    # Giám sát đã gộp vào Tổng quan. Giữ đường cũ để dấu trang và link đã
+    # gửi đi không rơi vào 404.
+    # 302 chứ không phải 301 mặc định: 301 bị trình duyệt nhớ vĩnh viễn, nên
+    # nếu sau này cần dựng lại trang Giám sát thì máy người vận hành vẫn nhảy
+    # về Tổng quan và không cách nào hiểu tại sao.
+    get "monitoring", to: redirect("/admin", status: 302)
     get "billing",    to: "billing#show"
     resources :plans, only: [:index, :update]
     get   "account", to: "account#edit",   as: :account

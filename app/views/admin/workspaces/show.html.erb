@@ -49,6 +49,26 @@
       <%= f.select :status, Workspace::STATUSES.map { |s| [Workspace::STATUS_LABELS[s], s] }, {}, class: "l-field" %>
       <label class="l-label" style="margin-top:12px;">Gói dịch vụ</label>
       <%= f.select :plan, Workspace::PLANS.map { |p| [p.capitalize, p] }, {}, class: "l-field" %>
+
+      <%# Số ngày dùng thử của riêng shop này. Một chuỗi nhiều chi nhánh mất hai
+          tuần chỉ để nhập dữ liệu — hai tuần đó trôi qua trước khi họ kịp dùng
+          thử thật. %>
+      <label class="l-label" style="margin-top:12px;">Số ngày dùng thử</label>
+      <%= f.number_field :trial_days, value: @workspace.settings["trial_days"],
+            min: Workspace::TRIAL_DAYS_RANGE.min, max: Workspace::TRIAL_DAYS_RANGE.max,
+            class: "l-field", placeholder: "Mặc định #{Workspace::TRIAL_DAYS} ngày" %>
+      <p style="color:var(--ink-2); font-size:12px; margin:5px 0 0; line-height:1.45;">
+        Để trống là dùng mặc định <%= Workspace::TRIAL_DAYS %> ngày.
+        <% if @workspace.trial? %>
+          Đang dùng thử <strong><%= @workspace.trial_days %> ngày</strong> tính từ
+          <%= l(@workspace.trial_started_at.to_date, format: :short) %><% if @workspace.paid_until %>,
+          hết hạn <strong><%= l(@workspace.paid_until.to_date, format: :short) %></strong><% end %>.
+          Đổi số này sẽ dời luôn ngày hết hạn.
+        <% else %>
+          Shop này không ở trạng thái dùng thử, nên số ngày chỉ áp dụng nếu sau này bật lại dùng thử.
+        <% end %>
+      </p>
+
       <%= f.submit "Cập nhật", class: "l-btn l-btn-soft l-btn-block", style: "margin-top:16px;" %>
     <% end %>
     <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">

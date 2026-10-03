@@ -34,7 +34,7 @@ module Admin
     def plan_params
       p = params.require(:plan).permit(:name, :price, :max_outlets, :max_members,
                                        :allow_stamps, :allow_gamification, :allow_campaigns,
-                                       :allow_custom_domain, :allow_ab_testing, :features_text)
+                                       :allow_custom_domain, :features_text)
       # blank limit fields → unlimited (nil)
       p[:max_outlets] = p[:max_outlets].presence
       p[:max_members] = p[:max_members].presence
