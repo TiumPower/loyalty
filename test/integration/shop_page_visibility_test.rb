@@ -21,7 +21,7 @@ class ShopPageVisibilityTest < ActionDispatch::IntegrationTest
     end
     post "#{base}/login", params: { email: @member.email }
     post "#{base}/verify", params: {
-      code: OtpChallenge.unscoped.where(workspace_id: @ws.id, email: @member.email).order(:id).last.code
+      code: otp_code_for(@member.email, workspace: @ws)
     }
   end
 

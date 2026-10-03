@@ -15,8 +15,7 @@ class CustomerPagesTest < ActionDispatch::IntegrationTest
   # Go through the real OTP login rather than forging a session.
   def sign_in_member!
     post "#{base}/login", params: { email: @member.email }
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: @member.email, purpose: "login")
-                     .order(:id).last
+    ch = otp_challenge_for(@member.email, workspace: @ws)
     assert ch.present?, "no OTP challenge issued"
     post "#{base}/verify", params: { code: ch.code }
   end

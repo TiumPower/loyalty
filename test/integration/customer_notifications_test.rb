@@ -18,7 +18,7 @@ class CustomerNotificationsTest < ActionDispatch::IntegrationTest
 
   def sign_in_member!
     post "#{base}/login", params: { email: @member.email }
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: @member.email, purpose: "login").order(:id).last
+    ch = otp_challenge_for(@member.email, workspace: @ws)
     post "#{base}/verify", params: { code: ch.code }
   end
 

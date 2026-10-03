@@ -1,9 +1,10 @@
 <% content_for :title, t("customer.session.verify_title") %>
+<% by_email = @identifier.to_s.include?("@") %>
 <div class="l-screen no-tabs l-auth">
   <div class="l-result" style="padding-top:0;">
-    <div class="halo brand"><%= ui_icon(:mail, size: 38, stroke: 1.6) %></div>
+    <div class="halo brand"><%= ui_icon(by_email ? :mail : :phone, size: 38, stroke: 1.6) %></div>
     <h1><%= t("customer.session.verify_heading") %></h1>
-    <p><%= t("customer.session.sent_to_html", email: @email) %></p>
+    <p><%= t("customer.session.sent_to_html", contact: @identifier) %></p>
   </div>
 
   <% if @dev_code.present? %>
@@ -13,14 +14,26 @@
     </div>
   <% end %>
 
+  <%= render "customer/sessions/delivery_state", challenge: @challenge %>
+
   <%= form_with url: member_verify_submit_path, method: :post, html: { style: "margin-top:26px;" } do %>
     <input type="text" name="code" inputmode="numeric" maxlength="6" autofocus autocomplete="one-time-code"
            class="l-field soft l-otp" placeholder="000000">
     <%= submit_tag t("customer.session.confirm"), class: "l-btn l-btn-primary l-btn-block", style: "margin-top:18px;" %>
   <% end %>
 
-  <%= link_to t("customer.session.change_phone"), member_login_path,
-        style: "display:block; text-align:center; color:var(--ink-2); font-size:13.5px; font-weight:600; margin-top:18px; text-decoration:none;" %>
+  <%# Re-issuing is the first thing anyone tries when a code doesn't arrive, so
+      it belongs here rather than only behind "change your number". %>
+  <div style="display:flex; gap:16px; justify-content:center; align-items:center; margin-top:18px;">
+    <%= button_to t("customer.session.resend"), member_login_path,
+          params: (by_email ? { tab: "email", email: @identifier } : { tab: "phone", phone: @identifier }),
+          class: "l-linkbtn" %>
+    <%= link_to by_email ? t("customer.session.change_email") : t("customer.session.change_phone"),
+          member_login_path(tab: by_email ? "email" : "phone"),
+          style: "color:var(--ink-2); font-size:13.5px; font-weight:600; text-decoration:none;" %>
+  </div>
 
-  <p class="legal"><%= t("customer.session.login_footer") %></p>
+  <p class="legal">
+    <%= by_email ? t("customer.session.login_footer") : t("customer.session.login_footer_phone") %>
+  </p>
 </div>

@@ -6,18 +6,41 @@
 
   <div style="margin-top:52px;">
     <div class="lead"><%= t("customer.session.welcome_back") %></div>
-    <div class="sub"><%= t("customer.session.enter_email") %></div>
+    <div class="sub">
+      <%= @tab == "phone" ? t("customer.session.enter_phone") : t("customer.session.enter_email") %>
+    </div>
+
+    <%# Email is kept for members who signed up before phone login existed. %>
+    <nav class="l-authtabs" style="margin-top:20px;">
+      <%= link_to t("customer.session.tab_phone"), member_login_path(tab: "phone"),
+            class: ("on" if @tab == "phone") %>
+      <%= link_to t("customer.session.tab_email"), member_login_path(tab: "email"),
+            class: ("on" if @tab == "email") %>
+    </nav>
 
     <%= form_with url: member_login_path, method: :post do %>
+      <%= hidden_field_tag :tab, @tab %>
       <%# Label and field are one control in the design, not a stacked pair. %>
-      <label class="l-inlinefield" style="margin-top:20px;">
-        <span class="lb"><%= t("customer.session.phone_label") %></span>
-        <input type="email" name="email" value="<%= @email %>" autocomplete="email" autofocus
-               placeholder="name@example.com">
-      </label>
-      <p style="color:var(--ink-2); font-size:13px; line-height:1.55; margin-top:14px;">
-        <%= t("customer.session.otp_explainer") %>
-      </p>
+      <% if @tab == "phone" %>
+        <label class="l-inlinefield">
+          <span class="lb"><%= t("customer.session.phone_label") %></span>
+          <input type="tel" name="phone" value="<%= @phone %>" autocomplete="tel"
+                 inputmode="numeric" autofocus
+                 placeholder="<%= t("customer.session.phone_placeholder") %>">
+        </label>
+        <p style="color:var(--ink-2); font-size:13px; line-height:1.55; margin-top:14px;">
+          <%= t("customer.session.otp_explainer_phone") %>
+        </p>
+      <% else %>
+        <label class="l-inlinefield">
+          <span class="lb"><%= t("customer.session.email_label") %></span>
+          <input type="email" name="email" value="<%= @email %>" autocomplete="email" autofocus
+                 placeholder="name@example.com">
+        </label>
+        <p style="color:var(--ink-2); font-size:13px; line-height:1.55; margin-top:14px;">
+          <%= t("customer.session.otp_explainer") %>
+        </p>
+      <% end %>
       <p style="color:var(--primary); font-size:13px; line-height:1.55; margin-top:6px;">
         <%= t("customer.session.first_login_note") %>
       </p>
@@ -25,5 +48,7 @@
     <% end %>
   </div>
 
-  <p class="legal"><%= t("customer.session.login_footer") %></p>
+  <p class="legal">
+    <%= @tab == "phone" ? t("customer.session.login_footer_phone") : t("customer.session.login_footer") %>
+  </p>
 </div>

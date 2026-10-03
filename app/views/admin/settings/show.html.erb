@@ -8,7 +8,7 @@
     <p style="color:var(--ink-2); font-size:13px; margin:0 0 12px;">
       Khi bật, mã OTP 6 số hiện thẳng trên trang đăng nhập của app khách hàng (và trang đổi email),
       không cần mở hộp thư. Dùng để test và demo với các email không có thật như
-      <span class="l-mono">khach1@cozycafe.vn</span>. Mã vẫn được gửi qua email như bình thường.
+      <span class="l-mono">khach1@cozycafe.vn</span>. Mã vẫn được gửi qua Zalo (hoặc email) như bình thường.
     </p>
 
     <% if @show_otp %>
@@ -31,4 +31,5 @@
       nhưng công tắc này là cách khuyên dùng.
     </p>
   </div>
+  <%= render "admin/settings/otp_gateway" %>
 </div>

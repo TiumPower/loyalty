@@ -1,0 +1,78 @@
+<%# Cổng gửi OTP qua Zalo: trạng thái, đổi refresh token, và gửi thử một tin
+    thật. Nút gửi thử là thứ quan trọng nhất ở đây — cấu hình có thể trông đúng
+    hết mà vẫn không gửi được (template chưa duyệt, sai OA id, token hết hạn). %>
+<div class="l-panel" style="margin-top:16px;">
+  <div class="l-eyebrow">Gửi mã</div>
+  <h3 class="l-display" style="font-size:20px; margin:6px 0 4px;">Cổng gửi OTP qua Zalo</h3>
+  <p style="color:var(--ink-2); font-size:13px; margin:0 0 14px;">
+    Khách đăng nhập bằng số điện thoại, mã xác thực gửi qua Zalo. Hai đường gửi:
+    <span class="l-mono">zns</span> (Zalo OA của mình) hoặc <span class="l-mono">esms</span> (qua đại lý).
+    Chọn bằng biến <span class="l-mono">OTP_ZALO_PROVIDER</span>; để trống là tự dò.
+  </p>
+
+  <div style="display:grid; gap:8px; font-size:13px; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; gap:12px;">
+      <span style="color:var(--ink-2);">Trạng thái</span>
+      <strong style="color:<%= @gateway[:configured] ? "var(--ink)" : "#B4402F" %>;">
+        <%= @gateway[:configured] ? "Đã cấu hình" : "Chưa cấu hình — mã đang hiện trên màn hình" %>
+      </strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; gap:12px;">
+      <span style="color:var(--ink-2);">Chế độ / đang dùng</span>
+      <strong class="l-mono"><%= @gateway[:mode] %> / <%= @gateway[:provider] || "—" %></strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; gap:12px;">
+      <span style="color:var(--ink-2);">Gửi thật thành công lần đầu</span>
+      <strong>
+        <%# Mốc này là thứ bật việc định tuyến OTP sang Zalo — xem
+            OtpChallenge.pick_channel. Chưa có thì vẫn ưu tiên email. %>
+        <%= @gateway[:verified_at] ? l(@gateway[:verified_at], format: :short) : "chưa có" %>
+      </strong>
+    </div>
+    <% if @gateway[:token_expiry] %>
+      <div style="display:flex; justify-content:space-between; gap:12px;">
+        <span style="color:var(--ink-2);">Access token hết hạn</span>
+        <strong><%= l(@gateway[:token_expiry], format: :short) %></strong>
+      </div>
+    <% end %>
+    <% if @gateway[:last_test].present? %>
+      <div style="display:flex; justify-content:space-between; gap:12px;">
+        <span style="color:var(--ink-2);">Lần gửi thử gần nhất</span>
+        <strong class="l-mono" style="font-size:12px; text-align:right;"><%= @gateway[:last_test] %></strong>
+      </div>
+    <% end %>
+  </div>
+
+  <% @gateway[:missing].each do |provider, missing| %>
+    <% next if missing.empty? %>
+    <div style="font-size:12.5px; color:var(--ink-2); margin-bottom:8px;">
+      <strong class="l-mono"><%= provider %></strong> còn thiếu:
+      <span class="l-mono" style="color:#B4402F;"><%= missing.join(", ") %></span>
+    </div>
+  <% end %>
+
+  <%# Refresh token của Zalo OA đổi sau mỗi lần làm mới, nên giá trị trong .env
+      sẽ cũ đi — phải dán được token mới mà không cần deploy. %>
+  <%= form_with url: admin_settings_otp_gateway_path, method: :patch,
+        html: { style: "display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin-bottom:12px;" } do %>
+    <div style="flex:1; min-width:220px;">
+      <label class="l-label">Refresh token Zalo OA</label>
+      <%= password_field_tag :zns_refresh_token, nil, class: "l-field", autocomplete: "off",
+            placeholder: "dán token mới vào đây" %>
+    </div>
+    <%= submit_tag "Lưu token", class: "l-btn" %>
+  <% end %>
+
+  <%= form_with url: admin_settings_otp_test_path, method: :post,
+        html: { style: "display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;" } do %>
+    <div style="flex:1; min-width:220px;">
+      <label class="l-label">Gửi thử tới số</label>
+      <%= telephone_field_tag :phone, nil, class: "l-field", placeholder: "0901234567" %>
+    </div>
+    <%= submit_tag "Gửi thử", class: "l-btn l-btn-primary" %>
+  <% end %>
+  <p style="color:var(--ink-2); font-size:12px; margin:10px 0 0;">
+    Gửi thử tốn một tin như bình thường. Gửi thành công một lần là hệ thống tự
+    chuyển OTP của khách sang Zalo; sau đó hãy TẮT công tắc hiện mã ở trên.
+  </p>
+</div>

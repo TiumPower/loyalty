@@ -1,0 +1,91 @@
+<% content_for :title, "Gộp hồ sơ trùng" %>
+<% content_for :title_en, "MERGE CUSTOMERS" %>
+
+<div style="max-width:720px;">
+  <%= link_to "← #{@member.display_name}", merchant_customer_path(@member),
+        style: "color:var(--ink-2); font-size:13px; text-decoration:none;" %>
+
+  <div class="l-panel" style="margin-top:12px;">
+    <div class="l-eyebrow">Hồ sơ giữ lại</div>
+    <h3 class="l-display" style="font-size:20px; margin:6px 0 4px;"><%= @member.display_name %></h3>
+    <p style="color:var(--ink-2); font-size:13px; margin:0;">
+      <%= [@member.phone, @member.email].compact_blank.join(" · ").presence || "chưa có liên lạc" %>
+      · <%= number_with_delimiter(@member.points_balance) %> điểm
+    </p>
+    <p style="color:var(--ink-2); font-size:13px; margin:10px 0 0; line-height:1.55;">
+      Hồ sơ còn lại sẽ bị <strong>xoá</strong>; toàn bộ điểm, hoá đơn, voucher, tem
+      và lịch sử của nó chuyển sang hồ sơ trên. Việc này <strong>không hoàn lại được</strong>.
+    </p>
+  </div>
+
+  <% if @other %>
+    <%# Màn xác nhận: liệt kê đúng những gì sẽ chuyển trước khi làm. %>
+    <div class="l-panel" style="margin-top:16px; border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);">
+      <div class="l-eyebrow" style="color:var(--warn);">Sẽ bị xoá sau khi gộp</div>
+      <h3 class="l-display" style="font-size:18px; margin:6px 0 4px;"><%= @other.display_name %></h3>
+      <p style="color:var(--ink-2); font-size:13px; margin:0 0 12px;">
+        <%= [@other.phone, @other.email].compact_blank.join(" · ").presence || "chưa có liên lạc" %>
+        · <%= number_with_delimiter(@other.points_balance) %> điểm
+        · vào <%= l(@other.created_at.to_date) %>
+      </p>
+
+      <% if @summary.present? %>
+        <ul style="margin:0 0 14px; padding-left:18px; font-size:13.5px; line-height:1.7;">
+          <% @summary.each do |label, count| %>
+            <li><strong><%= number_with_delimiter(count) %></strong> <%= label %></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p style="font-size:13.5px; margin:0 0 14px;">Hồ sơ này chưa có dữ liệu nào để chuyển.</p>
+      <% end %>
+
+      <% if @member.phone.blank? && @other.phone.present? %>
+        <p style="font-size:13px; color:var(--primary); margin:0 0 14px;">
+          Hồ sơ giữ lại sẽ nhận số <strong><%= @other.phone %></strong> để khách đăng nhập được bằng số đó.
+        </p>
+      <% end %>
+
+      <%= button_to "Gộp vào #{@member.display_name}",
+            merge_into_merchant_customer_path(@member, with: @other.id),
+            class: "l-btn l-btn-primary",
+            form: { data: { turbo_confirm: "Gộp #{@other.display_name} vào #{@member.display_name}? Không hoàn lại được." },
+                    style: "display:inline;" } %>
+      <%= link_to "Chọn hồ sơ khác", merge_merchant_customer_path(@member),
+            class: "l-btn l-btn-ghost" %>
+    </div>
+  <% else %>
+    <div class="l-panel" style="margin-top:16px;">
+      <div class="l-eyebrow">Chọn hồ sơ trùng</div>
+      <p style="color:var(--ink-2); font-size:13px; margin:6px 0 12px;">
+        Gợi ý theo tên giống nhau. Nếu khách dùng tên khác thì tìm theo số điện thoại hoặc email.
+      </p>
+
+      <%= form_with url: merge_merchant_customer_path(@member), method: :get,
+            html: { style: "display:flex; gap:8px; margin-bottom:14px;" } do %>
+        <%= text_field_tag :q, params[:q], class: "l-field", placeholder: "tên, số điện thoại hoặc email" %>
+        <%= submit_tag "Tìm", class: "l-btn" %>
+      <% end %>
+
+      <% if @candidates.any? %>
+        <% @candidates.each do |candidate| %>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;
+                      padding:12px 0; border-top:1px solid var(--line);">
+            <div style="min-width:0;">
+              <div style="font-weight:600;"><%= candidate.display_name %></div>
+              <div style="font-size:12.5px; color:var(--ink-2);">
+                <%= [candidate.phone, candidate.email].compact_blank.join(" · ").presence || "chưa có liên lạc" %>
+                · <%= number_with_delimiter(candidate.points_balance) %> điểm
+              </div>
+            </div>
+            <%= link_to "Chọn", merge_merchant_customer_path(@member, with: candidate.id),
+                  class: "l-btn l-btn-ghost" %>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="font-size:13.5px; color:var(--ink-2); margin:0;">
+          <%= params[:q].present? ? "Không tìm thấy hồ sơ nào khớp." : "Không thấy hồ sơ nào trùng tên. Hãy tìm theo số điện thoại hoặc email." %>
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

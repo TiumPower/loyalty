@@ -120,6 +120,16 @@ class Member < ApplicationRecord
     save!(validate: false)
   end
 
+  # Recompute without announcing a promotion. Merging two duplicate profiles can
+  # push the survivor over a tier line as an accounting artefact; telling the
+  # customer "Gold unlocked 🎉" because an operator tidied up their records is
+  # not a promotion they earned.
+  def recompute_points_quietly!
+    recompute_points!
+    @promoted_to = nil
+    self
+  end
+
   # True only when the new tier sits *above* the old one. A cycle rolling over,
   # or a voided bill, moves the key downwards — that is not a promotion, and
   # congratulating someone for losing a rung would be worse than saying nothing.
@@ -221,7 +231,7 @@ class Member < ApplicationRecord
   end
 
   def normalize_phone
-    self.phone = phone.to_s.gsub(/\s+/, "").presence
+    self.phone = self.class.canonical_phone(phone)
   end
 
   def normalize_email
@@ -242,6 +252,39 @@ class Member < ApplicationRecord
       domain = "gmail.com"
     end
     local.present? ? "#{local}@#{domain}" : e
+  end
+
+  # Other profiles in this shop that look like the same person, for the merge
+  # screen. `phone` and `email` are unique per workspace, so a duplicate can
+  # never be an exact match on either — the giveaway is the same name with the
+  # two identifiers split across two rows. A search term overrides the guess,
+  # because the owner knows their customers better than this heuristic does.
+  def self.likely_duplicates_of(member, q: nil, limit: 25)
+    scope = where(workspace_id: member.workspace_id).where.not(id: member.id)
+    if q.present?
+      like = "%#{q.to_s.strip}%"
+      scope.where("members.name ILIKE :q OR members.email ILIKE :q OR members.phone ILIKE :q", q: like)
+           .order(created_at: :desc).limit(limit)
+    elsif member.name.present?
+      scope.where("lower(btrim(members.name)) = ?", member.name.strip.downcase)
+           .order(created_at: :desc).limit(limit)
+    else
+      none
+    end
+  end
+
+  # Canonicalize a Vietnamese phone to the local 0xxxxxxxxx form, so the same
+  # person typing +84901234567, 84901234567, 0901234567 or "090 123 4567" all
+  # land on ONE account. This form is what the [workspace_id, phone] unique
+  # index and the login lookup are built on; PhoneFormat converts it to the
+  # 84xxxxxxxxx form the Zalo APIs want.
+  def self.canonical_phone(raw)
+    d = raw.to_s.gsub(/\D/, "")
+    return nil if d.blank?
+    d = d.sub(/\A0+84/, "84")
+    d = "0#{d[2..]}" if d.start_with?("84") && d.length >= 11
+    d = "0#{d}" unless d.start_with?("0")
+    d
   end
 
   def assign_referral_code

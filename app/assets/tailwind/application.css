@@ -1381,6 +1381,15 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   font-family:inherit; font-size:16px; color: var(--ink); }
 .l-inlinefield input::placeholder { color: var(--ink-2); font-weight:400; }
 
+/* Two ways to sign in (phone / email) as one segmented control, so neither
+   reads as the "other" option buried under the form. */
+.l-authtabs { display:flex; gap:4px; padding:4px; border-radius:14px;
+  background: var(--surface-2); margin-bottom:18px; }
+.l-authtabs a { flex:1; text-align:center; padding:10px 8px; border-radius:11px;
+  font-size:14px; font-weight:700; color: var(--ink-2); text-decoration:none; }
+.l-authtabs a.on { background: var(--card); color: var(--ink);
+  box-shadow:0 1px 3px rgb(0 0 0 / .07); }
+
 /* =====================================================================
    MERCHANT — dashboard components from the admin design.
    Prefixed .m- so nothing here can reach the customer app.

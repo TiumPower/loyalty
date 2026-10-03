@@ -59,6 +59,8 @@ Rails.application.routes.draw do
     patch "account", to: "account#update"
     get   "settings", to: "settings#show",   as: :settings
     patch "settings", to: "settings#update"
+    patch "settings/otp-gateway", to: "settings#update_gateway", as: :settings_otp_gateway
+    post  "settings/otp-test",    to: "settings#test_otp",        as: :settings_otp_test
   end
 
   # ---- Merchant self-serve signup (public) -------------------------------
@@ -107,7 +109,11 @@ Rails.application.routes.draw do
     # Saved audiences (MemberSegments presets) as a screen of their own.
     get "segments", to: "customers#segments", as: :segments
     resources :customers, only: [:index, :show, :destroy] do
-      member { post :adjust }
+      member do
+        post :adjust
+        get  :merge        # pick the duplicate, then confirm
+        post :merge_into   # actually fold it in
+      end
     end
     resources :transactions, only: [:index]
     # Undo a mis-rung bill (reverses points + revenue; see VoidPurchase).
