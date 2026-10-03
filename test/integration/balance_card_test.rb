@@ -35,6 +35,30 @@ class BalanceCardTest < ActionDispatch::IntegrationTest
     assert_select ".l-balance .toprow .l-ptspill .n", "450"
   end
 
+  # Huy hiệu chỉ nói được RẰNG có hạng. Hạng nào thì phải đọc ra chữ — chủ quán
+  # tự đặt tên hạng, nên không hình nào gợi được "Thành viên Bạch Kim".
+  test "viên điểm ghi cả tên hạng, không chỉ có hình" do
+    get base
+    assert_response :success
+    assert_select ".l-balance .l-ptspill .tier .tname", "Đồng"
+    assert_select ".l-balance .l-ptspill .tier svg", 1, "tên hạng đi kèm huy hiệu chứ không thay nó"
+  end
+
+  # Tên hạng dài không được đẩy viên phình ngang: nó xếp DƯỚI huy hiệu.
+  test "tên hạng dài bị cắt bằng ellipsis chứ không xuống dòng" do
+    ActsAsTenant.with_tenant(@ws) { @bronze.update!(name: "Thành viên Bạch Kim Danh Dự") }
+    get base
+    assert_select ".l-balance .l-ptspill .tier .tname", "Thành viên Bạch Kim Danh Dự"
+    css = File.read(Rails.root.join("app/assets/builds/tailwind.css"))
+    rule = css[/\.l-ptspill \.tier \.tname\s*\{[^}]+\}/m]
+    assert rule, "thiếu quy tắc cho tên hạng trong viên điểm"
+    assert_includes rule, "text-overflow:ellipsis"
+    assert_includes rule, "white-space:nowrap"
+    # line-height 1 cộng overflow:hidden sẽ xén dấu tiếng Việt — "Đồng" thành "Đong".
+    lh = rule[/line-height:\s*([0-9.]+)/, 1]
+    assert lh && lh.to_f > 1.05, "line-height #{lh.inspect} quá chật, dấu tiếng Việt sẽ bị cắt"
+  end
+
   # Huy hiệu hạng gộp vào viên điểm, không đứng thành viên thứ hai.
   test "hạng là huy hiệu trong viên điểm, không phải viên riêng" do
     get base
