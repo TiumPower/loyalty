@@ -266,12 +266,27 @@
             <% end %>
           </div>
 
-          <div style="border-radius:var(--pv-radius,22px); padding:18px; color:#fff; background:linear-gradient(135deg, var(--pv-primary,#8C4A2F), color-mix(in srgb, var(--pv-primary,#8C4A2F) 55%, #000)); box-shadow:var(--shadow-lg);">
-            <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; opacity:.85;"><%= ap.(:pv_points) %></div>
-            <div style="font-family:var(--pv-fd,'Fraunces'); font-size:38px; line-height:1;">2.480</div>
-            <div style="margin-top:12px; font-weight:600; letter-spacing:.04em; font-size:13px;">NGUYỄN THUỲ LINH</div>
+          <%# Dựng theo ĐÚNG thẻ đầu trang chủ của app khách: lời chào, viên
+              điểm kèm hạng, dòng còn bao nhiêu nữa thì lên hạng, rồi đường dẫn
+              lịch sử. Trước đây chỗ này là một thẻ "ĐIỂM HIỆN CÓ" khổ lớn kèm
+              nút "Đổi thưởng ngay" — cả hai đã không còn trên app từ lâu, nên
+              chủ quán chọn màu theo một màn hình không tồn tại. %>
+          <div style="border-radius:var(--pv-radius,22px); padding:16px; background:#fff; box-shadow:var(--shadow);">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-family:var(--pv-fb,'Plus Jakarta Sans'); font-weight:700; font-size:16px; color:var(--pv-ink,#3A2A20);"><%= ap.(:pv_greeting) %></span>
+              <span style="display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; color:#fff; background:var(--pv-primary,#8C4A2F); font-family:var(--pv-fb,'Plus Jakarta Sans');">
+                <strong style="font-size:15px;">2.480</strong>
+                <span style="font-size:11px; opacity:.85;"><%= t("customer.common.points_unit") %></span>
+                <span style="width:1px; height:14px; background:rgba(255,255,255,.35);"></span>
+                <span style="font-size:11px;"><%= t("customer.home.tier_pill", name: ap.(:pv_tier_name)) %></span>
+              </span>
+            </div>
+            <div style="font-size:12px; color:var(--pv-ink,#3A2A20); opacity:.65; margin-top:8px; font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= ap.(:pv_to_next) %></div>
+            <div style="height:6px; border-radius:999px; background:rgba(0,0,0,.08); margin-top:8px; overflow:hidden;">
+              <div style="width:28%; height:100%; background:var(--pv-primary,#8C4A2F);"></div>
+            </div>
+            <div style="margin-top:12px; font-size:12.5px; font-weight:700; color:var(--pv-primary,#8C4A2F); font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= t("customer.home.view_history") %> ›</div>
           </div>
-          <div style="margin-top:12px; width:100%; padding:12px; border-radius:14px; color:#fff; font-weight:600; text-align:center; background:var(--pv-primary,#8C4A2F); font-family:var(--pv-fb,'Plus Jakarta Sans');"><%= ap.(:pv_redeem) %></div>
         </div>
       </div>
     </div>
