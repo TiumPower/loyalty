@@ -1213,17 +1213,23 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 
 /* ---------- compact 2-up cards (home: play & collect, missions) ---------- */
 .l-duo { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.l-mini { background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px;
+.l-mini { background: var(--card); border:1px solid var(--line); border-radius:18px; padding:14px;
   box-shadow: var(--shadow-sm); display:flex; flex-direction:column; gap:10px; min-width:0;
   text-decoration:none; color: var(--ink); }
 .l-mini .hd { display:flex; align-items:flex-start; gap:10px; }
-.l-mini .ic { width:40px; height:40px; border-radius:12px; flex:none; display:grid; place-items:center;
-  background: var(--primary-soft); color: var(--primary); font-size:18px; }
-.l-mini .ic.count { background: var(--primary); color: var(--on-primary); border-radius:50%;
-  width:32px; height:32px; font-weight:700; font-size:14px; }
+/* Đĩa tròn đặc màu thương hiệu, glyph trắng — như design vẽ cho CẢ hai thẻ
+   "Chơi & tích" lẫn thẻ nhiệm vụ. Trước đây thẻ nhiệm vụ (.count) đã đúng còn
+   thẻ kia là ô bo góc nền nhạt, nên hai hàng cạnh nhau trông như hai thiết kế
+   khác nhau. */
+.l-mini .ic { width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center;
+  background: var(--primary); color: var(--on-primary); font-size:18px; }
+.l-mini .ic.count { width:44px; height:44px; font-weight:700; font-size:16px; }
 .l-mini .tt { font-weight:700; font-size:14px; line-height:1.25; }
 .l-mini .mt { font-size:12px; color: var(--ink-2); margin-top:2px; line-height:1.35; }
 .l-mini .ft { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; }
+/* "Thưởng mỗi ngày", "Còn 9": design để chữ hổ phách trần. Bọc pill vào làm
+   thẻ nhỏ đã chật càng rối, và lặp lại hình viên thuốc của số điểm ngay cạnh. */
+.l-mini .note { font-size:12px; font-weight:700; color: var(--amber); }
 
 /* ---------- shop detail ---------- */
 .l-shophero { aspect-ratio:390/200; background: var(--surface-2); position:relative; overflow:hidden;
