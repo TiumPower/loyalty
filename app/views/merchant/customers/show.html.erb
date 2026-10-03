@@ -135,6 +135,20 @@
     <% end %>
 
 
+    <%# ---- Merge a duplicate profile into this one (owner only) ---------- %>
+    <%# Phone login matches on the phone number, so a customer who used to sign
+        in by email can end up with a second profile. %>
+    <% if current_membership&.owner? %>
+      <div class="l-panel" style="margin-top:16px;">
+        <h3 class="l-display" style="font-size:17px; margin-bottom:4px;">Gộp hồ sơ trùng</h3>
+        <p style="color:var(--ink-2); font-size:13px; margin-bottom:12px;">
+          Nếu khách này có hai hồ sơ (một dùng email, một dùng số điện thoại), gộp lại để
+          điểm và lịch sử về cùng một chỗ.
+        </p>
+        <%= link_to "Tìm hồ sơ trùng", merge_merchant_customer_path(@member), class: "l-btn l-btn-ghost" %>
+      </div>
+    <% end %>
+
     <%# ---- Danger zone: permanently delete the customer (owner only) ---- %>
     <% if current_membership&.owner? %>
       <div class="l-panel" style="margin-top:16px; border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);">

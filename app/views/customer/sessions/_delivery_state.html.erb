@@ -1,0 +1,15 @@
+<%# Shown when the Zalo send actually failed. Without it the customer stares at
+    "we sent you a code" for a code that was never going to arrive. The code
+    itself is never revealed here — see OtpChallenge#show_on_screen?. %>
+<% if challenge&.delivery_error.present? %>
+  <div class="l-note warn" style="margin-top:18px;">
+    <div>
+      <%= t("customer.session.delivery_failed") %>
+      <% if challenge.delivery_email.present? %>
+        <%= button_to t("customer.session.send_by_email"), member_login_path,
+              params: { tab: "email", email: challenge.delivery_email },
+              class: "l-linkbtn", style: "margin-top:6px;" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

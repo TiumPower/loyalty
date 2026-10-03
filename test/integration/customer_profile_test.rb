@@ -19,7 +19,7 @@ class CustomerProfileTest < ActionDispatch::IntegrationTest
 
   def sign_in_member!
     post "#{base}/login", params: { email: @member.email }
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: @member.email, purpose: "login").order(:id).last
+    ch = otp_challenge_for(@member.email, workspace: @ws)
     post "#{base}/verify", params: { code: ch.code }
   end
 
@@ -38,8 +38,7 @@ class CustomerProfileTest < ActionDispatch::IntegrationTest
     assert_redirected_to "#{base}/me/confirm-email"
     assert_equal "me@example.com", @member.reload.email, "the login identifier is untouched"
 
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: "typo@example.com",
-                                     purpose: "email_change").order(:id).last
+    ch = otp_challenge_for("typo@example.com", workspace: @ws, purpose: "email_change")
     assert ch, "a code was sent to the NEW address"
 
     post "#{base}/me/confirm-email", params: { code: "000000" }
@@ -65,8 +64,7 @@ class CustomerProfileTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@ws) { create(:member, workspace: @ws, email: "taken@example.com") }
     patch "#{base}/me", params: { member: { email: "taken@example.com" } }
     assert_response :unprocessable_entity
-    assert_nil OtpChallenge.unscoped.where(workspace_id: @ws.id, email: "taken@example.com",
-                                           purpose: "email_change").last
+    assert_nil otp_challenge_for("taken@example.com", workspace: @ws, purpose: "email_change")
     assert_equal "me@example.com", @member.reload.email
   end
 

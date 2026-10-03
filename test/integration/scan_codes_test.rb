@@ -155,7 +155,7 @@ class ScanCodesTest < ActionDispatch::IntegrationTest
     ActsAsTenant.with_tenant(@ws) { @member.update!(email: "scan@example.com") }
     base = "/w/#{@ws.slug}"
     post "#{base}/login", params: { email: "scan@example.com" }
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: "scan@example.com", purpose: "login").order(:id).last
+    ch = otp_challenge_for("scan@example.com", workspace: @ws)
     post "#{base}/verify", params: { code: ch.code }
 
     url = ActsAsTenant.with_tenant(@ws) do

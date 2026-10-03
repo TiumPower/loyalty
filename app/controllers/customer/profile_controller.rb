@@ -53,15 +53,14 @@ module Customer
     def confirm_email
       @pending = session[:pending_email]
       return redirect_to member_profile_path if @pending.blank?
-      @dev_code = latest_code(@pending) if show_otp_onscreen?
+      load_challenge
     end
 
     def verify_email_change
       @pending = session[:pending_email]
       return redirect_to member_profile_path if @pending.blank?
 
-      challenge = OtpChallenge.where(workspace: current_workspace, email: @pending,
-                                     purpose: "email_change").order(created_at: :desc).first
+      challenge = email_change_challenge
       case challenge&.verify(params[:code])
       when :ok
         # Re-check: someone may have claimed the address while the code was out.
@@ -73,7 +72,7 @@ module Customer
         session.delete(:pending_email)
         redirect_to member_profile_path, notice: t("customer.profile.email_changed", email: @pending)
       else
-        @dev_code = latest_code(@pending) if show_otp_onscreen?
+        load_challenge
         flash.now[:alert] = t("customer.profile.email_code_bad")
         render :confirm_email, status: :unprocessable_entity
       end
@@ -107,19 +106,23 @@ module Customer
 
     def start_email_change!(email)
       session[:pending_email] = email
-      OtpChallenge.issue!(workspace: current_workspace, email: email, purpose: "email_change")
+      # `channel: "email"` is pinned, not inferred: the whole point of this flow
+      # is to prove control of the NEW address, so routing the code to Zalo
+      # would prove nothing.
+      OtpChallenge.issue!(identifier: email, scope: "customer", workspace: current_workspace,
+                          purpose: "email_change", channel: "email")
     end
 
-    def latest_code(email)
-      OtpChallenge.where(workspace: current_workspace, email: email, purpose: "email_change")
-                  .order(created_at: :desc).first&.code
+    def email_change_challenge
+      OtpChallenge.latest_for(identifier: @pending, scope: "customer",
+                              workspace: current_workspace, purpose: "email_change")
     end
 
-    # Same rule the login screen uses: show the code on-screen where no mail
-    # provider is configured, or this flow would be unusable there.
-    def show_otp_onscreen?
-      AppSetting.show_otp? || ENV["SHOW_OTP"] == "true" ||
-        !Rails.env.production? || !EmailOtp.configured?
+    # Whether to print the code on screen is the challenge's call — one rule,
+    # shared with the login screen.
+    def load_challenge
+      @challenge = email_change_challenge
+      @dev_code  = @challenge.code if @challenge&.show_on_screen?
     end
 
     # :avatar has its own action; leaving it here let the text form attach one

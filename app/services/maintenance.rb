@@ -11,7 +11,19 @@ module Maintenance
     { vouchers_expired: expire_vouchers, points_expired: ExpirePoints.run,
       birthday_rewards: Automations.run_birthday, winback: Automations.run_winback,
       members_recomputed: recompute_members, subscriptions: sync_subscriptions,
-      notifications_pruned: prune_notifications }
+      notifications_pruned: prune_notifications,
+      otp_pruned: prune_otp_challenges }
+  end
+
+  # Nothing ever removed spent/expired login codes, so the table grew forever
+  # for data that is useless after ten minutes. Keeps a day of history so a
+  # "I never got my code" report can still be looked into.
+  OTP_TTL = 1.day
+
+  def prune_otp_challenges
+    n = OtpChallenge.unscoped.where("expires_at < ?", OTP_TTL.ago).delete_all
+    Rails.logger.info("[Maintenance] pruned #{n} expired OTP challenges")
+    n
   end
 
   # Every broadcast writes one notification row per member and nothing ever

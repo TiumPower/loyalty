@@ -10,7 +10,7 @@ class ReviewRatingTest < ActionDispatch::IntegrationTest
       @member = create(:member, workspace: @ws, email: "r@example.com")
     end
     post "/w/#{@ws.slug}/login", params: { email: @member.email }
-    ch = OtpChallenge.unscoped.where(workspace_id: @ws.id, email: @member.email, purpose: "login").order(:id).last
+    ch = otp_challenge_for(@member.email, workspace: @ws)
     post "/w/#{@ws.slug}/verify", params: { code: ch.code }
   end
 

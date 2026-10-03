@@ -14,6 +14,21 @@ module ActiveSupport
 
     # Run a block with a tenant set (acts_as_tenant).
     def with_tenant(ws, &blk) = ActsAsTenant.with_tenant(ws, &blk)
+
+    # Read the code off the challenge a flow just issued, instead of each test
+    # knowing which column holds the identifier. Two dozen tests reached into
+    # the table directly; going through here means the next shape change is one
+    # edit rather than twenty.
+    def otp_code_for(identifier, workspace:, purpose: "login", scope: "customer")
+      otp_challenge_for(identifier, workspace: workspace, purpose: purpose, scope: scope)&.code
+    end
+
+    def otp_challenge_for(identifier, workspace:, purpose: "login", scope: "customer")
+      OtpChallenge.unscoped
+                  .where(workspace_id: workspace.id, scope: scope, purpose: purpose,
+                         identifier: OtpChallenge.normalize(identifier))
+                  .order(:id).last
+    end
   end
 end
 

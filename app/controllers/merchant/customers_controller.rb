@@ -1,8 +1,10 @@
 module Merchant
   class CustomersController < BaseController
-    before_action :set_member, only: [:show, :adjust, :destroy]
+    before_action :set_member, only: [:show, :adjust, :destroy, :merge, :merge_into]
     before_action :require_manager!, only: [:adjust]
-    before_action :require_owner!, only: [:destroy]
+    # Merging is as destructive and as irreversible as deleting, so it sits
+    # behind the same gate.
+    before_action :require_owner!, only: [:destroy, :merge, :merge_into]
 
     PER_PAGE = 50
 
@@ -121,6 +123,30 @@ module Merchant
       name = @member.display_name
       @member.destroy!
       redirect_to merchant_customers_path, notice: "Đã xoá khách hàng #{name}."
+    end
+
+    # Phone login matches on (workspace, phone), so a customer who used to sign
+    # in by email and now signs in by phone can end up with two profiles. This
+    # screen picks the duplicate, then shows exactly what will move before
+    # anything is touched.
+    def merge
+      @candidates = Member.likely_duplicates_of(@member, q: params[:q])
+      @other      = Member.find_by(id: params[:with]) if params[:with].present?
+      @summary    = MemberMerge.preview(keeper: @member, loser: @other) if @other
+    end
+
+    def merge_into
+      other = Member.find_by(id: params[:with])
+      return redirect_to merge_merchant_customer_path(@member), alert: "Chưa chọn hồ sơ để gộp." if other.nil?
+
+      result = MemberMerge.call(keeper: @member, loser: other, actor: current_user)
+      if result.ok?
+        redirect_to merchant_customer_path(@member),
+                    notice: "Đã gộp hồ sơ vào #{@member.reload.display_name}."
+      else
+        redirect_to merge_merchant_customer_path(@member, with: other.id),
+                    alert: "Không gộp được: #{result.error}"
+      end
     end
 
     private
