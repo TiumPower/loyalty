@@ -1867,7 +1867,7 @@ vi:
       greeting_morning: "Chào buổi sáng, %{name}"
       greeting_afternoon: "Chào buổi chiều, %{name}"
       greeting_evening: "Chào buổi tối, %{name}"
-      greeting_sub: "Hôm nay %{shop} có gì cho bạn?"
+      greeting_sub: "Hôm nay có gì cho bạn?"
       view_details: "Xem quán"
       view_history: "Xem lịch sử điểm"
       play_collect: "Chơi & tích"

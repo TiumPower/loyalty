@@ -3,11 +3,14 @@
 <% tier = @tier %>
 <% prog = current_workspace.program %>
 
-<%# ---- header: greeting + notification bell ---- %>
+<%# ---- header: tên quán + chuông ----
+     Lời chào đã nằm trong thẻ điểm ("Hey, Viên!"), nên ở đây nó là lời chào
+     thứ hai trên cùng một màn hình. Chỗ này giữ việc nói khách đang ở quán
+     nào — câu mà thẻ điểm không nói. %>
 <header class="l-head">
   <div style="min-width:0;">
-    <div class="t"><%= t("customer.home.greeting_#{greeting_period}", name: greeting_name(@member)) %></div>
-    <div class="s"><%= t("customer.home.greeting_sub", shop: current_workspace.name) %></div>
+    <div class="t"><%= current_workspace.name %></div>
+    <div class="s"><%= t("customer.home.greeting_sub") %></div>
   </div>
   <div class="sp">
     <%= link_to member_notifications_path, class: "l-iconbtn", "aria-label": t("customer.notifications.title") do %>
