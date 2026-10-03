@@ -1,4 +1,6 @@
-<%= form_with model: reward, url: url, method: method, multipart: true, data: { controller: "rewardform imagepick", turbo_frame: "_top",
+<%= form_with model: reward, url: url, method: method, multipart: true, data: { controller: "rewardform imagepick preview", turbo_frame: "_top",
+      preview_untitled_value: t("merchant.rewards.preview_untitled"),
+      preview_points_label_value: t("merchant.rewards.points_n", n: "%{n}"),
       imagepick_too_big_value: t("merchant.rewards.image_too_big"),
       imagepick_bad_type_value: t("merchant.rewards.image_bad_type"),
       imagepick_placeholder_value: t("merchant.rewards.image_none"),
@@ -24,7 +26,8 @@
           <div class="s"><%= t("merchant.rewards.sec_what_sub") %></div>
         </div>
   <label class="l-label"><%= t("merchant.rewards.name") %></label>
-  <%= f.text_field :title, class: "l-field", placeholder: t("merchant.rewards.name_ph") %>
+  <%= f.text_field :title, class: "l-field", placeholder: t("merchant.rewards.name_ph"),
+        data: { preview_target: "title", action: "input->preview#renderTitle" } %>
 
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
     <div>
@@ -35,7 +38,8 @@
     <div data-controller="iconpick" style="position:relative;">
       <label class="l-label"><%= t("merchant.rewards.icon") %></label>
       <%= f.text_field :icon, class: "l-field", placeholder: "🎁",
-            data: { iconpick_target: "input", action: "focus->iconpick#show click->iconpick#show" } %>
+            data: { iconpick_target: "input", preview_target: "icon",
+                    action: "focus->iconpick#show click->iconpick#show input->preview#renderIcon" } %>
       <div class="l-iconpick" data-iconpick-target="panel" hidden>
         <% %w[🎁 ☕ 🧋 🍰 🥐 🍩 🍔 🍜 🥤 🍺 🎟️ 🏷️ 🛍️ 👜 ✨ 💆 ⭐ 🔥 🎉 💎].each do |e| %>
           <button type="button" class="l-iconpick-btn" data-action="iconpick#pick" data-emoji="<%= e %>"><%= e %></button>
@@ -90,7 +94,8 @@
   <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
     <div>
       <label class="l-label"><%= t("merchant.rewards.cost") %></label>
-      <%= f.number_field :cost_points, class: "l-field", placeholder: "300" %>
+      <%= f.number_field :cost_points, class: "l-field", placeholder: "300",
+        data: { preview_target: "points", action: "input->preview#renderPoints" } %>
     </div>
     <div>
       <label class="l-label" data-rewardform-target="valueLabel"><%= t("merchant.rewards.value") %></label>
@@ -183,7 +188,8 @@
           <div class="s"><%= t("merchant.rewards.sec_copy_sub") %></div>
         </div>
   <label class="l-label"><%= t("merchant.rewards.description") %></label>
-  <%= f.text_area :description, class: "l-field", rows: 2, placeholder: t("merchant.rewards.description_ph") %>
+  <%= f.text_area :description, class: "l-field", rows: 2, placeholder: t("merchant.rewards.description_ph"),
+        data: { preview_target: "desc", action: "input->preview#renderDesc" } %>
 
       </div>
 
@@ -200,16 +206,15 @@
       <div class="m-previewlabel"><%= t("merchant.rewards.preview_label") %></div>
       <div class="m-phone">
         <div class="scr">
-          <div class="art" data-imagepick-target="art"><%= reward_art(reward, size: 420, emoji_size: 38, ratio: 16.0 / 10) %></div>
+          <div class="art" data-imagepick-target="art" data-preview-target="art"><%= reward_art(reward, size: 420, emoji_size: 38, ratio: 16.0 / 10) %></div>
           <div class="bd">
-            <div class="tt"><%= reward.title.presence || t("merchant.rewards.preview_untitled") %></div>
-            <% if reward.description.present? %>
-              <div class="ds"><%= truncate(reward.description, length: 90) %></div>
-            <% end %>
+            <%# Mô tả và viên điểm luôn có trong DOM, chỉ ẩn khi rỗng — nếu dựng
+                rồi xoá theo từng phím gõ thì không có chỗ ổn định để cập nhật. %>
+            <div class="tt" data-preview-target="titleOut"><%= reward.title.presence || t("merchant.rewards.preview_untitled") %></div>
+            <div class="ds" data-preview-target="descOut" <%= "hidden" if reward.description.blank? %>><%= truncate(reward.description, length: 90) %></div>
             <div style="display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
-              <% if reward.cost_points.to_i.positive? %>
-                <span class="l-chip l-chip-brand" style="font-size:11.5px;"><%= t("merchant.rewards.points_n", n: number_with_delimiter(reward.cost_points)) %></span>
-              <% end %>
+              <span class="l-chip l-chip-brand" style="font-size:11.5px;" data-preview-target="pointsOut"
+                    <%= "hidden" unless reward.cost_points.to_i.positive? %>><%= t("merchant.rewards.points_n", n: number_with_delimiter(reward.cost_points)) %></span>
               <% if reward.persisted? && reward.value.to_i.positive? %>
                 <span class="l-chip" style="font-size:11.5px;"><%= reward.value_label %></span>
               <% end %>
