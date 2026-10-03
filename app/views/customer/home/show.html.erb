@@ -3,13 +3,33 @@
 <% tier = @tier %>
 <% prog = current_workspace.program %>
 
-<%# ---- header: greeting + notification bell ---- %>
+<%# ---- header: ai, bao nhiêu điểm, và điều gì sắp hết hạn ----
+     Số điểm nằm ngay cạnh tên trên cùng một dòng, thay cho tấm thẻ số dư to
+     phía dưới: đó là con số khách mở app ra để xem, không đáng phải cuộn tới.
+     Viên pill mang màu và glyph của hạng, nên nó nói luôn hạng mà không cần
+     thêm một viên thứ hai trên màn hình rộng 375px. %>
+<% exp_amt, exp_date = prog.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
 <header class="l-head">
-  <div style="min-width:0;">
-    <div class="t"><%= t("customer.home.greeting_#{greeting_period}", name: greeting_name(@member)) %></div>
-    <div class="s"><%= t("customer.home.greeting_sub", shop: current_workspace.name) %></div>
+  <%= member_avatar(@member, klass: "l-head-av") %>
+  <div style="flex:1; min-width:0;">
+    <div class="t"><%= t("customer.home.greeting_short", name: greeting_name(@member)) %></div>
+    <% if exp_amt.to_i > 0 %>
+      <%= link_to member_wallet_path, class: "s expiring" do %>
+        <%= t("customer.home.expiring_plain", n: number_with_delimiter(exp_amt),
+              date: (exp_date ? l(exp_date.to_date, format: :short) : "")) %>
+      <% end %>
+    <% else %>
+      <div class="s"><%= t("customer.home.greeting_sub", shop: current_workspace.name) %></div>
+    <% end %>
   </div>
   <div class="sp">
+    <%= link_to member_history_path, class: "l-ptspill",
+          style: (tier ? "background:#{tier.pill_background}; color:#{tier.pill_foreground};" : nil),
+          title: (tier ? t("customer.home.tier_badge", name: tier.name) : nil) do %>
+      <%= number_with_delimiter(@member.points_balance) %>
+      <small><%= t("customer.common.points_unit") %></small>
+      <% if tier %><%= ui_icon(tier_icon(tier), size: 15, fill: true) %><% end %>
+    <% end %>
     <%= link_to member_notifications_path, class: "l-iconbtn", "aria-label": t("customer.notifications.title") do %>
       <%= ui_icon(:bell, size: 19) %>
       <% if @unread.to_i.positive? %><span class="dot"></span><% end %>
@@ -42,35 +62,8 @@
     </div>
   </div>
 
-  <div class="l-balance" style="margin-top:14px;">
-    <div style="display:flex; align-items:flex-start; gap:12px;">
-      <div style="flex:1; min-width:0;">
-        <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.home.points_balance") %></div>
-        <div class="v" style="font-size:40px;"><%= number_with_delimiter(@member.points_balance) %> <small><%= t("customer.common.points_unit").upcase %></small></div>
-      </div>
-      <% if tier %>
-        <%= link_to member_tier_path, class: "l-pill tier lg",
-              style: "flex:none; background:#{tier.pill_background}; color:#{tier.pill_foreground};#{" box-shadow: inset 0 0 0 1.5px #{tier.pill_ring};" if tier.pill_ring}" do %>
-          <%= ui_icon(tier_icon(tier), size: 14, fill: true) %><%= t("customer.home.tier_badge", name: tier.name) %>
-        <% end %>
-      <% end %>
-    </div>
-    <%= link_to member_history_path, class: "link" do %>
-      <%= t("customer.home.view_history") %> <%= ui_icon(:chevron_right, size: 14, stroke: 2.4) %>
-    <% end %>
-  </div>
-
-  <%# ---- Points expiring soon. The design has no slot for it, but it is the one
-        thing on this screen with a deadline, so it sits under the balance it
-        applies to. ---- %>
-  <% exp_amt, exp_date = prog.points_expire? ? @member.points_expiring_soon(within: 30.days) : [0, nil] %>
-  <% if exp_amt.to_i > 0 %>
-    <%= link_to member_wallet_path, class: "l-note amber", style: "margin-top:12px; text-decoration:none;" do %>
-      <%= ui_icon(:clock, size: 17) %>
-      <span><%= t("customer.home.expiring_html", n: number_with_delimiter(exp_amt),
-                   when: (exp_date ? t("customer.home.expiring_on", date: l(exp_date.to_date, format: :short)) : "")).html_safe %></span>
-    <% end %>
-  <% end %>
+  <%# Hạng vẫn tới được từ Hồ sơ → "Xem quyền lợi hạng"; ở đây màu và glyph
+      của viên điểm đã nói hạng rồi. %>
 
   <%# ---- Featured rewards ---- %>
   <% if @offers.present? %>

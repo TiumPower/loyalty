@@ -1868,6 +1868,8 @@ en:
       missions_today: "Today's missions"
       open_until: "Open until %{time}"
       closed_until: "Opens at %{time}"
+      greeting_short: "Hi, %{name}!"
+      expiring_plain: "%{n} points expire on %{date}"
     profile:
       email_code_valid: "Code valid for"
       email_confirm_heading: "Confirm your new email"
