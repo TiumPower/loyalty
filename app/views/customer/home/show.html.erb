@@ -46,7 +46,14 @@
     <div style="display:flex; align-items:flex-start; gap:12px;">
       <div style="flex:1; min-width:0;">
         <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.home.points_balance") %></div>
-        <div class="v" style="font-size:40px;"><%= number_with_delimiter(@member.points_balance) %> <small><%= t("customer.common.points_unit").upcase %></small></div>
+        <%# Viên đặc mang huy hiệu, như mẫu. Con số trần cỡ 40px trước đây là
+            chữ to nhất màn hình nhưng vẫn chỉ là chữ; viên pill làm nó thành
+            một vật thể, và đó mới là thứ khách mở app ra để nhìn. %>
+        <span class="l-ptspill" style="margin-top:8px;">
+          <%= number_with_delimiter(@member.points_balance) %>
+          <small><%= t("customer.common.points_unit") %></small>
+          <%= ui_icon(:medal, size: 18) %>
+        </span>
       </div>
       <% if tier %>
         <%= link_to member_tier_path, class: "l-pill tier lg",

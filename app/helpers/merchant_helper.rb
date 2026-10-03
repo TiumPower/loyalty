@@ -11,11 +11,12 @@ module MerchantHelper
   def merchant_sections
     manage = current_membership&.can_manage?
     [
+      # Không còn mục "Vận hành". Nó chỉ có hai màn, mà máy quét đã có nút
+      # riêng nổi bật ngay trên thanh menu — nên mục này chỉ là một lớp nữa
+      # phải bấm qua để tới Giao dịch. Giao dịch về với Tổng quan: bảng số và
+      # sổ cái đứng sau những con số đó thuộc về nhau.
       { key: :overview, icon: :layout, label: t("merchant.nav.sec_overview"), items: [
-        [:dashboard, t("merchant.nav.dashboard"), merchant_root_path, true]
-      ] },
-      { key: :operations, icon: :store, label: t("merchant.nav.sec_operations"), items: [
-        [:scanner,      t("merchant.nav.scanner"),      merchant_scanner_path,      true],
+        [:dashboard,    t("merchant.nav.dashboard"),    merchant_root_path,         true],
         [:transactions, t("merchant.nav.transactions"), merchant_transactions_path, true]
       ] },
       { key: :loyalty, icon: :award, label: t("merchant.nav.sec_loyalty"), items: [

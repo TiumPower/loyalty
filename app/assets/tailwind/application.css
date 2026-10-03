@@ -573,6 +573,16 @@ a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--prima
 .l-balance .v { font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1.05;
   font-variant-numeric:tabular-nums; margin-top:6px; }
 .l-balance .v small { font-size:.62em; font-weight:700; letter-spacing:0; margin-left:2px; }
+/* Số điểm: viên đặc mang huy hiệu. Thay cho con số trần 40px — cùng một con
+   số, nhưng thành một vật thể trên màn hình thay vì một dòng chữ to. */
+.l-ptspill { display:inline-flex; align-items:center; gap:6px;
+  padding:9px 15px; border-radius:999px; text-decoration:none;
+  background: var(--primary); color: var(--on-primary);
+  font-size:22px; font-weight:700; letter-spacing:-.02em; line-height:1;
+  font-variant-numeric:tabular-nums;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--primary) 28%, transparent); }
+.l-ptspill small { font-size:.62em; font-weight:700; letter-spacing:0; opacity:.88; }
+.l-ptspill svg { opacity:.9; margin-left:1px; }
 .l-balance .link { display:inline-flex; align-items:center; gap:5px; margin-top:12px;
   font-size:13.5px; font-weight:700; color: var(--primary); text-decoration:none; }
 
