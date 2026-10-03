@@ -42,26 +42,23 @@
     </div>
   </div>
 
+  <%# Lời chào, số điểm, và hạng — gộp lại thành một khối.
+      Hạng từng là một viên pill riêng đứng lẻ bên phải, lặp lại hình viên
+      thuốc của số điểm ngay cạnh nó. Giờ nó là nửa sau của CÙNG một viên:
+      điểm bên trái, huy hiệu và tên hạng bên phải, chung một đường bao. %>
   <div class="l-balance" style="margin-top:14px;">
-    <div style="display:flex; align-items:flex-start; gap:12px;">
-      <div style="flex:1; min-width:0;">
-        <div style="font-size:13px; font-weight:600; color:var(--ink-2);"><%= t("customer.home.points_balance") %></div>
-        <%# Viên đặc mang huy hiệu, như mẫu. Con số trần cỡ 40px trước đây là
-            chữ to nhất màn hình nhưng vẫn chỉ là chữ; viên pill làm nó thành
-            một vật thể, và đó mới là thứ khách mở app ra để nhìn. %>
-        <span class="l-ptspill" style="margin-top:8px;">
-          <%= number_with_delimiter(@member.points_balance) %>
-          <small><%= t("customer.common.points_unit") %></small>
-          <%= ui_icon(:medal, size: 18) %>
-        </span>
-      </div>
+    <div class="greet"><%= t("customer.home.greeting_hey", name: greeting_name(@member)) %></div>
+    <div class="lbl"><%= t("customer.home.points_balance") %></div>
+    <div><span class="l-ptspill">
+      <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
+      <small><%= t("customer.common.points_unit") %></small>
       <% if tier %>
-        <%= link_to member_tier_path, class: "l-pill tier lg",
-              style: "flex:none; background:#{tier.pill_background}; color:#{tier.pill_foreground};#{" box-shadow: inset 0 0 0 1.5px #{tier.pill_ring};" if tier.pill_ring}" do %>
-          <%= ui_icon(tier_icon(tier), size: 14, fill: true) %><%= t("customer.home.tier_badge", name: tier.name) %>
+        <%= link_to member_tier_path, class: "tier",
+              style: "background:#{tier.pill_background}; color:#{tier.pill_foreground};" do %>
+          <%= ui_icon(tier_icon(tier), size: 14, fill: true) %><%= tier.name %>
         <% end %>
       <% end %>
-    </div>
+    </span></div>
     <%= link_to member_history_path, class: "link" do %>
       <%= t("customer.home.view_history") %> <%= ui_icon(:chevron_right, size: 14, stroke: 2.4) %>
     <% end %>
