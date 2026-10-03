@@ -164,7 +164,10 @@
       <%= link_to merchant_customer_path(c), class: "l-btn l-btn-primary l-btn-block" do %>
         <%= ui_icon(:arrow_right, size: 16) %><%= t("merchant.customers.open_profile") %>
       <% end %>
-      <%= link_to t("merchant.customers.send_message"), new_merchant_broadcast_path(@compose_params),
+      <%# Nút này nằm dưới tên và lịch sử của MỘT khách, nên nó phải gửi cho
+          đúng người đó. Trước đây nó mang @compose_params — bộ lọc của cả danh
+          sách — nên bấm vào là soạn thông báo cho cả nhóm đang lọc. %>
+      <%= link_to t("merchant.customers.send_message"), new_merchant_broadcast_path(member: c.id),
             class: "l-btn l-btn-ghost l-btn-block" %>
     </div>
   </div>

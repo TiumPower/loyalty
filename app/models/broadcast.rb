@@ -29,7 +29,8 @@ class Broadcast < ApplicationRecord
   # the group it was composed for.
   def deliver_to_segment!
     deliver!(MemberSegments.audience(segment: segment_key, outlet_id: audience_outlet_id,
-                                     q: audience_query, tier: audience_tier).to_a)
+                                     q: audience_query, tier: audience_tier,
+                                     member_id: audience_member_id).to_a)
   end
 
   # Take ownership of a scheduled send before doing any work. Returns true only

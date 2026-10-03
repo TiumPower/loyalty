@@ -352,7 +352,7 @@ en:
       quick_preview: "Quick preview"
       recent_activity: "Recent activity"
       open_profile: "Open full profile"
-      send_message: "Send message"
+      send_message: "Send a direct notification"
       send_group: "✉ Notify this group"
       compose: "Compose broadcast"
       count: "%{n} customers"

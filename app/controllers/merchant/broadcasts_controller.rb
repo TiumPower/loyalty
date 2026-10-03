@@ -7,7 +7,7 @@ module Merchant
     end
 
     def new
-      load_audience(params[:segment], params[:outlet], params[:q], params[:tier])
+      load_audience(params[:segment], params[:outlet], params[:q], params[:tier], params[:member])
       @count      = @audience_scope.count
       @push_ready = push_ready_count(@audience_scope.select(:id))
       @broadcast  = Broadcast.new(segment_key: @segment)
@@ -15,12 +15,13 @@ module Merchant
 
     def create
       bp = params[:broadcast] || {}
-      load_audience(bp[:segment_key], bp[:audience_outlet_id], bp[:audience_query], bp[:audience_tier])
+      load_audience(bp[:segment_key], bp[:audience_outlet_id], bp[:audience_query], bp[:audience_tier],
+                    bp[:audience_member_id])
       @broadcast = current_workspace.broadcasts.new(
         broadcast_params.merge(segment_key: @segment, created_by: current_user,
                                audience_label: @audience_label,
                                audience_outlet_id: @outlet&.id, audience_query: @q.presence,
-                               audience_tier: @tier)
+                               audience_tier: @tier, audience_member_id: @member&.id)
       )
       members = @audience_scope.to_a
       @count  = members.size
@@ -71,13 +72,19 @@ module Merchant
     # display name, from whichever params the request carries (query on :new, nested
     # broadcast[...] hidden fields on :create). Sets @segment, @outlet, @q,
     # @audience_scope and @audience_label.
-    def load_audience(segment, outlet_id, q, tier = nil)
+    def load_audience(segment, outlet_id, q, tier = nil, member_id = nil)
       @segment = MemberSegments::PRESETS.key?(segment) ? segment : "all"
       @outlet  = current_workspace.outlets.find_by(id: outlet_id) if outlet_id.present?
       @q       = q.to_s.strip
       @tier    = tier.presence if current_workspace.tiers.any? { |t| t.key == tier }
-      @audience_scope = MemberSegments.audience(segment: @segment, outlet_id: @outlet&.id, q: @q, tier: @tier)
-      @audience_label = MemberSegments.audience_label(segment: @segment, outlet: @outlet, q: @q, tier: @tier)
+      # Đi qua tenant hiện tại chứ không `Member.find`: id trong tham số là thứ
+      # người gửi tự gõ được, và một shop không được soạn thông báo cho khách
+      # của shop khác.
+      @member  = Member.find_by(id: member_id) if member_id.present?
+      @audience_scope = MemberSegments.audience(segment: @segment, outlet_id: @outlet&.id, q: @q,
+                                                tier: @tier, member_id: @member&.id)
+      @audience_label = MemberSegments.audience_label(segment: @segment, outlet: @outlet, q: @q,
+                                                      tier: @tier, member: @member)
     end
 
     # How many of these customers actually have the app installed — the honest
