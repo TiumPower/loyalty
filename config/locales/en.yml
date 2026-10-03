@@ -1852,6 +1852,7 @@ en:
       greeting: "Hi %{name}, have a great day 👋"
       points_balance: "Points balance"
       tier_badge: "%{name} tier"
+      tier_pill: "%{name} tier"
       per_bill_html: "×%{m} pts<br>per bill"
       q_my_code: "My code"
       q_scan: "Scan"

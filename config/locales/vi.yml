@@ -1893,6 +1893,7 @@ vi:
       greeting: "Chào %{name}, chúc ngày tốt lành 👋"
       points_balance: "Điểm hiện có"
       tier_badge: "Hạng %{name}"
+      tier_pill: "Hạng %{name}"
       per_bill_html: "×%{m} điểm<br>mỗi hoá đơn"
       q_my_code: "Mã của tôi"
       q_scan: "Quét mã"

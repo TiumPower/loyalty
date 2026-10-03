@@ -48,18 +48,19 @@ Rails.application.configure do
       :local
     end
 
-  # Serve images through the app rather than redirecting to R2.
+  # Ảnh đi qua route redirect của Rails rồi mới tới CDN (302 → img.tiumpower.com).
   #
-  # The redirect hands the browser a signed R2 URL that expires in five
-  # minutes, and the redirect itself is cacheable for five minutes. In a PWA
-  # whose service worker caches every GET, any replay after that window followed
-  # an expired signature and the customer got a broken image — the shop cover and
-  # the reward photos, which are the first things the app shows. The proxy URL is
-  # same-origin, stable, and served with `immutable, max-age=1 year`, so each
-  # image is fetched once and then cached properly by the browser and the worker.
-  # Ảnh phát thẳng URL CDN khi bucket có domain công khai; biến thể chưa dựng
-  # rơi về redirect của Rails rồi lần sau đi thẳng. Xem lib/cdn_routes.rb.
-  config.active_storage.resolve_model_to_route = :cdn_storage
+  # ĐỪNG nối thẳng CDN bằng `resolve_model_to_route` + một route `direct` trả về
+  # URL tuyệt đối. Đã thử và nó hỏng âm thầm: khối `direct` KHÔNG nhận được cờ
+  # `only_path`, mà mọi helper dạng path (`image_tag`, `url_for` trong view) thì
+  # Rails PARSE chuỗi trả về rồi chỉ lấy phần path — nên
+  # "https://img.tiumpower.com/loyalty/<key>" thành "/loyalty/<key>", giải theo
+  # domain của chính shop và 404. Bản `_url` thì đúng, nên lỗi chỉ hiện ở ảnh
+  # chứ không hiện ở test đơn vị của resolver.
+  #
+  # Redirect tốn một lượt đi tới Rails cho mỗi ảnh, nhưng đích đến giờ là URL
+  # công khai VĨNH VIỄN (bucket R2 đã mở sau img.tiumpower.com), không còn chữ
+  # ký hết hạn — nên service worker của PWA cache lại cũng không gãy như trước.
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil

@@ -30,7 +30,9 @@ class BalanceCardTest < ActionDispatch::IntegrationTest
   test "tên và điểm nằm trên cùng một hàng" do
     get base
     assert_response :success
-    assert_select ".l-balance .idrow .av", 1, "ảnh đại diện mở đầu hàng"
+    # Vòng ảnh đại diện đã bỏ: khách chưa đặt được ảnh nên nó luôn chỉ là hai
+    # chữ cái viết tắt, chiếm chỗ mà không nói thêm gì.
+    assert_select ".l-balance .idrow .av", 0, "không còn vòng ảnh đại diện"
     assert_select ".l-balance .toprow .greet", /Viên/
     assert_select ".l-balance .toprow .l-ptspill .n", "450"
   end
@@ -40,7 +42,9 @@ class BalanceCardTest < ActionDispatch::IntegrationTest
   test "viên điểm ghi cả tên hạng, không chỉ có hình" do
     get base
     assert_response :success
-    assert_select ".l-balance .l-ptspill .tier .tname", "Đồng"
+    # "Hạng Đồng" chứ không trơ "Đồng": một mình cái tên đọc như một danh từ
+    # bất kỳ, không nói được rằng đó là hạng thành viên.
+    assert_select ".l-balance .l-ptspill .tier .tname", "Hạng Đồng"
     assert_select ".l-balance .l-ptspill .tier svg", 1, "tên hạng đi kèm huy hiệu chứ không thay nó"
   end
 
@@ -48,7 +52,7 @@ class BalanceCardTest < ActionDispatch::IntegrationTest
   test "tên hạng dài bị cắt bằng ellipsis chứ không xuống dòng" do
     ActsAsTenant.with_tenant(@ws) { @bronze.update!(name: "Thành viên Bạch Kim Danh Dự") }
     get base
-    assert_select ".l-balance .l-ptspill .tier .tname", "Thành viên Bạch Kim Danh Dự"
+    assert_select ".l-balance .l-ptspill .tier .tname", "Hạng Thành viên Bạch Kim Danh Dự"
     css = File.read(Rails.root.join("app/assets/builds/tailwind.css"))
     rule = css[/\.l-ptspill \.tier \.tname\s*\{[^}]+\}/m]
     assert rule, "thiếu quy tắc cho tên hạng trong viên điểm"

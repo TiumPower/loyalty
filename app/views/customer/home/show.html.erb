@@ -55,7 +55,6 @@
       đủ để nhận ra hạng. Bấm vào vẫn sang trang quyền lợi. %>
   <div class="l-balance" style="margin-top:14px;">
     <div class="idrow">
-      <%= member_avatar(@member, klass: "av") %>
       <div class="who">
         <div class="toprow">
           <span class="greet"><%= t("customer.home.greeting_hey", name: greeting_name(@member)) %></span>
@@ -73,7 +72,7 @@
               <small><%= t("customer.common.points_unit") %></small>
               <span class="tier">
                 <%= tier_glyph(tier, size: 15) %>
-                <small class="tname"><%= tier.name %></small>
+                <small class="tname"><%= t("customer.home.tier_pill", name: tier.name) %></small>
               </span>
             <% end %>
           <% else %>

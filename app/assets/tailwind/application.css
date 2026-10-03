@@ -573,11 +573,10 @@ a.l-row:hover, button.l-row:hover { border-color: color-mix(in srgb, var(--prima
 .l-balance .v { font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1.05;
   font-variant-numeric:tabular-nums; margin-top:6px; }
 .l-balance .v small { font-size:.62em; font-weight:700; letter-spacing:0; margin-left:2px; }
-/* Hàng ngang: ảnh đại diện, rồi tên + điểm, rồi ghi chú thụt vào dưới tên. */
+/* Hàng ngang: tên + điểm, rồi ghi chú thụt vào dưới tên.
+   Vòng ảnh đại diện đã bỏ: khách chưa đặt được ảnh nên nó luôn chỉ là hai chữ
+   cái viết tắt — chiếm chỗ mà không nói thêm gì. */
 .l-balance .idrow { display:flex; align-items:flex-start; gap:11px; }
-.l-balance .av { width:42px; height:42px; border-radius:50%; flex:none; overflow:hidden;
-  display:grid; place-items:center; background: var(--primary-soft); color: var(--primary);
-  font-weight:700; font-size:14px; }
 .l-balance .who { flex:1; min-width:0; }
 .l-balance .toprow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .l-balance .greet { font-size:18px; font-weight:700; letter-spacing:-.02em; line-height:1.2; }
