@@ -62,13 +62,19 @@
           <% if tier %>
             <%# Viên giữ màu thương hiệu, huy hiệu trắng — như mẫu. Lấy màu của
                 hạng vào đây làm nó nhợt đi: hạng Đồng là tông nâu nhạt, và
-                con số quan trọng nhất màn hình thì không nên nhạt. Hạng vẫn
-                đọc ra được qua HÌNH huy hiệu, vốn mỗi hạng một kiểu. %>
+                con số quan trọng nhất màn hình thì không nên nhạt.
+                Tên hạng đi kèm huy hiệu: hình chỉ nói được rằng CÓ hạng, còn
+                hạng nào thì phải đọc — nhất là khi chủ quán tự đặt tên hạng,
+                lúc đó hình chẳng gợi ra chữ nào. Xếp dọc chứ không nằm ngang
+                để bề ngang viên không phình theo độ dài cái tên. %>
             <%= link_to member_tier_path, class: "l-ptspill",
                   title: t("customer.home.tier_badge", name: tier.name) do %>
               <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
               <small><%= t("customer.common.points_unit") %></small>
-              <%= tier_glyph(tier, size: 16) %>
+              <span class="tier">
+                <%= tier_glyph(tier, size: 15) %>
+                <small class="tname"><%= tier.name %></small>
+              </span>
             <% end %>
           <% else %>
             <%= link_to member_history_path, class: "l-ptspill" do %>
