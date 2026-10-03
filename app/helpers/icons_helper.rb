@@ -6,10 +6,9 @@ module IconsHelper
   # cong, khác tỉ lệ, khác cách bo đầu nét — nên đứng cạnh nhau là thấy rõ
   # không cùng một bộ.
   #
-  # Huy hiệu hạng cũng lấy từ Lucide — hexagon, star, sparkle, diamond — chỉ
-  # khác là được tô đặc bằng `fill: true`, vốn là cách design vẽ chúng. Hạng
-  # Vàng từng là một tia tám cánh tôi tự vẽ; `sparkle` của Lucide nói đúng
-  # điều đó và thuộc cùng một bộ với phần còn lại.
+  # Huy hiệu hạng KHÔNG nằm ở đây — xem TIER_BADGES bên dưới. Lucide là bộ
+  # icon giao diện: một nét, một màu, phẳng. Huy hiệu hạng là con dấu, nó
+  # được phép có khối.
   ICONS = {
     home:    %(<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>),
 
@@ -46,16 +45,6 @@ module IconsHelper
     pause:   %(<rect x="14" y="3" width="5" height="18" rx="1"/><rect x="5" y="3" width="5" height="18" rx="1"/>),
 
     play:    %(<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>),
-
-    # ---- Membership tiers. Solid shapes, as the design draws them: a hexagon,
-    # a five-point star, an eight-point burst and a diamond. Always rendered
-    # with `fill: true`.
-    tier_hexagon: %(<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>),
-
-    tier_star:    %(<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>),
-
-    tier_burst:   %(<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>),
-    tier_diamond: %(<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/>),
 
     # A party popper: the cone, the burst it throws, and the confetti. For the
     # moment something is unlocked — a gift box is what is *in* the wallet, not
@@ -162,6 +151,41 @@ module IconsHelper
       %(fill="none" stroke="currentColor" stroke-width="#{stroke}" stroke-linejoin="round" stroke-linecap="round")
     end
     attrs = %(viewBox="0 0 24 24" width="#{size}" height="#{size}" #{paint} class="#{klass}" aria-hidden="true")
+    "<svg #{attrs}>#{body}</svg>".html_safe
+  end
+
+  # ---- Huy hiệu hạng -------------------------------------------------------
+  #
+  # Bốn hình vẫn là hình của design (lục giác, sao năm cánh, tia bốn cánh, kim
+  # cương), nhưng được CẮT MẶT như đá quý: mỗi hình chia thành những mặt phẳng
+  # không chồng lên nhau, cùng một màu, khác `fill-opacity`. Ánh sáng đến từ
+  # trên-trái, nên mặt nào quay về phía đó thì nhạt (0.64) và mặt khuất thì đậm
+  # (1.0). Cùng một quy luật cho cả bốn hạng, nên dù khác hình chúng vẫn là một
+  # bộ — và nước cắt dày dần theo hạng: Đồng 3 mặt, Vàng 8, Bạc 10, Kim Cương
+  # cắt brilliant đủ bàn, vai và bốn nêm đáy.
+  #
+  # Chỉ dùng `currentColor`, không màu cứng: mỗi hạng tự mang màu riêng trong
+  # DB (`pill_foreground`, `ink_color`), và huy hiệu nằm trên đủ loại nền —
+  # viên thuốc kem nhạt, ô gradient, nền trắng.
+  #
+  # Các mặt dùng chung đỉnh chứ không chồng mép. Đường ranh mảnh giữa hai mặt
+  # là cố ý: đá quý thật cũng có cạnh mặt cắt.
+  TIER_BADGES = {
+    bronze: %(<path d="M12.0 1.7L20.92 6.85L3.08 6.85Z" fill-opacity="0.67"/><path d="M3.08 6.85L12.0 6.85L12.0 22.3L3.08 17.15Z" fill-opacity="0.95"/><path d="M12.0 6.85L20.92 6.85L20.92 17.15L12.0 22.3Z" fill-opacity="1.0"/>),
+
+    silver: %(<path d="M12.0 12.0L9.3 8.28L12.0 1.4Z" fill-opacity="0.65"/><path d="M12.0 12.0L12.0 1.4L14.7 8.28Z" fill-opacity="0.7"/><path d="M12.0 12.0L14.7 8.28L22.08 8.72Z" fill-opacity="0.97"/><path d="M12.0 12.0L22.08 8.72L16.37 13.42Z" fill-opacity="1.0"/><path d="M12.0 12.0L16.37 13.42L18.23 20.58Z" fill-opacity="1.0"/><path d="M12.0 12.0L18.23 20.58L12.0 16.6Z" fill-opacity="1.0"/><path d="M12.0 12.0L12.0 16.6L5.77 20.58Z" fill-opacity="1.0"/><path d="M12.0 12.0L5.77 20.58L7.63 13.42Z" fill-opacity="1.0"/><path d="M12.0 12.0L7.63 13.42L1.92 8.72Z" fill-opacity="0.81"/><path d="M12.0 12.0L1.92 8.72L9.3 8.28Z" fill-opacity="0.71"/>),
+
+    gold: %(<path d="M12.0 12.0L12.0 0.8Q13.13 5.27 15.93 8.07Z" fill-opacity="0.71"/><path d="M12.0 12.0L15.93 8.07Q18.73 10.87 23.2 12.0Z" fill-opacity="1.0"/><path d="M12.0 12.0L23.2 12.0Q18.73 13.13 15.93 15.93Z" fill-opacity="1.0"/><path d="M12.0 12.0L15.93 15.93Q13.13 18.73 12.0 23.2Z" fill-opacity="1.0"/><path d="M12.0 12.0L12.0 23.2Q10.87 18.73 8.07 15.93Z" fill-opacity="1.0"/><path d="M12.0 12.0L8.07 15.93Q5.27 13.13 0.8 12.0Z" fill-opacity="0.93"/><path d="M12.0 12.0L0.8 12.0Q5.27 10.87 8.07 8.07Z" fill-opacity="0.78"/><path d="M12.0 12.0L8.07 8.07Q10.87 5.27 12.0 0.8Z" fill-opacity="0.65"/>),
+
+    diamond: %(<path d="M7.8 4.4L16.2 4.4L16.2 9.4L7.8 9.4Z" fill-opacity="0.67"/><path d="M7.8 4.4L7.8 9.4L2.6 9.4Z" fill-opacity="0.69"/><path d="M16.2 4.4L21.4 9.4L16.2 9.4Z" fill-opacity="0.93"/><path d="M2.6 9.4L7.3 9.4L12.0 20.0Z" fill-opacity="0.92"/><path d="M7.3 9.4L12.0 9.4L12.0 20.0Z" fill-opacity="1.0"/><path d="M12.0 9.4L16.7 9.4L12.0 20.0Z" fill-opacity="1.0"/><path d="M16.7 9.4L21.4 9.4L12.0 20.0Z" fill-opacity="1.0"/>),
+  }.freeze
+
+  # Huy hiệu của một hạng. Không có tham số `fill`/`stroke` như `ui_icon`: độ
+  # đậm nhạt nằm trong chính các mặt cắt, một huy hiệu chỉ có một cách vẽ.
+  def tier_badge(key, size: 24, klass: nil)
+    body = TIER_BADGES[key.to_sym] or return "".html_safe
+    attrs = %(viewBox="0 0 24 24" width="#{size}" height="#{size}" ) +
+            %(fill="currentColor" class="#{klass}" aria-hidden="true")
     "<svg #{attrs}>#{body}</svg>".html_safe
   end
 end

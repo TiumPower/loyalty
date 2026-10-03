@@ -21,7 +21,7 @@
       <div style="font-size:18px; font-weight:700; letter-spacing:-.018em;"><%= t("customer.my_code.title") %></div>
       <% if @member.tier %>
         <span class="l-pill tier" style="background:<%= @member.tier.pill_background %>; color:<%= @member.tier.pill_foreground %>;">
-          <%= ui_icon(tier_icon(@member.tier), size: 13, fill: true) %><%= t("customer.home.tier_badge", name: @member.tier.name) %>
+          <%= tier_glyph(@member.tier, size: 13) %><%= t("customer.home.tier_badge", name: @member.tier.name) %>
         </span>
       <% end %>
     </div>

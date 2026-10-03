@@ -68,7 +68,7 @@
                   title: t("customer.home.tier_badge", name: tier.name) do %>
               <span class="n"><%= number_with_delimiter(@member.points_balance) %></span>
               <small><%= t("customer.common.points_unit") %></small>
-              <%= ui_icon(tier_icon(tier), size: 16, fill: true) %>
+              <%= tier_glyph(tier, size: 16) %>
             <% end %>
           <% else %>
             <%= link_to member_history_path, class: "l-ptspill" do %>

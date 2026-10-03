@@ -16,7 +16,7 @@
       and white, not filled and inked: the star and the name are two colours in
       the design, and painting both the same turns the crest into a smudge. %>
   <div class="l-crest lg" style="background: <%= @current&.crest_gradient || 'linear-gradient(180deg,var(--primary-2),color-mix(in srgb,var(--primary-2) 62%,#000))' %>; color: <%= @current&.ink_color || '#fff' %>;">
-    <span class="em"><%= ui_icon(tier_icon(@current), size: 46, stroke: 2.2) %></span>
+    <span class="em"><%= tier_glyph(@current, size: 46) %></span>
     <div class="nm"><%= @current&.name %></div>
   </div>
   <div style="font-size:21px; font-weight:700; letter-spacing:-.02em; margin-top:18px;"><%= @member.display_name %></div>
@@ -67,7 +67,7 @@
           <%# Its own colour and glyph, greyed while it is still out of reach —
               the lock moves next to the name so the rung stays recognisable. %>
           <span class="ic l-tierdot <%= 'locked' unless reached %>" style="background:<%= tier.gradient_css %>; color:<%= tier.ink_color %>;">
-            <%= ui_icon(tier_icon(tier), size: 17, fill: true) %>
+            <%= tier_glyph(tier, size: 17) %>
           </span>
           <div class="bd">
             <div class="tt">

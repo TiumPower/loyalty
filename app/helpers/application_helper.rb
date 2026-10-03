@@ -231,13 +231,20 @@ module ApplicationHelper
   # before you read it. Tiers are merchant-editable — they can be renamed, added
   # to, or given their own keys — so an unknown key falls back to its rung on
   # the ladder rather than to nothing.
-  TIER_ICONS      = { "bronze" => :tier_hexagon, "silver" => :tier_star,
-                      "gold" => :tier_burst, "diamond" => :tier_diamond }.freeze
-  TIER_ICON_RUNGS = %i[tier_hexagon tier_star tier_burst tier_diamond].freeze
+  # Hạng → huy hiệu. Khoá là chính nó khi gặp bốn hạng quen thuộc; workspace
+  # tự đặt tên hạng khác thì rơi về nấc thang theo `position`.
+  TIER_RUNGS = %i[bronze silver gold diamond].freeze
 
   def tier_icon(tier)
-    return :tier_hexagon if tier.nil?
-    TIER_ICONS[tier.key.to_s] || TIER_ICON_RUNGS[tier.position.to_i] || :tier_hexagon
+    return :bronze if tier.nil?
+    key = tier.key.to_s.to_sym
+    return key if IconsHelper::TIER_BADGES.key?(key)
+    TIER_RUNGS[tier.position.to_i] || :bronze
+  end
+
+  # Huy hiệu hạng ở cỡ bất kỳ, màu lấy từ `color` của thẻ bao ngoài.
+  def tier_glyph(tier, size: 16)
+    tier_badge(tier_icon(tier), size: size)
   end
 
   # The tier badge as the design draws it: a soft tinted pill with the tier's
@@ -247,7 +254,7 @@ module ApplicationHelper
     style = +"background:#{tier.pill_background}; color:#{tier.pill_foreground};"
     style << " box-shadow: inset 0 0 0 1.5px #{tier.pill_ring};" if tier.pill_ring
     content_tag(:span, class: klass, style: style) do
-      safe_join([ui_icon(tier_icon(tier), size: size || 13, fill: true), tier.name])
+      safe_join([tier_glyph(tier, size: size || 13), tier.name])
     end
   end
 
