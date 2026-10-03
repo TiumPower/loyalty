@@ -1909,8 +1909,6 @@ vi:
       missions_today: "Nhiệm vụ hôm nay"
       open_until: "Mở tới %{time}"
       closed_until: "Mở lại lúc %{time}"
-      greeting_short: "Chào, %{name}!"
-      expiring_plain: "%{n} điểm sẽ hết hạn %{date}"
     profile:
       email_code_valid: "Mã còn hiệu lực"
       email_confirm_heading: "Xác nhận email mới"
