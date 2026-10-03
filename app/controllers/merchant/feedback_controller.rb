@@ -9,7 +9,8 @@ module Merchant
       @avg     = Rating.average(:stars)&.round(1) || 0
       @dist    = (1..5).to_h { |s| [s, Rating.where(stars: s).count] }
       @page    = [params[:page].to_i, 1].max
-      @filter  = params[:filter].presence_in(%w[unanswered low]) # quick triage
+      @filter  = params[:filter].presence_in(%w[unanswered low answered]) # quick triage
+      @q       = params[:q].to_s.strip
       scope    = filtered(Rating.recent.includes(:member, :replied_by))
       @count_filtered = scope.count
       @ratings = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE).to_a
@@ -67,11 +68,20 @@ module Merchant
     def nav_key = :feedback
 
     def filtered(scope)
-      case @filter
-      when "unanswered" then scope.where(replied_at: nil)
-      when "low"        then scope.where("stars <= 3")
-      else scope
-      end
+      scope = case @filter
+              when "unanswered" then scope.where(replied_at: nil)
+              when "answered"   then scope.where.not(replied_at: nil)
+              when "low"        then scope.where("stars <= 3")
+              else scope
+              end
+      return scope if @q.blank?
+
+      # Tìm theo tên khách hoặc nội dung đánh giá. Hộp thư có hàng trăm dòng
+      # thì lọc theo trạng thái không đủ để tìm lại MỘT đánh giá cụ thể.
+      like = "%#{ActiveRecord::Base.sanitize_sql_like(@q)}%"
+      scope.left_joins(:member)
+           .where("ratings.comment ILIKE :q OR members.name ILIKE :q OR members.email ILIKE :q OR members.phone ILIKE :q",
+                  q: like)
     end
 
     # Accept a pasted link with or without a scheme; reject anything that isn't

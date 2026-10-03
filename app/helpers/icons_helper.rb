@@ -6,9 +6,10 @@ module IconsHelper
   # cong, khác tỉ lệ, khác cách bo đầu nét — nên đứng cạnh nhau là thấy rõ
   # không cùng một bộ.
   #
-  # Chỉ hai ngoại lệ, đều là huy hiệu hạng chứ không phải icon giao diện:
-  # tier_burst (tia tám cánh, Lucide không có) và các hình hạng khác được tô
-  # đặc bằng `fill: true`, vốn là cách design vẽ chúng.
+  # Huy hiệu hạng cũng lấy từ Lucide — hexagon, star, sparkle, diamond — chỉ
+  # khác là được tô đặc bằng `fill: true`, vốn là cách design vẽ chúng. Hạng
+  # Vàng từng là một tia tám cánh tôi tự vẽ; `sparkle` của Lucide nói đúng
+  # điều đó và thuộc cùng một bộ với phần còn lại.
   ICONS = {
     home:    %(<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>),
 
@@ -53,7 +54,7 @@ module IconsHelper
 
     tier_star:    %(<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>),
 
-    tier_burst:   %(<path d="M12.00 2.20 13.91 7.38 18.93 5.07 16.62 10.09 21.80 12.00 16.62 13.91 18.93 18.93 13.91 16.62 12.00 21.80 10.09 16.62 5.07 18.93 7.38 13.91 2.20 12.00 7.38 10.09 5.07 5.07 10.09 7.38Z"/>),
+    tier_burst:   %(<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>),
     tier_diamond: %(<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/>),
 
     # A party popper: the cone, the burst it throws, and the confetti. For the

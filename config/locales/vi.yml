@@ -840,6 +840,11 @@ vi:
       reviews_count: "%{n} đánh giá"
       all_reviews: "Tất cả đánh giá"
       no_reviews: "Chưa có đánh giá nào từ khách."
+      inbox_title: "Hộp thư đánh giá"
+      search_ph: "Tìm theo tên khách hoặc nội dung…"
+      search: "Tìm"
+      filter_answered: "Đã trả lời"
+      no_match: "Không có đánh giá nào khớp “%{q}”."
     automations:
       intro: "Cài một lần — hệ thống tự tặng quà và nhắc khách đúng thời điểm. Quà là một ưu đãi bạn đã tạo ở mục Ưu đãi & quà."
       need_reward: "Bạn cần tạo ít nhất 1 ưu đãi ở mục “Ưu đãi & quà” trước khi dùng tự động hoá."

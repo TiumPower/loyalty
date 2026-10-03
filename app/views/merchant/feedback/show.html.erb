@@ -13,7 +13,10 @@
 </div>
 
 <%# ---- Score, spread, and the settings that shape both ---- %>
-<div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1.5fr) minmax(0,1.2fr); gap:16px; align-items:stretch; margin-bottom:16px;">
+<%# `align-items:stretch` kéo ba thẻ cao bằng thẻ cao nhất — mà thẻ cài đặt có
+    bốn ô nhập, nên hai thẻ số liệu bị thổi thành hai mảng trống lớn. Mỗi thẻ
+    giờ cao đúng phần nội dung của nó. %>
+<div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1.5fr) minmax(0,1.2fr); gap:16px; align-items:start; margin-bottom:16px;">
   <div class="l-panel" style="text-align:center;">
     <div style="font-size:42px; font-weight:700; letter-spacing:-.04em; line-height:1;"><%= @avg %></div>
     <div style="color:var(--primary-2); font-size:17px; letter-spacing:2px; margin-top:6px;"><%= stars.call(@avg) %></div>
@@ -32,7 +35,7 @@
   </div>
 
 <%= form_with url: merchant_feedback_path, method: :patch do %>
-  <div class="l-panel" style="height:100%;">
+  <div class="l-panel">
     <h3 class="l-display" style="font-size:17px; margin-bottom:2px;"><%= t("merchant.feedback.settings_title") %></h3>
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.feedback.settings_note") %></p>
 
@@ -92,19 +95,36 @@
 </div>
 
 <%# ---- Inbox: the list on the left, one review open on the right ---- %>
-<div class="m-subnav" style="margin-bottom:16px;">
-  <% [[nil, t("merchant.feedback.filter_all")],
-      ["unanswered", t("merchant.feedback.filter_unanswered")],
-      ["low", t("merchant.feedback.filter_low")]].each do |key, label| %>
-    <%= link_to label, merchant_feedback_path(filter: key), class: ("active" if @filter == key) %>
-  <% end %>
-</div>
+<div class="m-ops" style="grid-template-columns:minmax(0,420px) minmax(0,1fr);">
+  <div class="l-panel">
+    <%# Đầu hộp thư: tiêu đề + số lượng, ô tìm, rồi bộ lọc — như design xếp.
+        Trước đây bộ lọc là một thanh riêng nằm trên CẢ hai cột, nên nó trông
+        như lọc cả trang trong khi chỉ lọc danh sách bên trái. %>
+    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px;">
+      <h3 class="l-display" style="font-size:17px; flex:1; min-width:0;"><%= t("merchant.feedback.inbox_title") %></h3>
+      <span style="font-size:12.5px; color:var(--ink-2); flex:none;"><%= t("merchant.feedback.reviews_count", n: @count_filtered) %></span>
+    </div>
+    <%= form_with url: merchant_feedback_path, method: :get, data: { turbo: false } do %>
+      <%= hidden_field_tag :filter, @filter %>
+      <div style="display:flex; gap:8px;">
+        <%= search_field_tag :q, @q, class: "l-field", placeholder: t("merchant.feedback.search_ph"), style: "flex:1; min-width:0;" %>
+        <%= submit_tag t("merchant.feedback.search"), class: "l-btn l-btn-soft", style: "flex:none;" %>
+      </div>
+    <% end %>
+    <div class="m-subnav" style="margin:12px 0 2px;">
+      <% [[nil, t("merchant.feedback.filter_all")],
+          ["unanswered", t("merchant.feedback.filter_unanswered")],
+          ["answered", t("merchant.feedback.filter_answered")],
+          ["low", t("merchant.feedback.filter_low")]].each do |key, label| %>
+        <%= link_to label, merchant_feedback_path(filter: key, q: @q.presence), class: ("active" if @filter == key) %>
+      <% end %>
+    </div>
 
-<% if @ratings.empty? %>
-  <div class="l-panel" style="text-align:center; padding:44px; color:var(--ink-2);"><%= t("merchant.feedback.no_reviews") %></div>
-<% else %>
-  <div class="m-ops" style="grid-template-columns:minmax(0,420px) minmax(0,1fr);">
-    <div class="l-panel">
+    <% if @ratings.empty? %>
+      <div style="text-align:center; padding:34px 10px; color:var(--ink-2); font-size:13.5px;">
+        <%= @q.present? ? t("merchant.feedback.no_match", q: @q) : t("merchant.feedback.no_reviews") %>
+      </div>
+    <% end %>
       <% @ratings.each do |r| %>
         <% on = @selected && r.id == @selected.id %>
         <%= link_to merchant_feedback_path(filter: @filter, page: (@page if @page > 1), id: r.id),
@@ -183,4 +203,3 @@
       </div>
     <% end %>
   </div>
-<% end %>

@@ -837,6 +837,11 @@ en:
       reviews_count: "%{n} reviews"
       all_reviews: "All reviews"
       no_reviews: "No customer reviews yet."
+      inbox_title: "Review inbox"
+      search_ph: "Search by customer or wording…"
+      search: "Search"
+      filter_answered: "Answered"
+      no_match: "No review matches “%{q}”."
     automations:
       intro: "Set it once — the system gifts and reminds customers at the right moment. The gift is a reward you created in Rewards & gifts."
       need_reward: "Create at least one reward in “Rewards & gifts” before using automations."
