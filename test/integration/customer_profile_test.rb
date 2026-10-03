@@ -96,4 +96,17 @@ class CustomerProfileTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_nil @member.reload.birthday
   end
+  # "Quyền riêng tư & dữ liệu" ở trang cá nhân mở trang sửa hồ sơ, nhưng điều
+  # nó hứa trả lời chỉ là một dòng gần cuối biểu mẫu. Không có neo thì khách
+  # bấm vào rồi rơi vào đầu một trang họ không hỏi, không hiểu mình được đưa
+  # tới đâu.
+  test "mục quyền riêng tư dẫn thẳng tới dòng nói về dữ liệu" do
+    get "#{base}/me"
+    assert_response :success
+    assert_select "a[href=?]", "#{base}/me/edit#privacy"
+
+    get "#{base}/me/edit"
+    assert_response :success
+    assert_select "#privacy[data-controller=?]", "spotlight"
+  end
 end

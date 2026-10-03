@@ -763,6 +763,18 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-note.brand { background: var(--primary-soft); color: var(--primary-ink); }
 .l-note.brand strong { color: var(--primary-ink); }
 
+/* Khối vừa được dẫn tới từ một mục menu khác: viền sáng rồi tắt dần, đủ để mắt
+   bắt được chỗ mình vừa được đưa tới mà không kéo dài thành trang trí. */
+.is-spot { animation: l-spot 2.2s ease-out both; }
+@keyframes l-spot {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 50%, transparent); }
+  12%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 50%, transparent); }
+  100% { box-shadow: 0 0 0 3px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-spot { animation: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent); }
+}
+
 /* ---------- QR panel ---------- */
 /* The code a member shows across the counter. Notches on the sides make it read
    as a detachable stub, like the voucher it stands for. */

@@ -3,7 +3,7 @@
 <% genders = [["female", t("customer.profile.gender_female")], ["male", t("customer.profile.gender_male")], ["other", t("customer.profile.gender_other")]] %>
 
 <header class="l-subhead">
-  <%= link_to member_profile_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_profile_path, class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
   <div style="min-width:0;">
@@ -86,7 +86,8 @@
       </div>
     </div>
 
-    <div class="l-note" style="margin-top:14px;">
+    <%# Đích của mục "Quyền riêng tư & dữ liệu" ở trang cá nhân. %>
+    <div class="l-note" id="privacy" data-controller="spotlight" style="margin-top:14px;">
       <%= ui_icon(:shield, size: 16) %><span><%= t("customer.profile.privacy_note", shop: current_workspace.name) %></span>
     </div>
 

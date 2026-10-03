@@ -1,7 +1,7 @@
 <% content_for :title, t("customer.profile.email_confirm_title") %>
 <% content_for :tab, "me" %>
 <header class="l-subhead">
-  <%= link_to member_edit_profile_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_edit_profile_path, class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
   <div style="min-width:0;"><div class="t"><%= t("customer.profile.email_confirm_title") %></div></div>

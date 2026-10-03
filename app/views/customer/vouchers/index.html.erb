@@ -3,7 +3,7 @@
 <% lists = { "available" => @usable, "used" => @used, "expired" => @expired } %>
 
 <header class="l-subhead">
-  <%= link_to member_wallet_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_wallet_path, class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
   <div style="min-width:0;">

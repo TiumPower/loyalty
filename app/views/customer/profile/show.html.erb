@@ -4,7 +4,7 @@
 
 <%# The design centres the title between a back button and a matching spacer. %>
 <header class="l-subhead" style="padding-bottom:6px;">
-  <%= link_to member_root_path, class: "l-iconbtn sm", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_root_path, class: "l-iconbtn sm", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 17) %>
   <% end %>
   <div style="flex:1; text-align:center;"><div style="font-size:17px; font-weight:700;"><%= t("customer.profile.title") %></div></div>
@@ -113,7 +113,7 @@
 
     <%# "Privacy & Security" in the design; here it is the one honest thing the
         app can say about the data it holds. %>
-    <%= link_to member_edit_profile_path do %>
+    <%= link_to member_edit_profile_path(anchor: "privacy") do %>
       <span class="ic"><%= ui_icon(:shield, size: 20) %></span>
       <span style="flex:1; min-width:0;"><%= t("customer.profile.privacy") %></span>
       <span class="tr"><%= ui_icon(:chevron_right, size: 16, stroke: 2.2) %></span>

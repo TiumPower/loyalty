@@ -13,7 +13,7 @@
   <%# The camera half of the screen inverts to dark chrome, as in the design —
       it reads as a viewfinder rather than a page. %>
   <header class="l-darkbar">
-    <%= link_to member_my_code_path, class: "l-iconbtn sm", "aria-label": t("customer.common.back") do %>
+    <%= link_to member_my_code_path, class: "l-iconbtn sm", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
       <%= ui_icon(:arrow_left, size: 17) %>
     <% end %>
     <div class="t"><%= t("customer.scan.checkin_title") %></div>

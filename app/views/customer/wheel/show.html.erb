@@ -3,7 +3,7 @@
 <% segs = @wheel.resolved_segments; n = segs.size; ang = 360.0 / n %>
 
 <header class="l-subhead">
-  <%= link_to member_root_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_root_path, class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
   <div style="min-width:0;">

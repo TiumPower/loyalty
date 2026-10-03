@@ -4,7 +4,7 @@
 <% in_use = @voucher.usable? && @voucher.redeem_token.present? && @voucher.redeem_token_expires_at&.future? %>
 
 <header class="l-subhead">
-  <%= link_to member_vouchers_path, class: "l-iconbtn", "aria-label": t("customer.common.back") do %>
+  <%= link_to member_vouchers_path, class: "l-iconbtn", data: { controller: "goback", action: "goback#back" }, "aria-label": t("customer.common.back") do %>
     <%= ui_icon(:arrow_left, size: 18) %>
   <% end %>
   <div style="min-width:0;"><div class="t"><%= t("customer.voucher.title") %></div></div>
