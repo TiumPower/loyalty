@@ -94,7 +94,7 @@
   <% else %>
     <%# ---- Held, not yet being used. ---- %>
     <div class="l-tile pad-0">
-      <div class="l-hero <%= 'no-art' unless @voucher.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@voucher.reward, size: 720, emoji_size: 48) %></div>
+      <div class="l-hero <%= 'no-art' unless @voucher.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@voucher.reward, size: 720, emoji_size: 48, ratio: 16.0 / 10) %></div>
       <div style="padding:14px 16px 16px;">
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="font-size:11.5px; font-weight:700; color:var(--primary); flex:1; min-width:0;"><%= current_workspace.name %></span>

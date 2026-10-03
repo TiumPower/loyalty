@@ -19,7 +19,7 @@
 </header>
 
 <div class="l-screen" data-controller="sheet">
-  <div class="l-hero <%= 'no-art' unless @reward&.image&.attached? %>"><%= reward_art(@reward, size: 720, emoji_size: 56) %></div>
+  <div class="l-hero <%= 'no-art' unless @reward&.image&.attached? %>"><%= reward_art(@reward, size: 720, emoji_size: 56, ratio: 16.0 / 10) %></div>
 
   <div style="display:flex; align-items:center; gap:10px; margin-top:16px;">
     <span class="l-eyebrow" style="flex:1; min-width:0;"><%= current_workspace.name %></span>

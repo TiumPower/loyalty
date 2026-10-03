@@ -41,7 +41,7 @@
       the wallet, so point at it rather than just saying sorry. %>
   <% if @apology %>
     <div class="l-tile pad-0" style="margin-top:14px;">
-      <div class="l-hero <%= 'no-art' unless @apology.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@apology.reward, size: 720, emoji_size: 44) %></div>
+      <div class="l-hero <%= 'no-art' unless @apology.reward&.image&.attached? %>" style="border-radius:0;"><%= reward_art(@apology.reward, size: 720, emoji_size: 44, ratio: 16.0 / 10) %></div>
       <div style="padding:14px 16px 16px;">
         <span class="l-pill brand"><%= t("customer.review_thanks.apology_title") %></span>
         <div style="font-weight:700; font-size:16px; margin-top:8px;"><%= @apology.reward&.title %></div>

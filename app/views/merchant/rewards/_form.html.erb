@@ -180,7 +180,7 @@
       <div class="m-previewlabel"><%= t("merchant.rewards.preview_label") %></div>
       <div class="m-phone">
         <div class="scr">
-          <div class="art"><%= reward_art(reward, size: 420, emoji_size: 38) %></div>
+          <div class="art"><%= reward_art(reward, size: 420, emoji_size: 38, ratio: 16.0 / 10) %></div>
           <div class="bd">
             <div class="tt"><%= reward.title.presence || t("merchant.rewards.preview_untitled") %></div>
             <% if reward.description.present? %>

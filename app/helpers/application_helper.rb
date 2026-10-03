@@ -140,9 +140,15 @@ module ApplicationHelper
   # a shop that has not uploaded one still needs something in the frame — so
   # fall back to the reward's emoji on a brand tint. `size` drives the variant
   # only; the box itself is sized by the surrounding component's CSS.
-  def reward_art(reward, size: 320, emoji_size: nil)
+  # `ratio` là tỉ lệ của KHUNG sẽ chứa ảnh (rộng ÷ cao).
+  #
+  # Trước đây mọi biến thể đều cắt vuông rồi thả vào khung 4:3 hay 16:10, và
+  # `object-fit: cover` cắt thêm lần nữa — hai lần cắt chồng nhau, nên chủ thể
+  # của ảnh trôi ra ngoài khuôn hình. Cắt đúng một lần, đúng tỉ lệ sẽ dùng.
+  def reward_art(reward, size: 320, emoji_size: nil, ratio: 1)
     if reward&.image&.attached?
-      image_tag(reward.image.variant(resize_to_fill: [size, size]), alt: "",
+      height = (size / ratio.to_f).round
+      image_tag(reward.image.variant(resize_to_fill: [size, height]), alt: "",
                 style: "width:100%;height:100%;object-fit:cover;display:block;")
     else
       reward_placeholder(reward, emoji_size: emoji_size)

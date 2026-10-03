@@ -626,8 +626,12 @@ a.l-vrow:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--line
 .l-artfallback .em { position:relative; }
 
 /* ---------- horizontal carousel ---------- */
-.l-carousel { display:flex; gap:12px; overflow-x:auto; padding:2px 20px 8px; margin:0 -20px;
-  scroll-snap-type:x mandatory; scroll-padding-left:20px; -webkit-overflow-scrolling:touch; }
+/* Dừng ở lề nội dung, không tràn ra mép màn hình.
+   Trước đây nó có margin âm 20px mỗi bên để chạy hết chiều ngang màn hình, nên
+   thẻ cuối bị cắt ở mép kính — lệch hẳn với mọi thứ khác trên trang vốn dừng
+   ở lề 20px. */
+.l-carousel { display:flex; gap:12px; overflow-x:auto; padding:2px 0 8px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
 .l-carousel > * { scroll-snap-align:start; }
 .l-carousel::-webkit-scrollbar { display:none; }
 /* A reward tile inside the carousel: photo on top, title, cost, redeem button. */
@@ -1239,8 +1243,19 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
 .l-mini .ic { width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center;
   background: var(--primary); color: var(--on-primary); font-size:18px; }
 .l-mini .ic.count { width:44px; height:44px; font-weight:700; font-size:16px; }
-.l-mini .tt { font-weight:700; font-size:14px; line-height:1.25; }
-.l-mini .mt { font-size:12px; color: var(--ink-2); margin-top:2px; line-height:1.35; }
+/* Tiêu đề và phụ đề bị chặn số dòng: tên quán hay tên thẻ tem dài ngắn tuỳ
+   quán, mà hai thẻ nằm cạnh nhau thì phần đầu phải cao bằng nhau, nếu không
+   mọi thứ bên dưới lệch theo. */
+.l-mini .tt { font-weight:700; font-size:14px; line-height:1.25;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.l-mini .mt { font-size:12px; color: var(--ink-2); margin-top:2px; line-height:1.35;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+/* Khối số liệu giữa thẻ: một dòng chính bên trái, một ghi chú bên phải.
+   Hai thẻ "Chơi & tích" vốn xếp phần này theo hai cách khác nhau — một bên
+   hai dòng chồng lên nhau, một bên hai cột — nên cạnh nhau trông như hai
+   thiết kế. Giờ cùng một khuôn. */
+.l-mini .stat { display:flex; flex-direction:column; gap:2px; }
+.l-mini .stat .k { font-size:12.5px; font-weight:700; line-height:1.35; }
 .l-mini .ft { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; }
 /* "Thưởng mỗi ngày", "Còn 9": design để chữ hổ phách trần. Bọc pill vào làm
    thẻ nhỏ đã chật càng rối, và lặp lại hình viên thuốc của số điểm ngay cạnh. */

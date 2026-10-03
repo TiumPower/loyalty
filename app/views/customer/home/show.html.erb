@@ -83,7 +83,7 @@
         <% @offers.each do |r| %>
           <% open = r.redeem_open? %>
           <%= link_to member_reward_path(r), class: "l-offer #{'dim' unless open}" do %>
-            <div class="ph"><%= reward_art(r, size: 240, emoji_size: 32) %></div>
+            <div class="ph"><%= reward_art(r, size: 240, emoji_size: 32, ratio: 4.0 / 3) %></div>
             <div class="tt"><%= truncate(r.title, length: 40) %></div>
             <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px;">
               <% if r.cost_points %>
@@ -115,10 +115,10 @@
               <div class="mt"><%= @wheel_free ? t("customer.home.spin_free_today") : t("customer.wheel.spin_cost", n: @wheel.cost_points) %></div>
             </div>
           </div>
-          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px;">
-            <% if @wheel_top_prize.to_i.positive? %>
-              <span style="font-size:12px; color:var(--primary); font-weight:700;"><%= t("customer.home.win_up_to", n: number_with_delimiter(@wheel_top_prize)) %></span>
-            <% end %>
+          <div class="stat">
+            <span class="k" style="color:var(--primary);">
+              <%= t("customer.home.win_up_to", n: number_with_delimiter(@wheel_top_prize)) if @wheel_top_prize.to_i.positive? %>
+            </span>
             <% if @wheel_free %><span class="note"><%= t("customer.home.daily_bonus") %></span><% end %>
           </div>
           <%= link_to t("customer.home.spin_now"), member_wheel_path, class: "l-btn l-btn-primary l-btn-sm l-btn-block", style: "margin-top:auto;" %>
@@ -133,18 +133,17 @@
                 quán và vẫn hiện ở trang Thẻ tem. %>
             <span class="ic"><%= ui_icon(:stamp, size: 19) %></span>
             <div style="min-width:0;">
-              <div class="tt"><%= truncate(@stamp_card.title, length: 30) %></div>
-              <div class="mt"><%= t("customer.stamps.title") %></div>
+              <div class="tt"><%= @stamp_card.title %></div>
+              <%# Phụ đề là phần thưởng đang hướng tới, không phải chữ "Thẻ tem"
+                  — mục đã nằm dưới tiêu đề "Chơi & tích" rồi, nhắc lại là phí
+                  một dòng. Và nó đặt thẻ này vào đúng khuôn của thẻ bên cạnh:
+                  tiêu đề, phụ đề, một dòng số liệu, nút. %>
+              <div class="mt"><%= @stamp_card.reward&.title || t("customer.stamps.title") %></div>
             </div>
           </div>
-          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px;">
-            <div style="min-width:0;">
-              <div style="font-size:12px; font-weight:700;"><%= t("customer.home.stamps_of", n: sm.count, total: @stamp_card.target_count) %></div>
-              <% if @stamp_card.reward %>
-                <div style="font-size:12px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= @stamp_card.reward.title %></div>
-              <% end %>
-            </div>
-            <% if left.positive? %><span class="note" style="flex:none;"><%= t("customer.home.n_left", n: left) %></span><% end %>
+          <div class="stat">
+            <span class="k"><%= t("customer.home.stamps_of", n: sm.count, total: @stamp_card.target_count) %></span>
+            <% if left.positive? %><span class="note"><%= t("customer.home.n_left", n: left) %></span><% end %>
           </div>
           <%= link_to t("customer.home.view_card"), member_stamps_path, class: "l-btn l-btn-primary l-btn-sm l-btn-block", style: "margin-top:auto;" %>
         </div>
