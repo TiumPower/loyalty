@@ -1393,6 +1393,55 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress { acc
   font-family:inherit; font-size:16px; color: var(--ink); }
 .l-inlinefield input::placeholder { color: var(--ink-2); font-weight:400; }
 
+/* =====================================================================
+   Saved-item cards: stamp cards and missions on the gamification screen.
+   A <details> row that expands into its edit form.
+
+   These lived in a <style> block inside the "stamps" tab of
+   merchant/gamification/show, so the missions tab — which uses the same
+   markup — rendered with NO styling at all: no card, no border, rows running
+   together, the browser's default ▶ marker showing, and no pointer cursor on
+   the actions. Styles belong here, where a second caller cannot miss them.
+   ===================================================================== */
+.stampcard, .taskcard { border:1px solid var(--line); border-radius:14px; background: var(--surface);
+  margin-bottom:12px; transition: border-color .15s, background .15s, box-shadow .15s; }
+.stampcard:last-of-type, .taskcard:last-of-type { margin-bottom:0; }
+.stampcard > summary, .taskcard > summary { display:flex; align-items:center; gap:10px;
+  padding:14px 12px; cursor:pointer; list-style:none; }
+.stampcard > summary::-webkit-details-marker,
+.taskcard  > summary::-webkit-details-marker { display:none; }
+/* The whole row is the click target for expanding, so it has to look alive. */
+@media (hover: hover) and (pointer: fine) {
+  .stampcard:not([open]):hover, .taskcard:not([open]):hover {
+    border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
+    background: color-mix(in srgb, var(--primary) 4%, var(--surface)); }
+}
+.stampcard[open], .taskcard[open] { border-color: var(--primary); background: var(--primary-soft);
+  box-shadow:0 8px 22px -14px var(--primary); }
+/* Open row: a rule between the header and the form it reveals, so the edit
+   fields read as belonging to the row rather than floating under it. */
+.stampcard[open] > summary, .taskcard[open] > summary {
+  border-bottom:1px solid color-mix(in srgb, var(--primary) 22%, transparent); margin-bottom:12px; }
+.stampcard .sc-body, .taskcard .sc-body { padding:0 12px 14px; }
+.sc-title { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+.sc-meta { font-size:12px; color: var(--ink-2); margin-top:2px; }
+
+/* Actions. Edit and delete read as one pair, so they get the same shape and
+   differ only in colour — brand for the safe one, warn for the destructive. */
+.sc-edit, .sc-del { border:none; background:transparent; cursor:pointer; font-size:12px; line-height:1;
+  padding:6px 10px; border-radius:9px; font-weight:600; font-family:inherit;
+  transition: background .12s, color .12s; }
+.sc-edit { background: var(--primary-soft); color: var(--primary-ink); }
+.sc-del  { color: var(--ink-2); font-size:15px; padding:6px 8px; }
+@media (hover: hover) and (pointer: fine) {
+  .sc-edit:hover { background: color-mix(in srgb, var(--primary) 22%, #fff); }
+  .sc-del:hover  { background: color-mix(in srgb, var(--warn) 12%, #fff); color: var(--warn); }
+}
+/* button_to wraps its button in a form; without this the delete sits on its
+   own line and breaks the action row. */
+.sc-del-form { display:inline; margin:0; }
+.sc-new { border-top:1px dashed var(--line); margin-top:16px; padding-top:14px; }
+
 /* Two ways to sign in (phone / email) as one segmented control, so neither
    reads as the "other" option buried under the form. */
 .l-authtabs { display:flex; gap:4px; padding:4px; border-radius:14px;

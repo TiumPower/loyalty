@@ -85,20 +85,6 @@
 
   <div class="l-panel">
     <%= render "merchant/gamification/reward_source", context: :stamp %>
-    <style>
-      /* Shared "saved item" card look for stamp cards & missions (created rows vs the new-item form) */
-      .stampcard,.taskcard{border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:10px;
-        transition:border-color .15s, background .15s, box-shadow .15s;}
-      .stampcard>summary,.taskcard>summary{display:flex; align-items:center; gap:10px; padding:12px; cursor:pointer; list-style:none;}
-      .stampcard>summary::-webkit-details-marker,.taskcard>summary::-webkit-details-marker{display:none;}
-      .stampcard[open],.taskcard[open]{border-color:var(--primary); background:var(--primary-soft);
-        box-shadow:0 8px 22px -14px var(--primary);}
-      .stampcard .sc-body,.taskcard .sc-body{padding:0 12px 12px;}
-      .sc-del{border:none; background:transparent; color:var(--ink-2); cursor:pointer; font-size:16px; line-height:1;
-        padding:6px 8px; border-radius:9px; transition:background .12s, color .12s;}
-      .sc-del:hover{background:color-mix(in srgb, var(--warn) 12%, #fff); color:var(--warn);}
-      .sc-new{border-top:1px dashed var(--line); margin-top:16px; padding-top:14px;}
-    </style>
     <% @stamp_cards.each do |c| %>
       <details class="stampcard" data-controller="activetoggle"
                data-activetoggle-url-value="<%= toggle_merchant_stamp_card_path(c) %>"
@@ -109,11 +95,13 @@
                data-activetoggle-error-value="<%= t("merchant.gami.toggle_failed") %>">
         <summary>
           <span style="font-size:20px;"><%= c.display_icon %></span>
-          <div style="flex:1;">
-            <strong><%= c.title %></strong>
-            <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if c.active? %>
-                  style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
-            <div style="font-size:12px; color:var(--ink-2);"><%= t("merchant.gami.stamp_desc", n: c.target_count, reward: c.reward&.title || "—") %></div>
+          <div style="flex:1; min-width:0;">
+            <div class="sc-title">
+              <strong><%= c.title %></strong>
+              <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if c.active? %>
+                    style="font-size:10px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
+            </div>
+            <div class="sc-meta"><%= t("merchant.gami.stamp_desc", n: c.target_count, reward: c.reward&.title || "—") %></div>
           </div>
           <%# Pause/run is one click and saves on its own — it used to be a
               checkbox that only took effect when the whole card was saved. %>
@@ -122,10 +110,10 @@
                   style="padding:5px 12px; font-size:12px; white-space:nowrap;">
             <%= c.active? ? t("merchant.gami.stamp_pause") : t("merchant.gami.stamp_run") %>
           </button>
-          <span class="l-chip" style="font-size:11px;"><%= t("merchant.gami.edit_chip") %></span>
+          <span class="sc-edit"><%= t("merchant.gami.edit_chip") %></span>
           <%= button_to "🗑", merchant_stamp_card_path(c), method: :delete, class: "sc-del",
                 title: t("merchant.gami.delete_stamp"),
-                form: { data: { turbo_confirm: t("merchant.gami.delete_stamp_confirm") }, style: "display:inline; margin:0;" } %>
+                form: { data: { turbo_confirm: t("merchant.gami.delete_stamp_confirm") }, class: "sc-del-form" } %>
         </summary>
         <div class="sc-body">
           <%= form_with model: c, url: merchant_stamp_card_path(c), method: :patch, scope: :stamp_card do |f| %>
@@ -189,21 +177,23 @@
                data-activetoggle-error-value="<%= t("merchant.gami.toggle_failed") %>">
         <summary>
           <span style="font-size:20px;"><%= mission_icon(m, size: 22) %></span>
-          <div style="flex:1;">
-            <strong><%= m.title %></strong>
-            <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if m.active? %>
-                  style="font-size:10px; margin-left:6px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
-            <div style="font-size:12px; color:var(--ink-2);"><%= t("merchant.gami.period_#{m.period}", default: m.period) %> · <%= t("merchant.gami.points_plus", n: m.reward_points) %></div>
+          <div style="flex:1; min-width:0;">
+            <div class="sc-title">
+              <strong><%= m.title %></strong>
+              <span class="l-chip" data-activetoggle-target="chip" <%= "hidden" if m.active? %>
+                    style="font-size:10px; background:var(--surface-2);">⏸ <%= t("merchant.gami.stamp_paused") %></span>
+            </div>
+            <div class="sc-meta"><%= t("merchant.gami.period_#{m.period}", default: m.period) %> · <%= t("merchant.gami.points_plus", n: m.reward_points) %></div>
           </div>
           <button type="button" data-activetoggle-target="button" data-action="activetoggle#toggle"
                   class="l-btn <%= m.active? ? "l-btn-soft" : "l-btn-primary" %>"
                   style="padding:5px 12px; font-size:12px; white-space:nowrap;">
             <%= m.active? ? t("merchant.gami.stamp_pause") : t("merchant.gami.stamp_run") %>
           </button>
-          <span class="l-chip" style="font-size:11px;"><%= t("merchant.gami.edit_chip") %></span>
+          <span class="sc-edit"><%= t("merchant.gami.edit_chip") %></span>
           <%= button_to "🗑", merchant_mission_path(m), method: :delete, class: "sc-del",
                 title: t("merchant.gami.delete_mission"),
-                form: { data: { turbo_confirm: t("merchant.gami.delete_mission_confirm") }, style: "display:inline; margin:0;" } %>
+                form: { data: { turbo_confirm: t("merchant.gami.delete_mission_confirm") }, class: "sc-del-form" } %>
         </summary>
         <div class="sc-body">
           <%= form_with model: m, url: merchant_mission_path(m), method: :patch, scope: :mission,
@@ -332,7 +322,7 @@
           <div style="flex:1;"><strong><%= b.name %></strong>
             <div style="font-size:12px; color:var(--ink-2);"><%= crit[b.criteria_type] || b.criteria_type %><%= " · #{t('merchant.gami.threshold_word')} #{b.threshold}" if %w[purchases_count points_total].include?(b.criteria_type) %><%= " · #{t('merchant.gami.points_plus', n: b.reward_points)}" if b.reward_points.to_i.positive? %><%= " · 🎁 #{b.reward.title}" if b.reward %></div>
           </div>
-          <span class="l-chip" style="font-size:11px;"><%= t("merchant.gami.edit_chip") %></span>
+          <span class="sc-edit"><%= t("merchant.gami.edit_chip") %></span>
           <%= button_to "✕", merchant_badge_path(b), method: :delete, class: "l-btn l-btn-ghost", style: "padding:4px 10px;", form: { data: { turbo_confirm: t("merchant.gami.delete_badge_confirm") }, style: "display:inline;" } %>
         </summary>
         <%= form_with model: b, url: merchant_badge_path(b), method: :patch, scope: :badge do |f| %>
