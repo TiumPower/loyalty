@@ -145,8 +145,24 @@ module ApplicationHelper
       image_tag(reward.image.variant(resize_to_fill: [size, size]), alt: "",
                 style: "width:100%;height:100%;object-fit:cover;display:block;")
     else
-      content_tag(:span, reward&.display_icon,
-                  style: ["line-height:1", ("font-size:#{emoji_size}px" if emoji_size)].compact.join(";"))
+      reward_placeholder(reward, emoji_size: emoji_size)
+    end
+  end
+
+  # Khi quán chưa tải ảnh cho ưu đãi.
+  #
+  # Trước đây chỗ này chỉ là một emoji đặt giữa ô trống — nhìn như ảnh chưa
+  # tải xong, và nằm cạnh những ưu đãi CÓ ảnh thì trông như lỗi. Giờ nó là một
+  # tấm nền có bố cục: dải chuyển màu theo màu thương hiệu của quán cộng hai
+  # vòng tròn mờ, lấp đầy đúng khung ảnh, nên hàng thẻ vẫn đều nhau.
+  #
+  # Vẽ bằng CSS theo biến màu của quán chứ không dùng một tệp ảnh có sẵn: một
+  # tấm ảnh tĩnh sẽ chọi với bảng màu của mọi quán khác, và ảnh stock thì kéo
+  # theo giấy phép của bên thứ ba vào một sản phẩm đem bán.
+  def reward_placeholder(reward, emoji_size: nil)
+    content_tag(:span, class: "l-artfallback") do
+      content_tag(:span, reward&.display_icon, class: "em",
+                  style: ("font-size:#{emoji_size}px" if emoji_size))
     end
   end
 

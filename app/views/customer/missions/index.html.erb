@@ -42,29 +42,15 @@
       <div class="mt"><%= t("customer.missions.empty_sub") %></div>
     </div>
   <% else %>
-    <%# One tab per group, plus "all" — tapping one shows that group. They used
-        to be anchors that jumped to a heading, which on a card with two missions
-        moved the page barely a hundred pixels and read as a dead tab. %>
-    <% shown = groups.select { |period, _| open_missions.any? { |m| m.period == period } } %>
-    <div data-controller="groupfilter">
-      <% if shown.size > 1 %>
-        <div class="l-seg boxed">
-          <button type="button" data-groupfilter-target="tab" data-group="all"
-                  data-action="groupfilter#pick"><%= t("customer.missions.all") %></button>
-          <% shown.each do |period, label| %>
-            <button type="button" data-groupfilter-target="tab" data-group="<%= period %>"
-                    data-action="groupfilter#pick"><%= label %></button>
-          <% end %>
-        </div>
-      <% end %>
-
-      <% shown.each do |period, label| %>
-        <div data-groupfilter-target="group" data-group="<%= period %>">
-          <div class="l-grouplabel"><%= label %></div>
-          <% open_missions.select { |m| m.period == period }.each { |m| %><%= render "customer/missions/card", m: m, mp: @progress[m] %><% } %>
-        </div>
-      <% end %>
-    </div>
+    <%# Nhóm theo chu kỳ, không có bộ lọc. Bộ ba tab "Tất cả / Hôm nay / Tuần
+        này" lọc một danh sách thường chỉ có hai, ba dòng — thao tác thừa cho
+        thứ đã nhìn thấy hết trong một màn hình. %>
+    <% groups.each do |period, label| %>
+      <% list = open_missions.select { |m| m.period == period } %>
+      <% next if list.empty? %>
+      <div class="l-grouplabel"><%= label %></div>
+      <% list.each { |m| %><%= render "customer/missions/card", m: m, mp: @progress[m] %><% } %>
+    <% end %>
 
     <% if done_missions.any? %>
       <div class="l-grouplabel"><%= t("customer.missions.completed") %></div>
