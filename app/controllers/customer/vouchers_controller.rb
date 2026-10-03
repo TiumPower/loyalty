@@ -46,10 +46,17 @@ module Customer
 
     private
 
+    # Mở sẵn tab đầu tiên CÓ gì để xem, thay vì bắt khách tự dò.
+    #
+    # Khi chưa có voucher nào thì cả ba tab đều rỗng — trước đây rơi xuống tận
+    # "Hết hạn", nên ví trống lại mở ở tab vô nghĩa nhất và câu đầu khách đọc là
+    # "Chưa có voucher nào hết hạn". Ví trống thì mở "Khả dụng": đó là chỗ
+    # voucher đầu tiên của họ sẽ xuất hiện.
     def default_tab
       return "available" if @usable.any?
       return "used"      if @used.any?
-      "expired"
+      return "expired"   if @expired.any?
+      "available"
     end
 
 
