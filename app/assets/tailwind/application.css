@@ -1624,6 +1624,46 @@ details[open] > summary .sc-edit::after { transform: rotate(180deg); }
 .m-phone .scr { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
 .m-phone .art { aspect-ratio:16/10; background: var(--surface-2); display:grid; place-items:center; font-size:38px; }
 .m-phone .art img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Chọn ảnh phần thưởng: vừa là nút bấm, vừa là đích kéo thả.
+   <input type="file"> trần không dùng được ở đây — nút "Choose File" do trình
+   duyệt vẽ nên luôn là tiếng Anh, và nó không nhận kéo thả. */
+.m-thumb { width:74px; height:74px; border-radius:12px; flex:none; overflow:hidden;
+  background: var(--surface-2); display:grid; place-items:center; font-size:30px; }
+/* Lưới chứ không phải flex một hàng: cột trái của form chỉ rộng ~180px, mà một
+   hàng ngang gồm icon + chữ + nút thì chữ bị bóp đến mức mỗi dòng một từ. Icon
+   và chữ chung hàng, nút xuống hàng riêng. */
+.m-dropzone { display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px 11px;
+  align-items:center; padding:12px 14px; cursor:pointer;
+  border:1.5px dashed var(--line); border-radius:13px; background: var(--surface-2);
+  transition: border-color .15s, background .15s; }
+.m-dropzone > button { grid-column:1 / -1; justify-self:start; }
+.m-dropzone:hover { border-color: var(--primary); }
+.m-dropzone.is-over { border-color: var(--primary); border-style:solid;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface-2)); }
+.m-dropzone .ic { width:34px; height:34px; flex:none; border-radius:10px; display:grid;
+  place-items:center; background:#fff; color: var(--primary); }
+.m-dropzone .tt { font-size:13px; font-weight:600; }
+.m-dropzone .fn { font-size:12px; color: var(--ink-2); margin-top:2px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.m-droperr { font-size:12.5px; font-weight:600; color: var(--warn); margin-top:7px; }
+
+/* Bảng ô giải của vòng quay. Sáu cột với bề rộng cố định tổng ~450px, đứng
+   trong một cột nửa màn thì ô "Tên giải" — thứ co giãn — bị bóp còn vài pixel
+   và tên giải không đọc được. Lưới với bề rộng vừa đủ thì cả sáu cột nằm gọn,
+   và ở màn hẹp thì cả bảng cuộn ngang thay vì bóp chữ. */
+.wheel-row { display:grid; gap:8px; align-items:center;
+  grid-template-columns: 38px minmax(90px,1fr) 64px minmax(96px,1.1fr) 58px 32px; }
+.wheel-head { font-size:10.5px; color: var(--ink-2); text-transform:uppercase;
+  letter-spacing:.05em; padding:0 2px 6px; align-items:end; }
+.wheel-row .l-field { min-width:0; padding-left:10px; padding-right:8px; }
+@media (min-width:1500px) {
+  .wheel-row { grid-template-columns: 40px minmax(120px,1fr) 88px minmax(140px,1.1fr) 76px 34px; }
+}
+/* Sáu ô có bề rộng tối thiểu ~418px; cột nửa màn ở laptop hẹp hơn thế. Cho
+   BẢNG cuộn ngang trong khung của nó — để cả TRANG cuộn ngang là lỗi. */
+.wheel-scroll { overflow-x:auto; padding-bottom:4px; }
+.wheel-scroll > * { min-width:420px; }
 .m-phone .bd { padding:14px; }
 .m-phone .tt { font-weight:700; font-size:15px; letter-spacing:-.015em; }
 .m-phone .ds { font-size:12.5px; color: var(--ink-2); margin-top:5px; line-height:1.5; }

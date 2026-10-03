@@ -9,7 +9,7 @@
   <% end %>
   <div style="min-width:0;"><div class="t" style="font-size:18px;"><%= current_workspace.name %></div></div>
   <div class="sp">
-    <% if @public && @avg.to_f.positive? %><span class="l-pill"><%= @avg %> ★</span><% end %>
+    <% if @public && @avg.to_f.positive? %><span class="l-pill amber"><%= @avg %> ★</span><% end %>
   </div>
 </header>
 

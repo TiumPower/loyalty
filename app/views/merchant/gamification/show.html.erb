@@ -409,35 +409,37 @@
     <p style="color:var(--ink-2); font-size:13px; margin-bottom:14px;"><%= t("merchant.gami.wheel_note") %></p>
     <% rows = @wheel.resolved_segments.dup; rows << {} while rows.size < 2 %>
     <%= form_with url: merchant_wheel_config_path, method: :patch do %>
+      <div class="wheel-scroll">
       <div data-controller="rows" data-rows-next-value="<%= rows.size %>" data-rows-min-value="2">
-        <div style="display:flex; gap:8px; font-size:11px; color:var(--ink-2); text-transform:uppercase; letter-spacing:.05em; padding:0 2px 6px;">
-          <span style="width:40px;"><%= t("merchant.gami.col_color") %></span><span style="flex:1;"><%= t("merchant.gami.col_prize") %></span><span style="width:96px;"><%= t("merchant.gami.col_points") %></span><span style="width:160px;"><%= t("merchant.gami.col_reward") %></span><span style="width:84px;"><%= t("merchant.gami.col_rate") %></span><span style="width:34px;"></span>
+        <div class="wheel-row wheel-head">
+          <span><%= t("merchant.gami.col_color") %></span><span><%= t("merchant.gami.col_prize") %></span><span><%= t("merchant.gami.col_points") %></span><span><%= t("merchant.gami.col_reward") %></span><span><%= t("merchant.gami.col_rate") %></span><span></span>
         </div>
         <div style="display:flex; flex-direction:column; gap:8px;" data-rows-target="list">
           <% rows.each_with_index do |s, i| %>
-            <div style="display:flex; gap:8px; align-items:center;" data-row>
+            <div class="wheel-row" data-row>
               <input type="color" name="segments[<%= i %>][color]" value="<%= s['color'] || '#E08A3C' %>" style="width:40px; height:38px; border:1px solid var(--line); border-radius:10px; padding:2px; background:#fff; cursor:pointer;">
-              <input type="text" name="segments[<%= i %>][label]" value="<%= s['label'] %>" placeholder="<%= t("merchant.gami.prize_ph") %>" class="l-field" style="flex:1;">
-              <input type="number" name="segments[<%= i %>][value]" value="<%= s['value'] %>" min="0" placeholder="0" class="l-field" style="width:96px;">
-              <%= select_tag "segments[#{i}][reward_id]", options_for_select(@rewards.map { |r| [r.title, r.id] }, s['reward_id']), include_blank: t("merchant.gami.reward_none"), class: "l-field", style: "width:160px;" %>
-              <input type="number" name="segments[<%= i %>][weight]" value="<%= s['weight'] || 10 %>" min="1" placeholder="10" class="l-field" style="width:84px;">
+              <input type="text" name="segments[<%= i %>][label]" value="<%= s['label'] %>" placeholder="<%= t("merchant.gami.prize_ph") %>" class="l-field">
+              <input type="number" name="segments[<%= i %>][value]" value="<%= s['value'] %>" min="0" placeholder="0" class="l-field">
+              <%= select_tag "segments[#{i}][reward_id]", options_for_select(@rewards.map { |r| [r.title, r.id] }, s['reward_id']), include_blank: t("merchant.gami.reward_none"), class: "l-field" %>
+              <input type="number" name="segments[<%= i %>][weight]" value="<%= s['weight'] || 10 %>" min="1" placeholder="10" class="l-field">
               <button type="button" class="wheel-x" data-action="rows#remove" aria-label="<%= t("merchant.gami.remove_cell") %>">✕</button>
             </div>
           <% end %>
         </div>
         <template data-rows-target="template">
-          <div style="display:flex; gap:8px; align-items:center;" data-row>
-            <input type="color" name="segments[__INDEX__][color]" value="#E08A3C" style="width:40px; height:38px; border:1px solid var(--line); border-radius:10px; padding:2px; background:#fff; cursor:pointer;">
-            <input type="text" name="segments[__INDEX__][label]" placeholder="<%= t("merchant.gami.prize_ph") %>" class="l-field" style="flex:1;">
-            <input type="number" name="segments[__INDEX__][value]" min="0" placeholder="0" class="l-field" style="width:96px;">
-            <%= select_tag "segments[__INDEX__][reward_id]", options_for_select(@rewards.map { |r| [r.title, r.id] }), include_blank: t("merchant.gami.reward_none"), class: "l-field", style: "width:160px;" %>
-            <input type="number" name="segments[__INDEX__][weight]" value="10" min="1" placeholder="10" class="l-field" style="width:84px;">
+          <div class="wheel-row" data-row>
+            <input type="color" name="segments[__INDEX__][color]" value="#E08A3C" style="height:38px; border:1px solid var(--line); border-radius:10px; padding:2px; background:#fff; cursor:pointer;">
+            <input type="text" name="segments[__INDEX__][label]" placeholder="<%= t("merchant.gami.prize_ph") %>" class="l-field">
+            <input type="number" name="segments[__INDEX__][value]" min="0" placeholder="0" class="l-field">
+            <%= select_tag "segments[__INDEX__][reward_id]", options_for_select(@rewards.map { |r| [r.title, r.id] }), include_blank: t("merchant.gami.reward_none"), class: "l-field" %>
+            <input type="number" name="segments[__INDEX__][weight]" value="10" min="1" placeholder="10" class="l-field">
             <button type="button" class="wheel-x" data-action="rows#remove" aria-label="<%= t("merchant.gami.remove_cell") %>">✕</button>
           </div>
         </template>
         <button type="button" class="l-btn l-btn-ghost" data-action="rows#add" style="margin-top:10px;">
           <%= ui_icon(:check, size: 15) %> <%= t("merchant.gami.add_cell") %>
         </button>
+      </div>
       </div>
 
       <div style="display:flex; gap:16px; align-items:center; margin-top:14px; flex-wrap:wrap;">
