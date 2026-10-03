@@ -8,51 +8,59 @@ module MerchantHelper
   #
   #   [nav_key, label, path, visible?]
   # ---------------------------------------------------------------------
+  # Chín mục của thanh menu merchant, mỗi mục là một nhóm tab trong trang.
+  #
+  # Mỗi màn hình phải nằm trong đúng một mục: một màn không có mục nào là một
+  # màn không ai tới được. Có test khoá điều đó (merchant_nav_test).
+  #
+  # Những mục người dùng yêu cầu mà app chưa có chức năng tương ứng thì KHÔNG
+  # dựng tab rỗng ở đây — xem ghi chú cuối phương thức.
   def merchant_sections
     manage = current_membership&.can_manage?
     [
-      # Không còn mục "Vận hành". Nó chỉ có hai màn, mà máy quét đã có nút
-      # riêng nổi bật ngay trên thanh menu — nên mục này chỉ là một lớp nữa
-      # phải bấm qua để tới Giao dịch. Giao dịch về với Tổng quan: bảng số và
-      # sổ cái đứng sau những con số đó thuộc về nhau.
       { key: :overview, icon: :layout, label: t("merchant.nav.sec_overview"), items: [
-        [:dashboard,    t("merchant.nav.dashboard"),    merchant_root_path,         true],
-        [:transactions, t("merchant.nav.transactions"), merchant_transactions_path, true]
-      ] },
-      { key: :loyalty, icon: :award, label: t("merchant.nav.sec_loyalty"), items: [
-        [:program,        t("merchant.nav.program"),      merchant_loyalty_program_path, manage],
-        [:tiers,          t("merchant.nav.tiers"),        merchant_tiers_path,           manage],
-        [:rewards,        t("merchant.nav.rewards"),      merchant_rewards_path,         manage],
-        [:stamp_cards,    t("merchant.nav.stamp_cards"),  merchant_stamp_cards_admin_path, manage],
-        [:missions_setup, t("merchant.nav.missions"),     merchant_missions_admin_path,  manage],
-        [:games,          t("merchant.nav.games"),        merchant_games_admin_path,     manage]
+        [:dashboard, t("merchant.nav.dashboard"), merchant_root_path, true]
       ] },
       { key: :customers, icon: :users, label: t("merchant.nav.sec_customers"), items: [
         [:customers, t("merchant.nav.customers"), merchant_customers_path, true],
         [:segments,  t("merchant.nav.segments"),  merchant_segments_path,  manage],
         [:feedback,  t("merchant.nav.feedback"),  merchant_feedback_path,  true]
       ] },
-      # The design splits this section in two: campaigns, and everything that
-      # sends a message (broadcasts + automations) behind one tab, which then
-      # has its own pair of tabs.
-      { key: :campaigns, icon: :megaphone, label: t("merchant.nav.sec_campaigns"), items: [
-        [:campaigns, t("merchant.nav.campaigns"), merchant_campaigns_path,  manage],
-        [:messages,  t("merchant.nav.messages"),  merchant_broadcasts_path, true]
+      { key: :loyalty, icon: :star, label: t("merchant.nav.sec_loyalty"), items: [
+        [:program, t("merchant.nav.program"), merchant_loyalty_program_path, manage],
+        [:tiers,   t("merchant.nav.tiers"),   merchant_tiers_path,           manage],
+        [:games,   t("merchant.nav.games"),   merchant_games_admin_path,     manage]
       ] },
-      # Five tabs, as in the design. The merchant's own account is not one of
-      # them: it lives on the sidebar footer chip, where the design puts it.
+      { key: :marketing, icon: :target, label: t("merchant.nav.sec_marketing"), items: [
+        [:campaigns,      t("merchant.nav.campaigns"),   merchant_campaigns_path,       manage],
+        [:messages,       t("merchant.nav.messages"),    merchant_broadcasts_path,      true],
+        [:missions_setup, t("merchant.nav.missions"),    merchant_missions_admin_path,  manage],
+        [:stamp_cards,    t("merchant.nav.stamp_cards"), merchant_stamp_cards_admin_path, manage]
+      ] },
+      # Reward trong hệ thống CHÍNH LÀ mẫu voucher: đặt tên gì thì nó vẫn là
+      # một màn, nên nó ở đây chứ không nhân đôi sang mục Thành viên.
+      { key: :vouchers, icon: :ticket, label: t("merchant.nav.sec_vouchers"), items: [
+        [:rewards, t("merchant.nav.voucher_templates"), merchant_rewards_path, manage]
+      ] },
+      { key: :operations, icon: :store, label: t("merchant.nav.sec_operations"), items: [
+        [:outlets,      t("merchant.nav.outlets"),      merchant_outlets_path,          manage],
+        [:transactions, t("merchant.nav.transactions"), merchant_transactions_path,     true],
+        [:checkin_qr,   t("merchant.nav.checkin_qr"),   merchant_scanner_checkin_qr_path, true]
+      ] },
+      { key: :admin, icon: :user_circle, label: t("merchant.nav.sec_admin"), items: [
+        [:staff,  t("merchant.nav.staff"),  merchant_staff_index_path, manage],
+        [:alerts, t("merchant.nav.alerts"), merchant_alerts_path,      true]
+      ] },
       { key: :settings, icon: :gear, label: t("merchant.nav.sec_settings"), items: [
-        [:appearance, t("merchant.nav.appearance"), merchant_appearance_path,   manage],
-        [:outlets,    t("merchant.nav.outlets"),    merchant_outlets_path,      manage],
-        [:staff,      t("merchant.nav.staff"),      merchant_staff_index_path,  manage],
-        [:domain,     t("merchant.nav.domain"),     merchant_domain_path,       manage],
-        [:billing,    t("merchant.nav.billing"),    merchant_billing_path,      manage]
+        [:appearance, t("merchant.nav.appearance"), merchant_appearance_path, manage],
+        [:domain,     t("merchant.nav.domain"),     merchant_domain_path,     manage],
+        [:billing,    t("merchant.nav.billing"),    merchant_billing_path,    manage]
       ] }
     ].map { |sec| sec.merge(items: sec[:items].select { |it| it[3] }) }
      .reject { |sec| sec[:items].empty? }
   end
 
-  # Which of the six a screen belongs to, from its own nav_key.
+  # Mục nào chứa màn này, tra từ nav_key của chính nó.
   def merchant_section_for(nav)
     merchant_sections.find { |sec| sec[:items].any? { |it| it[0] == nav } }
   end

@@ -45,7 +45,9 @@ module Merchant
 
     private
 
-    def nav_key = :scanner
+    # Màn quản lý mã QR nằm trong mục Vận hành; máy quét thì có nút riêng
+    # trên thanh menu. Cùng một controller, hai chỗ khác nhau trong menu.
+    def nav_key = action_name == "checkin_qr" ? :checkin_qr : :scanner
 
     # Today's postings at the active branch (all branches when none is chosen).
     def load_counter_activity

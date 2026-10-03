@@ -1,8 +1,7 @@
 require "test_helper"
 
-# Thanh menu merchant. Mục "Vận hành" chỉ có hai màn, mà máy quét đã có nút
-# riêng nổi bật ngay phía trên — nên nó chỉ là một lớp phải bấm qua để tới
-# Giao dịch.
+# Thanh menu merchant: chín mục, mỗi màn hình nằm trong đúng một mục.
+# Một màn không thuộc mục nào là một màn không ai tới được.
 class MerchantNavTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
@@ -14,26 +13,51 @@ class MerchantNavTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "menu không còn mục Vận hành" do
+  def sections
     get merchant_root_path
-    assert_response :success
-    keys = ActsAsTenant.with_tenant(@ws) { @controller.view_context.merchant_sections.map { |s| s[:key] } }
-    assert_not_includes keys, :operations
+    ActsAsTenant.with_tenant(@ws) { @controller.view_context.merchant_sections }
   end
 
-  # Gỡ một mục khỏi menu không được làm mồ côi màn hình nào bên trong nó.
-  test "Giao dịch vẫn tới được, từ Tổng quan" do
-    get merchant_root_path
-    assert_select "a[href=?]", merchant_transactions_path, { minimum: 1 },
-                  "Tổng quan phải có tab dẫn sang Giao dịch"
-    get merchant_transactions_path
-    assert_response :success
+  test "đúng chín mục, theo đúng thứ tự đã chốt" do
+    assert_equal %i[overview customers loyalty marketing vouchers operations admin settings],
+                 sections.map { |s| s[:key] }
   end
 
-  test "máy quét vẫn có nút riêng trên menu" do
+  # Cái dễ hỏng nhất khi sắp xếp lại menu: một màn bị rơi ra ngoài mọi mục.
+  test "mọi màn hình trong menu đều mở được" do
+    missing = []
+    sections.each do |sec|
+      sec[:items].each do |key, label, path, _|
+        get path
+        missing << "#{sec[:key]}/#{key} → #{path} (#{response.status})" unless response.successful? || response.redirect?
+      end
+    end
+    assert_empty missing, "những màn này không mở được:\n#{missing.join("\n")}"
+  end
+
+  # Mỗi màn tự khai nav_key; nếu nav_key đó không nằm trong mục nào thì trang
+  # mở ra mà menu không sáng chỗ nào, và dải tab phía trên biến mất.
+  test "mọi nav_key của màn hình đều có nhà" do
+    placed = sections.flat_map { |s| s[:items].map(&:first) } + [:scanner, :account]
+    # Chỉ đọc trên CHÍNH dòng khai báo: quét nhiều dòng sẽ vớ phải mọi ký hiệu
+    # khác trong file (params[:preset]...) và báo động giả.
+    declared = Dir["app/controllers/merchant/*_controller.rb"].flat_map do |f|
+      File.read(f).lines.grep(/def nav_key\b/).flat_map { |l| l.scan(/:(\w+)/).flatten }
+    end.uniq.map(&:to_sym)
+    assert_empty (declared - placed), "nav_key không thuộc mục nào: #{(declared - placed).inspect}"
+  end
+
+  test "máy quét vẫn có nút riêng, không nằm trong mục nào" do
     get merchant_root_path
     assert_select "a.l-nav-scan[href=?]", merchant_scanner_path, 1
-    get merchant_scanner_path
+    assert_not_includes sections.flat_map { |s| s[:items].map(&:first) }, :scanner
+  end
+
+  # Quản lý QR và máy quét dùng chung controller nhưng ở hai chỗ khác nhau.
+  test "quản lý QR sáng ở mục Vận hành, không phải ở nút máy quét" do
+    get merchant_scanner_checkin_qr_path
     assert_response :success
+    ops = sections.find { |s| s[:key] == :operations }
+    assert_includes ops[:items].map(&:first), :checkin_qr
   end
 end
