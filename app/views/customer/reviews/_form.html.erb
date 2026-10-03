@@ -98,7 +98,7 @@
         <div class="l-eyebrow" style="margin-bottom:7px;"><%= t("customer.review.photos_current") %></div>
         <div class="l-photogrid">
           <% rating.photo_list.each do |att| %>
-            <span class="l-photo"><%= image_tag att.variant(resize_to_fill: [160, 160]), alt: "" %></span>
+            <span class="l-photo"><%= cdn_image_tag att.variant(resize_to_fill: [160, 160]), alt: "" %></span>
           <% end %>
         </div>
         <label style="display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-size:13px; color:var(--ink-2);">

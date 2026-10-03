@@ -48,6 +48,17 @@ Rails.application.configure do
       :local
     end
 
+  # Cái 302 đó mặc định chỉ được cache 5 phút (`max-age=300, private`), nên cứ
+  # mỗi 5 phút là mọi ảnh trên màn hình lại hỏi Rails một lượt — đo thật ~140ms
+  # mỗi ảnh chỉ để nhận lại đúng một dòng Location.
+  #
+  # An toàn để kéo dài VÌ bucket R2 đang công khai: đích của redirect là URL
+  # vĩnh viễn, không chữ ký, không hạn dùng. NẾU sau này đóng bucket lại thì
+  # PHẢI hạ con số này xuống, bằng không trình duyệt (và service worker của
+  # PWA) sẽ giữ redirect trỏ tới một URL đã ký hết hạn — đúng lỗi ảnh vỡ từng
+  # gặp trước đây.
+  config.active_storage.service_urls_expire_in = 1.week
+
   # Ảnh đi qua route redirect của Rails rồi mới tới CDN (302 → img.tiumpower.com).
   #
   # ĐỪNG nối thẳng CDN bằng `resolve_model_to_route` + một route `direct` trả về

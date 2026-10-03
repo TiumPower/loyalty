@@ -58,15 +58,23 @@
       <div style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line-soft);">
         <span style="width:38px; height:38px; border-radius:11px; flex:none; display:grid; place-items:center;
                      background:var(--primary-soft); color:var(--primary);"><%= ui_icon(:coins, size: 18) %></span>
+        <%# Huy hiệu có thể tặng CẢ voucher LẪN điểm. Trước đây dòng phụ chỉ
+            ghi tên voucher còn số điểm trôi ở mép phải không nhãn, nên không
+            ai đoán được là nhận cả hai hay số đó thuộc về voucher. Liệt kê
+            từng phần thưởng một dòng, nói rõ nó vào đâu. %>
         <div style="flex:1; min-width:0;">
           <div style="font-weight:700; font-size:14px;"><%= t("customer.badges.completion_reward") %></div>
-          <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;">
-            <%= @badge.reward ? @badge.reward.title : t("customer.badges.added_to_balance") %>
-          </div>
+          <% if @badge.reward %>
+            <div style="font-size:12.5px; color:var(--ink-2); margin-top:3px;">
+              <%= t("customer.badges.reward_voucher_line", title: @badge.reward.title) %>
+            </div>
+          <% end %>
+          <% if @badge.reward_points.to_i.positive? %>
+            <div style="font-size:12.5px; color:var(--ink-2); margin-top:3px;">
+              <%= t("customer.badges.reward_points_line", n: number_with_delimiter(@badge.reward_points)) %>
+            </div>
+          <% end %>
         </div>
-        <% if @badge.reward_points.to_i.positive? %>
-          <span style="flex:none; font-weight:700; color:var(--primary);">+<%= number_with_delimiter(@badge.reward_points) %></span>
-        <% end %>
       </div>
     <% end %>
   </div>

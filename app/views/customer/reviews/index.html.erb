@@ -59,6 +59,9 @@
           </span>
         </div>
       <% end %>
+      <%# Hàng này chỉ còn các cách LIÊN HỆ quán. "Gửi lời nhắn" từng đứng ở
+          đây nhưng trỏ vào đúng màn viết đánh giá — hai nút khác tên, cùng
+          một chỗ đến, mà nút "Viết đánh giá" ở cuối trang đã nói rõ hơn. %>
       <% if main&.phone.present? %>
         <div class="l-inforow"><span class="ic"><%= ui_icon(:phone, size: 14) %></span><span><%= main.phone %></span></div>
       <% end %>
@@ -119,9 +122,6 @@
               target: "_blank", rel: "noopener", class: "l-action" do %>
           <%= ui_icon(:navigate, size: 18) %><span><%= t("customer.shop.directions_cta") %></span>
         <% end %>
-      <% end %>
-      <%= link_to member_new_review_path, class: "l-action" do %>
-        <%= ui_icon(:mail, size: 18) %><span><%= t("customer.shop.send_message") %></span>
       <% end %>
     </div>
 
@@ -195,7 +195,7 @@
                       <%= link_to url_for(att), data: { action: "click->lightbox#open",
                             lightbox_src: url_for(att),
                             lightbox_alt: t("customer.shop.photo_of", name: r.member&.display_name) } do %>
-                        <%= image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
+                        <%= cdn_image_tag att.variant(resize_to_fill: [200, 200]), alt: "" %>
                       <% end %>
                     <% end %>
                   </div>

@@ -156,7 +156,7 @@ module ApplicationHelper
   # the logo on its brand tint so the frame is never an empty grey box.
   def shop_cover(ws, size: 780)
     if ws&.cover&.attached?
-      image_tag(ws.cover.variant(resize_to_fill: [size, (size * 0.56).round]), alt: "",
+      cdn_image_tag(ws.cover.variant(resize_to_fill: [size, (size * 0.56).round]), alt: "",
                 style: "width:100%;height:100%;object-fit:cover;display:block;")
     elsif ws&.logo&.attached?
       image_tag(workspace_icon_url(ws), alt: "",
@@ -176,11 +176,48 @@ module ApplicationHelper
   # Trước đây mọi biến thể đều cắt vuông rồi thả vào khung 4:3 hay 16:10, và
   # `object-fit: cover` cắt thêm lần nữa — hai lần cắt chồng nhau, nên chủ thể
   # của ảnh trôi ra ngoài khuôn hình. Cắt đúng một lần, đúng tỉ lệ sẽ dùng.
+  # URL CDN TUYỆT ĐỐI cho một blob/biến thể, hoặc nil nếu chưa phát thẳng được.
+  #
+  # Dùng TƯỜNG MINH ở từng chỗ gọi, KHÔNG cắm vào `resolve_model_to_route`: khối
+  # route `direct` không nhận được cờ `only_path`, và mọi helper dạng path sẽ
+  # cắt mất scheme+host khỏi chuỗi này — "/loyalty/<key>" giải theo domain của
+  # shop và 404. Trả về chuỗi rồi đưa thẳng cho `image_tag` thì không dính.
+  def cdn_src(model)
+    blob = case model
+           when ActiveStorage::Blob then model
+           when ActiveStorage::VariantWithRecord
+             # `processed?` là private, còn `processed` sẽ DỰNG biến thể ngay
+             # giữa lúc render HTML — hỏi thẳng bảng variant_records.
+             return nil unless model.blob.variant_records.exists?(variation_digest: model.variation.digest)
+             model.image&.blob
+           end
+    return nil if blob.nil?
+
+    # Service thật nằm sau Mirror (R2 là chính, đĩa máy chủ là bản sao). Mirror
+    # không có `public_host` nên phải đi xuống primary.
+    service = blob.service
+    4.times { break unless service.respond_to?(:primary); service = service.primary }
+    return nil unless service.respond_to?(:public_host) && service.public_host.present?
+    blob.url
+  rescue StandardError => e
+    Rails.logger.warn("[cdn_src] #{e.class}: #{e.message}")
+    nil
+  end
+
+  # `image_tag` đi thẳng CDN khi được, còn không thì rơi về đường của Rails.
+  #
+  # Mỗi ảnh đi qua route redirect của Rails tốn một vòng ~140ms chỉ để nhận một
+  # cái 302 — đo thật trên production. Đi thẳng CDN bỏ hẳn vòng đó.
+  def cdn_image_tag(model, **opts)
+    src = cdn_src(model)
+    src ? image_tag(src, **opts) : image_tag(model, **opts)
+  end
+
   def reward_art(reward, size: 320, emoji_size: nil, ratio: 1)
     if reward&.image&.attached?
       height = (size / ratio.to_f).round
-      image_tag(reward.image.variant(resize_to_fill: [size, height]), alt: "",
-                style: "width:100%;height:100%;object-fit:cover;display:block;")
+      cdn_image_tag(reward.image.variant(resize_to_fill: [size, height]), alt: "",
+                    style: "width:100%;height:100%;object-fit:cover;display:block;")
     else
       reward_placeholder(reward, emoji_size: emoji_size)
     end
