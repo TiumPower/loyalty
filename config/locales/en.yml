@@ -857,7 +857,6 @@ en:
       turn_off: "Turn off"
       turned_on: "%{name} is on."
       turned_off: "%{name} is off."
-      need_gift_first: "Pick a gift first — turned on without one, the automation runs and the customer gets nothing."
       need_reward: "Create at least one reward in “Rewards & gifts” before using automations."
       welcome_title: "Welcome new customers"
       welcome_desc: "Automatically gift a reward when a customer signs up."
@@ -880,7 +879,7 @@ en:
       col_status: "Status"
       "on": "Running"
       "off": "Off"
-      edit: "Edit"
+      edit: "Details & edit"
       no_gift_set: "Not set"
       trig_welcome: "As soon as they sign up"
       trig_birthday: "On their birthday"
@@ -2092,6 +2091,12 @@ en:
       birthday:
         title: "🎂 Happy birthday!"
         body: "%{reward} is in your wallet — a small gift for your day!"
+      welcome_plain:
+        title: "Welcome! 👋"
+        body: "Thanks for joining the %{shop} loyalty programme — start collecting points on your next visit."
+      birthday_plain:
+        title: "🎂 Happy birthday!"
+        body: "%{shop} wishes you a wonderful day!"
       winback:
         title: "Long time no see 👋"
         body: "%{message}"
@@ -2140,6 +2145,7 @@ en:
       push_off: "Off — tap to turn on notifications"
       push_blocked: "Blocked by the browser — enable it in settings"
       push_unsupported: "This device doesn't support push"
+      push_failed: "Could not turn on notifications — the server did not save the subscription. Sign in again and retry."
       install_title: "Install the app"
       install_sub: "Add to your home screen for quick access & alerts."
       install_btn: "Install"

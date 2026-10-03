@@ -858,7 +858,6 @@ vi:
       turn_off: "Tắt"
       turned_on: "Đã bật %{name}."
       turned_off: "Đã tắt %{name}."
-      need_gift_first: "Chọn quà tặng trước đã — bật mà chưa có quà thì tự động hoá chạy nhưng khách không nhận được gì."
       need_reward: "Bạn cần tạo ít nhất 1 ưu đãi ở mục “Ưu đãi & quà” trước khi dùng tự động hoá."
       welcome_title: "Chào mừng khách mới"
       welcome_desc: "Tự tặng quà ngay khi khách đăng ký lần đầu."
@@ -881,7 +880,7 @@ vi:
       col_status: "Trạng thái"
       "on": "Đang chạy"
       "off": "Tắt"
-      edit: "Chỉnh sửa"
+      edit: "Chi tiết & chỉnh sửa"
       no_gift_set: "Chưa chọn"
       trig_welcome: "Ngay khi khách đăng ký"
       trig_birthday: "Đúng ngày sinh nhật"
@@ -2131,6 +2130,12 @@ vi:
       birthday:
         title: "🎂 Chúc mừng sinh nhật!"
         body: "%{reward} đã vào ví của bạn — món quà nhỏ mừng sinh nhật bạn!"
+      welcome_plain:
+        title: "Chào mừng bạn! 👋"
+        body: "Cảm ơn bạn đã tham gia chương trình tri ân của %{shop} — bắt đầu tích điểm từ lần ghé tới nhé."
+      birthday_plain:
+        title: "🎂 Chúc mừng sinh nhật!"
+        body: "%{shop} chúc bạn một ngày thật vui!"
       winback:
         title: "Lâu rồi không gặp bạn 👋"
         body: "%{message}"
@@ -2179,6 +2184,7 @@ vi:
       push_off: "Đang tắt — chạm để bật nhận thông báo"
       push_blocked: "Trình duyệt đang chặn — hãy bật trong cài đặt"
       push_unsupported: "Thiết bị không hỗ trợ thông báo đẩy"
+      push_failed: "Chưa bật được thông báo — máy chủ không lưu được đăng ký. Hãy đăng nhập lại rồi thử lần nữa."
       install_title: "Cài đặt ứng dụng"
       install_sub: "Thêm vào màn hình chính để mở nhanh & nhận thông báo."
       install_btn: "Cài đặt"

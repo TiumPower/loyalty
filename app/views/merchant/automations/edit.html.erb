@@ -16,6 +16,14 @@
     <div class="ds"><%= a.("#{kind}_desc") %></div>
   </div>
   <div class="act">
+    <%# Công tắc nhanh ngay đầu màn hình, có hiệu lực NGAY. Trước đây nó là một
+        ô tick nằm giữa form, chỉ ăn khi bấm Lưu — mở trang ra xem chi tiết rồi
+        muốn bật thì phải cuộn tìm, tick, rồi lưu. %>
+    <%= button_to cfg["enabled"] ? a.(:turn_off) : a.(:turn_on),
+          merchant_toggle_automation_path(kind), method: :post,
+          class: "l-btn #{cfg["enabled"] ? "l-btn-soft" : "l-btn-primary"}",
+          form: { style: "margin:0;" },
+          style: "padding:9px 16px; font-size:13.5px;" %>
     <%= link_to a.(:ed_cancel), merchant_automations_path, class: "l-btn l-btn-ghost",
           style: "padding:9px 16px; font-size:13.5px;" %>
   </div>
@@ -41,16 +49,6 @@
             <div style="font-weight:700; font-size:14.5px;"><%= a.("#{kind}_title") %></div>
             <div style="font-size:12.5px; color:var(--ink-2); margin-top:2px;"><%= a.("trig_#{kind}_long") %></div>
           </div>
-        </div>
-        <div class="l-toggle-row" style="margin-top:8px;">
-          <div style="flex:1; min-width:0;">
-            <div style="font-size:13.5px; font-weight:600;"><%= a.(:enabled_label) %></div>
-            <div style="font-size:12px; color:var(--ink-2); margin-top:3px; line-height:1.45;"><%= a.(:enabled_hint) %></div>
-          </div>
-          <%= hidden_field_tag "automations[#{kind}][enabled]", "0" %>
-          <label class="l-switch">
-            <%= check_box_tag "automations[#{kind}][enabled]", "1", cfg["enabled"] %><span class="knob"></span>
-          </label>
         </div>
       </div>
 

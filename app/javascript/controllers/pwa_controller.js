@@ -28,7 +28,26 @@ export default class extends Controller {
     if (!this.hasPushLabelTarget) return
     if (!this.supported()) return this.setPush("unsupported")
     if (Notification.permission === "denied") return this.setPush("blocked")
-    this.setPush((await this.currentSub()) ? "on" : "off")
+    const sub = await this.currentSub()
+    this.setPush(sub ? "on" : "off")
+    if (sub) this.resync(sub)
+  }
+
+  // Công tắc trước đây chỉ đọc trạng thái của TRÌNH DUYỆT. Nếu lần lưu lên máy
+  // chủ hỏng — phiên đăng nhập hết hạn, mạng rớt giữa chừng — thì trình duyệt
+  // vẫn có subscription, công tắc vẫn "Bật", mà máy chủ không có dòng nào để
+  // gửi tới. Không có cách nào để khách biết, và cũng không có cách nào tự
+  // khỏi: bật lại thì thấy "đang bật" rồi nên bấm vào là TẮT.
+  //
+  // Nên mỗi phiên gửi lại một lần (store! là ghi đè theo endpoint, gửi lại
+  // không tạo bản trùng). Máy đang hỏng tự lành ở lần mở app kế tiếp.
+  async resync(sub) {
+    try {
+      if (sessionStorage.getItem("push_resynced") === "1") return
+      sessionStorage.setItem("push_resynced", "1")
+    } catch (e) {}
+    const ok = await this.save(sub)
+    if (!ok) this.setPush("off")
   }
 
   setPush(state) {
@@ -70,8 +89,31 @@ export default class extends Controller {
       const reg = await navigator.serviceWorker.ready
       sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: this.b64(this.vapidValue) })
     } catch (e) { return this.reflectPush() }
-    await this.post(this.subscribeUrlValue, sub.toJSON())
-    this.setPush("on")
+
+    // Máy chủ không nhận được thì ĐỪNG báo là đã bật. Bản cũ gửi xong là bật
+    // công tắc bất kể kết quả, nên một lần lưu hỏng biến thành một cái công tắc
+    // nói dối vĩnh viễn.
+    if (await this.save(sub)) {
+      this.setPush("on")
+    } else {
+      try { await sub.unsubscribe() } catch (e) {}
+      this.setPush("off")
+      alert(this.data.get("failedText") || "")
+    }
+  }
+
+  // Chỉ coi là xong khi máy chủ trả đúng {ok:true}. Không dùng `res.ok` một
+  // mình: phiên đăng nhập hết hạn thì fetch đi theo chuyển hướng và kết thúc ở
+  // trang đăng nhập với mã 200 — "thành công" theo nghĩa HTTP, mà chẳng có gì
+  // được lưu.
+  async save(sub) {
+    try {
+      const res = await this.post(this.subscribeUrlValue, sub.toJSON())
+      const data = await res.json()
+      return res.ok && data && data.ok === true
+    } catch (e) {
+      return false
+    }
   }
 
   async unsub(sub) {

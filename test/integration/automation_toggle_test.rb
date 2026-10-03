@@ -45,17 +45,15 @@ class AutomationToggleTest < ActionDispatch::IntegrationTest
     assert_equal @reward.id, cfg["reward_id"]
   end
 
-  # Chào mừng / Sinh nhật thiếu quà thì Automations thoát ngay, không tặng gì và
-  # không báo gì — bật trong trạng thái đó là dựng một cái bẫy im lặng.
-  test "chưa chọn quà thì không cho bật Chào mừng" do
-    post merchant_toggle_automation_path("welcome")
-    assert_redirected_to merchant_edit_automation_path("welcome")
-    assert_not autos.dig("welcome", "enabled")
-  end
-
-  # Kéo khách quay lại vẫn gửi lời nhắc khi không có quà, nên nó được phép bật.
-  test "Kéo khách quay lại bật được dù chưa có quà" do
-    post merchant_toggle_automation_path("winback")
-    assert autos.dig("winback", "enabled")
+  # Quà là tuỳ chọn với cả ba: một lời chào mừng hay lời chúc sinh nhật không
+  # quà vẫn đáng gửi, và quán chưa kịp dựng ưu đãi thì đó là tất cả những gì họ
+  # cần. (Trước đây hai cái đầu bị chặn vì Automations im lặng không chạy khi
+  # thiếu quà — nay nó gửi lời nhắn không quà.)
+  Merchant::AutomationsController::KINDS.each do |kind|
+    test "#{kind} bật được dù chưa chọn quà" do
+      post merchant_toggle_automation_path(kind)
+      assert_redirected_to merchant_automations_path
+      assert autos.dig(kind, "enabled")
+    end
   end
 end

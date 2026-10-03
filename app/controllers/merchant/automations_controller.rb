@@ -39,13 +39,11 @@ module Merchant
     # `update` dựng lại toàn bộ cấu hình từ form, nên gọi nó cho một cú bật là
     # xoá sạch quà, số ngày và lời nhắn đã đặt. Ở đây chỉ chạm đúng cờ `enabled`.
     #
-    # Chào mừng và Sinh nhật mà chưa chọn quà thì CHẠY CŨNG KHÔNG CHO GÌ (xem
-    # Automations#on_signup / run_birthday: cả hai thoát ngay khi thiếu
-    # reward_id). Bật trong trạng thái đó là dựng một cái bẫy im lặng, nên chặn
-    # lại và nói rõ còn thiếu gì. Kéo khách quay lại thì chạy được không cần quà
-    # — nó vẫn gửi lời nhắc.
-    NEEDS_REWARD = %w[welcome birthday].freeze
-
+    # Quà là TUỲ CHỌN với cả ba. Trước đây Chào mừng và Sinh nhật thiếu quà là
+    # im lặng không chạy, nên nút bật phải chặn lại — nhưng một lời chào mừng
+    # hay một lời chúc sinh nhật không quà vẫn đáng gửi, và với quán chưa kịp
+    # dựng ưu đãi thì đó là tất cả những gì họ cần. Automations giờ gửi lời nhắn
+    # không quà, nên chẳng còn gì để chặn.
     def toggle
       kind = params[:kind].to_s
       return redirect_to merchant_automations_path unless KINDS.include?(kind)
@@ -53,11 +51,6 @@ module Merchant
       autos = current_workspace.settings.fetch("automations", {}).dup
       cfg   = (autos[kind] || {}).dup
       turning_on = !cfg["enabled"]
-
-      if turning_on && NEEDS_REWARD.include?(kind) && cfg["reward_id"].blank?
-        return redirect_to merchant_edit_automation_path(kind), alert: t("merchant.automations.need_gift_first")
-      end
-
       autos[kind] = cfg.merge("enabled" => turning_on)
       current_workspace.update!(settings: current_workspace.settings.merge("automations" => autos))
       redirect_to merchant_automations_path,
@@ -75,7 +68,12 @@ module Merchant
     end
 
     def config_from_params(kind)
-      cfg = { "enabled" => flag(kind, "enabled"), "reward_id" => field(kind, "reward_id").presence }
+      # Công tắc bật/tắt giờ nằm ở đầu màn hình và có hiệu lực ngay, không đi
+      # qua form này nữa. Form không gửi `enabled` thì GIỮ NGUYÊN giá trị đang
+      # có — đọc mù từ params sẽ thành: bấm Lưu là tắt mất tự động hoá vừa bật.
+      current = current_workspace.settings.fetch("automations", {})[kind] || {}
+      enabled = field(kind, "enabled").nil? ? current["enabled"] : flag(kind, "enabled")
+      cfg = { "enabled" => enabled, "reward_id" => field(kind, "reward_id").presence }
       return cfg unless kind == "winback"
       cfg.merge("days" => field("winback", "days").to_i,
                 "message" => field("winback", "message").to_s.strip.presence)
